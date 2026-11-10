@@ -37,9 +37,5 @@ npm run build      # type-check + production build
 ### Adding a block
 Add a `NodeDef` to one of `src/engine/nodes/*.ts`. It declares pins, settings, a plain-English `sentence`, an optional `validate`, and `execute` (for actions and flow) or `evaluate` (for values). The palette, the block UI, connection checking and the inspector all pick it up automatically.
 
-## Roadmap (phase 2: backend)
-The engine talks to the outside world only through a `HostApi`, so the same interpreter can run on a server:
-- data tables with a visual schema
-- server workflows triggered by *On HTTP request* or *On form submit*
-- *Fetch from API* and *Query table* blocks
-- accounts, and publishing apps to a URL
+## Roadmap
+All the planned next steps are listed in [docs/ROADMAP.md](docs/ROADMAP.md), and their completion is tracked in [docs/PROGRESS.md](docs/PROGRESS.md).
