@@ -81,6 +81,7 @@ function BlockNodeInner({ id, selected }: NodeProps) {
         .filter(Boolean)
         .join(' ')}
       style={{ ['--cat' as string]: cat.color }}
+      data-node-type={node.type}
     >
       <div className="block-header">
         {execIns.map((p) => (
