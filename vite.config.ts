@@ -5,5 +5,12 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'node',
+    include: ['src/**/*.test.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**'],
+      exclude: ['src/**/*.test.ts'],
+      reporter: ['text-summary', 'html'],
+    },
   },
 });

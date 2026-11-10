@@ -1,5 +1,7 @@
 # Code Blocks
 
+[![CI](https://github.com/vrund1999-ai/code_blocks/actions/workflows/ci.yml/badge.svg)](https://github.com/vrund1999-ai/code_blocks/actions/workflows/ci.yml)
+
 Build apps without writing code. Lay out your screens by dragging elements, make them do things by connecting blocks with arrows, and press **▶ Run** to use your app straight away.
 
 ## Getting started
@@ -10,6 +12,38 @@ npm run dev        # open http://localhost:5173
 npm test           # unit tests (engine + project store)
 npm run build      # type-check + production build
 ```
+
+Use Node 24 (see `.nvmrc`).
+
+## Testing
+
+| Command | What it does |
+| --- | --- |
+| `npm test` | Unit tests (Vitest) for the engine and project store, in `src/**/*.test.ts` |
+| `npm run test:coverage` | Unit tests with a coverage report in `coverage/` |
+| `npm run e2e:install` | One-time: download the Chromium build Playwright uses (`e2e:install:all` adds Firefox and WebKit) |
+| `npm run test:e2e` | Browser end-to-end tests (Playwright, Chromium) in `e2e/` |
+| `npm run test:e2e:ui` | The same tests in Playwright's interactive UI mode |
+| `npm run test:e2e:all` | End-to-end tests in Chromium, Firefox and WebKit |
+| `npm run check` | Type-check (app + tests), unit tests and production build |
+
+The end-to-end tests start a dev server on port 4173 by themselves (or reuse one that is already running). After a failure, `npx playwright show-report` opens the report with screenshots and traces.
+
+How the end-to-end tests are organised:
+
+- **`e2e/support/fixtures.ts`:**
+  - Every test fails if the page logs a console error.
+  - `seed()` stores a project in localStorage before the app starts.
+- **`e2e/support/projects.ts`:** builds test projects with the app's own model code.
+- **`e2e/support/AppPage.ts`:** a page object with helpers for dragging, connecting blocks, running the app and so on.
+- **No fixed waits:** use Playwright's auto-retrying `expect`, and use `page.clock` for anything timed.
+
+**CI:** GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request and every push to `main`. It has two jobs:
+
+- type-check, unit tests with coverage, and the build
+- end-to-end tests in Chromium, against the production build
+
+The Playwright report and coverage are uploaded as artifacts. To also run Firefox and WebKit, start the workflow by hand with **all_browsers**.
 
 ## How it works
 
@@ -33,13 +67,11 @@ npm run build      # type-check + production build
 | `src/logic/` | Node-graph editor (React Flow) |
 | `src/app/` | Shell: toolbar, inspector, side panels |
 | `src/templates/` | Starter projects |
+| `e2e/` | Playwright end-to-end tests and their helpers (`e2e/support/`) |
+| `.github/` | CI workflow and Dependabot config |
 
 ### Adding a block
 Add a `NodeDef` to one of `src/engine/nodes/*.ts`. It declares pins, settings, a plain-English `sentence`, an optional `validate`, and `execute` (for actions and flow) or `evaluate` (for values). The palette, the block UI, connection checking and the inspector all pick it up automatically.
 
-## Roadmap (phase 2: backend)
-The engine talks to the outside world only through a `HostApi`, so the same interpreter can run on a server:
-- data tables with a visual schema
-- server workflows triggered by *On HTTP request* or *On form submit*
-- *Fetch from API* and *Query table* blocks
-- accounts, and publishing apps to a URL
+## Roadmap
+All the planned next steps are listed in [docs/ROADMAP.md](docs/ROADMAP.md), and their completion is tracked in [docs/PROGRESS.md](docs/PROGRESS.md).

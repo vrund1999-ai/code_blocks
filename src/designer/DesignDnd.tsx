@@ -10,7 +10,7 @@ import {
   type DragMoveEvent,
   type DragStartEvent,
 } from '@dnd-kit/core';
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useRef, useState, type ReactNode } from 'react';
 import { ELEMENT_DEFS } from '../model/elements';
 import { useProjectStore } from '../model/projectStore';
 import { findElement, findInProject, findParent } from '../model/tree';
@@ -93,12 +93,19 @@ function computeTarget(overId: string, x: number, y: number, draggingId: string 
 
 export function DesignDnd({ children }: { children: ReactNode }) {
   const [active, setActive] = useState<DragData | null>(null);
-  const [dropTarget, setDropTarget] = useState<DropTarget | null>(null);
+  const [dropTarget, setDropTargetState] = useState<DropTarget | null>(null);
+  // The drop always lands where the indicator was last shown. Recomputing on
+  // drop is unreliable because the indicator itself shifts the layout.
+  const lastTarget = useRef<DropTarget | null>(null);
+  const setDropTarget = (t: DropTarget | null) => {
+    lastTarget.current = t;
+    setDropTargetState(t);
+  };
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   const draggingId = active?.source === 'element' ? active.id : null;
 
-  const pointer = (e: DragMoveEvent | DragEndEvent) => {
+  const pointer = (e: DragMoveEvent) => {
     const ev = e.activatorEvent as PointerEvent;
     return { x: ev.clientX + e.delta.x, y: ev.clientY + e.delta.y };
   };
@@ -111,7 +118,7 @@ export function DesignDnd({ children }: { children: ReactNode }) {
   };
   const onDragEnd = (e: DragEndEvent) => {
     const data = e.active.data.current as DragData | undefined;
-    const target = e.over ? computeTarget(String(e.over.id), pointer(e).x, pointer(e).y, draggingId) : null;
+    const target = e.over ? lastTarget.current : null;
     setActive(null);
     setDropTarget(null);
     if (!data || !target) return;
