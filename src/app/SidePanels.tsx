@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { toList, toText } from '../engine/convert';
+import { toList, toRecord, toText } from '../engine/convert';
+import { nextName } from '../model/factory';
 import { useProjectStore } from '../model/projectStore';
 import type { Variable } from '../model/types';
 import { useRuntimeStore } from '../runtime/runtimeStore';
@@ -9,7 +10,58 @@ const TYPE_LABELS: Record<Variable['type'], string> = {
   number: 'Number',
   boolean: 'Yes / No',
   list: 'List',
+  record: 'Record',
 };
+
+/** Starting fields of a record variable: one row per field name and value. */
+function RecordInitialEditor({ v }: { v: Variable }) {
+  const updateVariable = useProjectStore((s) => s.updateVariable);
+  const entries = Object.entries(toRecord(v.initial));
+  const save = (next: [string, unknown][]) => updateVariable(v.id, { initial: Object.fromEntries(next) });
+  return (
+    <div className="field-list">
+      {entries.map(([name, value], i) => (
+        <div className="field-list-row" key={i}>
+          <input
+            className="field-input"
+            aria-label={`Field ${i + 1} name`}
+            placeholder="field"
+            value={name}
+            onChange={(e) => {
+              const to = e.target.value;
+              // Two fields can't share a name; ignore the edit rather than lose one.
+              if (entries.some(([n], j) => j !== i && n === to)) return;
+              save(entries.map((x, j) => (j === i ? [to, x[1]] : x)));
+            }}
+          />
+          <input
+            className="field-input"
+            aria-label={`Field ${i + 1} value`}
+            placeholder="value"
+            value={toText(value)}
+            onChange={(e) => save(entries.map((x, j) => (j === i ? [x[0], e.target.value] : x)))}
+          />
+          <button
+            type="button"
+            className="icon-btn"
+            title={`Remove field “${name}”`}
+            aria-label={`Remove field “${name}”`}
+            onClick={() => save(entries.filter((_, j) => j !== i))}
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        className="chip"
+        onClick={() => save([...entries, [nextName(entries.map(([n]) => n), 'field'), '']])}
+      >
+        + Add field
+      </button>
+    </div>
+  );
+}
 
 function InitialEditor({ v }: { v: Variable }) {
   const updateVariable = useProjectStore((s) => s.updateVariable);
@@ -34,6 +86,8 @@ function InitialEditor({ v }: { v: Variable }) {
           <option value="false">No</option>
         </select>
       );
+    case 'record':
+      return <RecordInitialEditor v={v} />;
     case 'list':
       return (
         <textarea
@@ -93,10 +147,18 @@ export function VariablesPanel() {
                   ))}
                 </select>
               </label>
-              <label>
-                Starting value
-                <InitialEditor v={v} />
-              </label>
+              {v.type === 'record' ? (
+                // Several inputs: a labelled group, since a <label> names only one control.
+                <div className="var-edit-group" role="group" aria-label="Starting value">
+                  Starting value
+                  <InitialEditor v={v} />
+                </div>
+              ) : (
+                <label>
+                  Starting value
+                  <InitialEditor v={v} />
+                </label>
+              )}
               <button className="btn danger small" onClick={() => deleteVariable(v.id)}>
                 Delete variable
               </button>
@@ -105,7 +167,7 @@ export function VariablesPanel() {
         </div>
       ))}
       <div className="add-row">
-        {(['text', 'number', 'boolean', 'list'] as const).map((t) => (
+        {(['text', 'number', 'boolean', 'list', 'record'] as const).map((t) => (
           <button
             key={t}
             className="chip"

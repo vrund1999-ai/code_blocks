@@ -1,6 +1,6 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { memo, useMemo } from 'react';
-import { CATEGORIES, getNodeDef } from '../engine/registry';
+import { CATEGORIES, getNodeDef, inputPins } from '../engine/registry';
 import type { NameLookup, Pin } from '../engine/types';
 import { useProjectStore } from '../model/projectStore';
 import { findInProject } from '../model/tree';
@@ -12,6 +12,7 @@ export const TYPE_COLORS: Record<string, string> = {
   number: '#15aabf',
   boolean: '#fa5252',
   list: '#fab005',
+  record: '#7950f2',
   any: '#868e96',
 };
 
@@ -62,9 +63,10 @@ function BlockNodeInner({ id, selected }: NodeProps) {
   const config = { ...Object.fromEntries(def.configFields.map((f) => [f.key, f.default])), ...node.config };
   const problem = def.validate?.(config);
 
-  const execIns = def.inputs.filter((p) => p.kind === 'exec');
+  const inputs = inputPins(def, config);
+  const execIns = inputs.filter((p) => p.kind === 'exec');
   const execOuts = def.outputs.filter((p) => p.kind === 'exec');
-  const dataIns = def.inputs.filter((p) => p.kind === 'data');
+  const dataIns = inputs.filter((p) => p.kind === 'data');
   const dataOuts = def.outputs.filter((p) => p.kind === 'data');
   // Config fields that are shown in the sentence/fields area (pin defaults are inline).
   const fields = def.configFields;
@@ -94,17 +96,28 @@ function BlockNodeInner({ id, selected }: NodeProps) {
 
       {fields.length > 0 && (
         <div className="block-fields">
-          {fields.map((f) => (
-            <label key={f.key} className="block-field">
-              <span>{f.label}</span>
+          {fields.map((f) => {
+            const input = (
               <ConfigFieldInput
                 compact
                 field={f}
                 value={config[f.key]}
                 onChange={(v) => updateNodeConfig(id, { [f.key]: v })}
               />
-            </label>
-          ))}
+            );
+            // A field list has several controls, so it is a labelled group, not a <label>.
+            return f.type === 'fields' ? (
+              <div key={f.key} className="block-field" role="group" aria-label={f.label}>
+                <span>{f.label}</span>
+                {input}
+              </div>
+            ) : (
+              <label key={f.key} className="block-field">
+                <span>{f.label}</span>
+                {input}
+              </label>
+            );
+          })}
         </div>
       )}
 
