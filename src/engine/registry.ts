@@ -2,9 +2,10 @@ import { actionNodes } from './nodes/actions';
 import { dataNodes } from './nodes/data';
 import { eventNodes } from './nodes/events';
 import { flowNodes } from './nodes/flow';
+import { recordNodes } from './nodes/records';
 import type { NodeCategory, NodeDef, Pin } from './types';
 
-const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes];
+const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...recordNodes];
 
 export const NODE_DEFS: Record<string, NodeDef> = Object.fromEntries(ALL.map((d) => [d.type, d]));
 
@@ -12,7 +13,7 @@ export const CATEGORIES: { id: NodeCategory; label: string; color: string; hint:
   { id: 'events', label: 'When…', color: '#e8590c', hint: 'Start here: things that happen' },
   { id: 'actions', label: 'Do…', color: '#1c7ed6', hint: 'Things your app does' },
   { id: 'flow', label: 'Decide & repeat', color: '#9c36b5', hint: 'Choices and loops' },
-  { id: 'data', label: 'Values', color: '#2f9e44', hint: 'Text, numbers, maths and checks' },
+  { id: 'data', label: 'Values', color: '#2f9e44', hint: 'Text, numbers, maths, lists and records' },
 ];
 
 export function nodesInCategory(cat: NodeCategory): NodeDef[] {
@@ -23,8 +24,18 @@ export function getNodeDef(type: string): NodeDef | undefined {
   return NODE_DEFS[type];
 }
 
-export function findPin(def: NodeDef, side: 'in' | 'out', pinId: string): Pin | undefined {
-  return (side === 'in' ? def.inputs : def.outputs).find((p) => p.id === pinId);
+/** A block's input pins: the fixed ones plus any that depend on its settings. */
+export function inputPins(def: NodeDef, config: Record<string, unknown> = {}): Pin[] {
+  return def.dynamicInputs ? [...def.inputs, ...def.dynamicInputs(config)] : def.inputs;
+}
+
+export function findPin(
+  def: NodeDef,
+  side: 'in' | 'out',
+  pinId: string,
+  config: Record<string, unknown> = {},
+): Pin | undefined {
+  return (side === 'in' ? inputPins(def, config) : def.outputs).find((p) => p.id === pinId);
 }
 
 export function defaultConfig(def: NodeDef): Record<string, unknown> {
@@ -36,7 +47,8 @@ export function defaultConfig(def: NodeDef): Record<string, unknown> {
 /**
  * Can an output pin be wired into an input pin? Exec only joins exec.
  * Data is forgiving: anything can become text, and numbers / yes-no values
- * convert automatically. Lists must go into list (or "any") inputs.
+ * convert automatically. Lists and records only go into inputs of their own
+ * kind (or "any"), apart from text, which shows them in readable form.
  */
 export function canConnect(from: Pin, to: Pin): boolean {
   if (from.kind !== to.kind) return false;
@@ -45,6 +57,6 @@ export function canConnect(from: Pin, to: Pin): boolean {
   const b = to.valueType ?? 'any';
   if (a === 'any' || b === 'any' || a === b) return true;
   if (b === 'text') return true;
-  if (a === 'list' || b === 'list') return false;
+  if (a === 'list' || b === 'list' || a === 'record' || b === 'record') return false;
   return true; // text/number/boolean convert between each other
 }

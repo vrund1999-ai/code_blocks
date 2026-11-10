@@ -98,4 +98,40 @@ describe('projectStore', () => {
     store().undo();
     expect(findInProject(store().project, t)?.el.props.text).toEqual({ kind: 'static', value: 'Some text' });
   });
+
+  it('adds record variables that start empty and reset when the kind changes', () => {
+    const id = store().addVariable('record');
+    const v = () => store().project.variables.find((x) => x.id === id)!;
+    expect(v()).toMatchObject({ name: 'my record', type: 'record', initial: {} });
+    store().updateVariable(id, { initial: { name: 'Ada' } });
+    store().updateVariable(id, { type: 'list' });
+    expect(v().initial).toEqual([]);
+    store().updateVariable(id, { type: 'record' });
+    expect(v().initial).toEqual({});
+  });
+
+  it('drops wires and typed values of record fields that are removed', () => {
+    const make = store().addNode('data.makeRecord', { x: 0, y: 0 });
+    const text = store().addNode('data.text', { x: 0, y: 0 });
+    const node = () => store().project.graph.nodes.find((x) => x.id === make)!;
+    const twoFields = [
+      { id: 'a', name: 'name' },
+      { id: 'b', name: 'age' },
+    ];
+    store().updateNodeConfig(make, { fields: twoFields, f_b: '36' });
+    store().addEdge({ source: text, sourcePin: 'value', target: make, targetPin: 'f_a', kind: 'data' });
+    store().addEdge({ source: text, sourcePin: 'value', target: make, targetPin: 'f_b', kind: 'data' });
+
+    // Renaming keeps the wire: pins are keyed by field id, not name.
+    store().updateNodeConfig(make, { fields: [{ id: 'a', name: 'full name' }, twoFields[1]] });
+    expect(store().project.graph.edges.map((e) => e.targetPin).sort()).toEqual(['f_a', 'f_b']);
+
+    store().updateNodeConfig(make, { fields: [{ id: 'a', name: 'full name' }] });
+    expect(store().project.graph.edges.map((e) => e.targetPin)).toEqual(['f_a']);
+    expect(node().config).not.toHaveProperty('f_b');
+
+    store().undo();
+    expect(store().project.graph.edges).toHaveLength(2);
+    expect(node().config.f_b).toBe('36');
+  });
 });

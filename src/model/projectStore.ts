@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { defaultConfig, getNodeDef } from '../engine/registry';
+import { defaultConfig, getNodeDef, inputPins } from '../engine/registry';
 import { ELEMENT_DEFS } from './elements';
 import { defaultInitial, makeElement, makeProject, makeScreen, newId, nextElementName, nextName } from './factory';
 import { collectIds, findElement, findInProject, findParent } from './tree';
@@ -198,7 +198,7 @@ export const useProjectStore = create<ProjectStore>()(
       // ---- Variables ----------------------------------------------------------
       addVariable: (type) => {
         const names = get().project.variables.map((v) => v.name);
-        const base = type === 'list' ? 'my list' : type === 'number' ? 'my number' : type === 'boolean' ? 'my switch' : 'my text';
+        const base = { list: 'my list', number: 'my number', boolean: 'my switch', record: 'my record', text: 'my text' }[type];
         const v: Variable = { id: newId(), name: nextName(names, base), type, initial: defaultInitial(type) };
         mutate((p) => void p.variables.push(v));
         return v.id;
@@ -240,7 +240,19 @@ export const useProjectStore = create<ProjectStore>()(
       updateNodeConfig: (id, patch) =>
         mutate((p) => {
           const n = p.graph.nodes.find((x) => x.id === id);
-          if (n) Object.assign(n.config, patch);
+          if (!n) return;
+          const def = getNodeDef(n.type);
+          const pinsNow = () =>
+            def?.dynamicInputs ? inputPins(def, { ...defaultConfig(def), ...n.config }).map((x) => x.id) : [];
+          const before = pinsNow();
+          Object.assign(n.config, patch);
+          // Blocks whose pins follow their settings (e.g. one pin per record
+          // field) drop the wires and typed-in values of pins that are gone.
+          const after = new Set(pinsNow());
+          const gone = new Set(before.filter((pin) => !after.has(pin)));
+          if (gone.size === 0) return;
+          p.graph.edges = p.graph.edges.filter((e) => e.target !== id || !gone.has(e.targetPin));
+          for (const pin of gone) delete n.config[pin];
         }, `node:${id}:${Object.keys(patch).join(',')}`),
       moveNodes: (positions) =>
         mutate((p) => {

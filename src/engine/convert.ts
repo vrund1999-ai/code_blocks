@@ -1,9 +1,21 @@
 // Forgiving value conversions so non-technical users rarely hit type errors.
 
+export type Rec = Record<string, unknown>;
+
+/** A record is a plain object with named fields (not a list). */
+export function isRecord(v: unknown): v is Rec {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
 export function toText(v: unknown): string {
   if (v === null || v === undefined) return '';
   if (Array.isArray(v)) return v.map(toText).join(', ');
-  if (typeof v === 'object') return JSON.stringify(v);
+  if (isRecord(v)) {
+    // "name: Ada, age: 36". Records inside records go in brackets.
+    return Object.entries(v)
+      .map(([k, x]) => `${k}: ${isRecord(x) ? `(${toText(x)})` : toText(x)}`)
+      .join(', ');
+  }
   return String(v);
 }
 
@@ -21,6 +33,7 @@ export function toBool(v: unknown): boolean {
     return !(s === '' || s === 'false' || s === 'no' || s === '0');
   }
   if (Array.isArray(v)) return v.length > 0;
+  if (isRecord(v)) return Object.keys(v).length > 0;
   return Boolean(v);
 }
 
@@ -28,6 +41,29 @@ export function toList(v: unknown): unknown[] {
   if (Array.isArray(v)) return v;
   if (v === null || v === undefined || v === '') return [];
   return [v];
+}
+
+/** Anything that is not a record becomes an empty record. */
+export function toRecord(v: unknown): Rec {
+  return isRecord(v) ? v : {};
+}
+
+/**
+ * Finds a field by name. An exact match wins; otherwise case and
+ * surrounding spaces are ignored, so "Name" finds "name".
+ */
+export function findField(rec: Rec, name: string): string | undefined {
+  if (Object.hasOwn(rec, name)) return name;
+  const want = name.trim().toLowerCase();
+  if (want === '') return undefined;
+  return Object.keys(rec).find((k) => k.trim().toLowerCase() === want);
+}
+
+/** True for '', empty lists and records with no fields. */
+export function isEmptyValue(v: unknown): boolean {
+  if (Array.isArray(v)) return v.length === 0;
+  if (isRecord(v)) return Object.keys(v).length === 0;
+  return toText(v).trim() === '';
 }
 
 /** Equality that treats "5" and 5 as equal, like people expect. */
