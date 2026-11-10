@@ -45,6 +45,7 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 | UX-9 | Guided onboarding tutorial for first-time users | P2 | |
 | UX-10 | Freely resizable preview (beyond phone/tablet/desktop) | P3 | |
 | UX-11 | Touch / tablet support for the editor | P3 | |
+| UX-12 | Projects menu: close on click-outside instead of mouse-leave | P3 | Today it closes by itself when deleting a project makes it shorter (found by the end-to-end tests) |
 
 ## 4. UI elements and styling
 | ID | Item | Priority | Notes |
@@ -91,10 +92,14 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 ## 8. Quality and engineering
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
-| QE-1 | Add the browser end-to-end tests (Playwright) to the repo | P1 | The v1 checks ran from a temporary script |
+| QE-1 | Add the browser end-to-end tests (Playwright) to the repo | P1 | `e2e/`, covering every v1 feature |
 | QE-2 | GitHub Actions CI: test, type-check, build | P1 | |
 | QE-3 | Code-split the bundle (it is currently over 500 kB) | P2 | Lazy-load React Flow / the Logic tab |
 | QE-4 | Validate the project file format (e.g. zod) and test migrations | P2 | |
 | QE-5 | Accessibility pass (keyboard, screen readers, contrast) | P2 | |
 | QE-6 | Performance with large graphs and screens | P3 | |
 | QE-7 | Export an app as standalone HTML or generated code | P3 | |
+| QE-8 | Visual regression screenshots for the editor and templates | P3 | Playwright `toHaveScreenshot` |
+| QE-9 | Raise unit test coverage (about 24% today) | P2 | Runtime controller, persistence, model tree |
+| QE-10 | Review React Flow's `hideAttribution` setting | P2 | React Flow asks that only Pro subscribers hide the attribution |
+| QE-11 | Make the end-to-end tests reliable in Firefox and WebKit | P3 | Drag tests are marked `test.fixme` there: pointer drags hang in Firefox automation, and some drops don't register in WebKit. Local headless Firefox on Windows also hit graphics-process crashes and timeouts under parallel load. CI runs Chromium only. |

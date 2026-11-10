@@ -1,5 +1,13 @@
 # Code Blocks — project instructions
 
+## Testing
+- Before opening a PR, run `npm run check` and `npm run test:e2e`. Both must pass; CI runs the same checks.
+- Any user-facing change needs a new or updated Playwright spec in `e2e/`. Engine and store logic needs Vitest tests next to the code (`src/**/*.test.ts`).
+- In end-to-end tests:
+  - Use the helpers in `e2e/support/` (`AppPage`, `seed`, `build`).
+  - Never use fixed sleeps (`waitForTimeout`). Use auto-retrying `expect`, and `page.clock` for timers and waits.
+- A failing test that exposes an app bug: fix the bug. If the bug is too big for the current PR, mark the test `test.fixme` with a new roadmap ID instead.
+
 ## Keep docs/ up to date
 After every change that adds, finishes or changes planned work, update the `docs/` folder in the same branch/PR:
 

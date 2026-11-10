@@ -13,6 +13,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Milestone | Date | PR | Summary |
 | --- | --- | --- | --- |
 | v1: local prototype | 2026-11-10 | [#1](https://github.com/vrund1999-ai/code_blocks/pull/1) | See below |
+| Testing and CI | 2026-11-10 | [#2](https://github.com/vrund1999-ai/code_blocks/pull/2) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -22,6 +23,11 @@ v1 included:
 - **Blocks:** 5 events, 12 actions, 3 flow blocks and 13 value blocks.
 - **Projects:** autosave, projects menu, export/import, undo/redo, and 3 templates.
 - **Tests:** 20 unit tests, plus a manual browser end-to-end run.
+
+Testing and CI included:
+- **End-to-end suite:** 68 Playwright tests in `e2e/` covering every v1 feature.
+- **CI:** a GitHub Actions workflow that runs the type-check, the unit tests with coverage, the build and the end-to-end tests.
+- **Bug fix:** on the design canvas, an element now drops exactly where the drop indicator shows. Before, a drop inside a box could land after it instead.
 
 ---
 
@@ -64,6 +70,7 @@ v1 included:
 | UX-9 | Onboarding tutorial | ⬜ | | |
 | UX-10 | Resizable preview | ⬜ | | |
 | UX-11 | Touch support | ⬜ | | |
+| UX-12 | Projects menu click-outside | ⬜ | | |
 
 ### 4. UI elements and styling
 | ID | Item | Status | Completed | PR |
@@ -110,14 +117,18 @@ v1 included:
 ### 8. Quality and engineering
 | ID | Item | Status | Completed | PR |
 | --- | --- | --- | --- | --- |
-| QE-1 | E2E tests in repo | ⬜ | | |
-| QE-2 | CI workflow | ⬜ | | |
+| QE-1 | E2E tests in repo | ✅ | 2026-11-10 | [#2](https://github.com/vrund1999-ai/code_blocks/pull/2) |
+| QE-2 | CI workflow | ✅ | 2026-11-10 | [#2](https://github.com/vrund1999-ai/code_blocks/pull/2) |
 | QE-3 | Code-split bundle | ⬜ | | |
 | QE-4 | Project format validation | ⬜ | | |
 | QE-5 | Accessibility pass | ⬜ | | |
 | QE-6 | Large-graph performance | ⬜ | | |
 | QE-7 | Export as standalone app / code | ⬜ | | |
+| QE-8 | Visual regression screenshots | ⬜ | | |
+| QE-9 | Raise unit test coverage | ⬜ | | |
+| QE-10 | React Flow attribution review | ⬜ | | |
+| QE-11 | Drag tests in Firefox / WebKit | ⬜ | | |
 
 ---
 
-**Totals:** 0 / 59 done · 0 in progress
+**Totals:** 2 / 64 done · 0 in progress
