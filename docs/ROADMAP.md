@@ -65,13 +65,14 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 | --- | --- | --- | --- |
 | LB-1 | Text blocks: uppercase/lowercase, contains, length, split, replace | P1 | |
 | LB-2 | List blocks: insert at, find, sort, filter, update item | P1 | |
-| LB-3 | Records (objects with named fields) as a value type | P1 | Needed for tables and cards |
+| LB-3 | Records (objects with named fields) as a value type | P1 | Needed for tables and cards. Shipped: the record type, record variables, *Make record*, *Get field*, *Change field* and *Set field of variable* |
 | LB-4 | Math extras: round, min/max, remainder | P2 | |
 | LB-5 | Date and time blocks | P2 | |
 | LB-6 | Custom reusable blocks (functions) | P2 | |
 | LB-7 | Local variables scoped to a single run | P3 | |
 | LB-8 | *Repeat while* loop and *Stop loop* | P3 | |
 | LB-9 | More events: key pressed, list item clicked, hover | P2 | |
+| LB-10 | Typed starting values for list items and record fields (numbers, yes/no) | P3 | The Variables panel stores them as text today; the forgiving conversions hide this in most cases |
 
 ## 6. Run mode and debugging
 | ID | Item | Priority | Notes |
@@ -96,7 +97,7 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 | QE-2 | GitHub Actions CI: test, type-check, build | P1 | |
 | QE-3 | Code-split the bundle (it is currently over 500 kB) | P2 | Lazy-load React Flow / the Logic tab |
 | QE-4 | Validate the project file format (e.g. zod) and test migrations | P2 | |
-| QE-5 | Accessibility pass (keyboard, screen readers, contrast) | P2 | |
+| QE-5 | Accessibility pass (keyboard, screen readers, contrast) | P2 | Includes icon-only buttons (✕) that have a `title` but no `aria-label`, such as *Delete screen* |
 | QE-6 | Performance with large graphs and screens | P3 | |
 | QE-7 | Export an app as standalone HTML or generated code | P3 | |
 | QE-8 | Visual regression screenshots for the editor and templates | P3 | Playwright `toHaveScreenshot` |
