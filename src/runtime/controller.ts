@@ -9,6 +9,9 @@ import { findInProject } from '../model/tree';
 import type { Variable } from '../model/types';
 import { initialRuntime, pushToast, setElementState, useRuntimeStore } from './runtimeStore';
 
+/** A *Fetch from API* request that takes longer than this counts as failed. */
+const FETCH_TIMEOUT_MS = 30_000;
+
 let generation = 0;
 let timers: ReturnType<typeof setInterval>[] = [];
 let host: HostApi | null = null;
@@ -101,6 +104,10 @@ function makeHost(gen: number): HostApi {
       if (alive()) localStorage.setItem(prefix + key, JSON.stringify(value ?? null));
     },
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+    httpRequest: async ({ method, url, headers, body }) => {
+      const res = await fetch(url, { method, headers, body, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+      return { status: res.status, statusText: res.statusText, text: await res.text() };
+    },
   };
 }
 

@@ -16,6 +16,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Testing and CI | 2026-11-10 | [#2](https://github.com/vrund1999-ai/code_blocks/pull/2) | See below |
 | Records | 2026-11-10 | [#4](https://github.com/vrund1999-ai/code_blocks/pull/4) | See below |
 | List cards | 2026-11-10 | [#5](https://github.com/vrund1999-ai/code_blocks/pull/5) | See below |
+| Fetch from API | 2026-11-11 | [#6](https://github.com/vrund1999-ai/code_blocks/pull/6) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -45,6 +46,14 @@ List cards included:
 - **Rules:** text boxes, checkboxes and lists can't go in cards, because they keep one value per element.
 - **Tests:** 8 new unit tests and 7 new end-to-end tests.
 
+Fetch from API included:
+- **Block:** *Fetch from API* loads data from a web address with Get, Post, Put, Patch or Delete. JSON answers become records and lists, so a list of results can go straight into a List's cards.
+- **Pick field:** a dotted path such as `current.temp` or `results.1.name` picks one value out of the answer.
+- **Sending:** the *Send* input appears for requests that send something. Records and lists are sent as JSON. *Headers* takes a record.
+- **Failures:** the *If it fails* branch runs on error answers and unreachable servers, with the *Problem* and *Status code*. Without that branch, the failure shows on the block like any other error.
+- **Engine:** `HostApi.httpRequest`, so a server host can make the same requests later.
+- **Tests:** 13 new unit tests and 5 new end-to-end tests, which answer requests from a fake API.
+
 ---
 
 ## Roadmap status
@@ -58,9 +67,10 @@ List cards included:
 | BE-4 | Table data viewer/editor | ⬜ | | |
 | BE-5 | Table blocks | ⬜ | | |
 | BE-6 | Server workflow triggers | ⬜ | | |
-| BE-7 | Fetch from API block | ⬜ | | |
+| BE-7 | Fetch from API block | ✅ | 2026-11-11 | [#6](https://github.com/vrund1999-ai/code_blocks/pull/6) |
 | BE-8 | Secrets store | ⬜ | | |
 | BE-9 | Send email block | ⬜ | | |
+| BE-10 | Fetch through a server proxy | ⬜ | | |
 
 ### 2. Platform
 | ID | Item | Status | Completed | PR |
@@ -149,4 +159,4 @@ List cards included:
 
 ---
 
-**Totals:** 4 / 66 done · 0 in progress
+**Totals:** 5 / 67 done · 0 in progress

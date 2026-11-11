@@ -23,6 +23,9 @@ function makeHost(vars: Record<string, unknown> = {}) {
     storageGet: () => undefined,
     storageSet: () => {},
     sleep: async () => {},
+    httpRequest: async () => {
+      throw new Error('offline');
+    },
   };
   return { host, vars, props, toasts };
 }

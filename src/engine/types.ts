@@ -25,6 +25,21 @@ export interface ConfigField {
   default?: unknown;
 }
 
+/** A web request made by the *Fetch from API* block. */
+export interface HttpRequest {
+  method: string;
+  url: string;
+  headers: Record<string, string>;
+  body?: string;
+}
+
+/** The server's answer. `text` is the raw body; the engine turns JSON into values. */
+export interface HttpResponse {
+  status: number;
+  statusText: string;
+  text: string;
+}
+
 /** Everything the engine needs from the outside world. */
 export interface HostApi {
   getVar(variableId: string): unknown;
@@ -37,6 +52,8 @@ export interface HostApi {
   storageGet(key: string): unknown;
   storageSet(key: string, value: unknown): void;
   sleep(ms: number): Promise<void>;
+  /** Sends a web request. Rejects when the server can't be reached at all. */
+  httpRequest(req: HttpRequest): Promise<HttpResponse>;
 }
 
 export interface NameLookup {
@@ -57,6 +74,8 @@ export interface NodeContext {
   setOutputs(values: Record<string, unknown>): void;
   /** Run the chain connected to one of this node's exec outputs and wait for it. */
   runBranch(pinId: string): Promise<void>;
+  /** Is anything connected to this exec output? */
+  hasBranch(pinId: string): boolean;
   /** Event payload that started this run. */
   payload: Record<string, unknown>;
 }

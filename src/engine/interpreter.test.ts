@@ -23,6 +23,9 @@ function makeHost(vars: Record<string, unknown> = {}) {
       storage[k] = v;
     },
     sleep: async () => {},
+    httpRequest: async () => {
+      throw new Error('offline');
+    },
   };
   return { host, vars, props, toasts, storage };
 }
