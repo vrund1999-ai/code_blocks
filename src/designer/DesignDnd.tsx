@@ -13,8 +13,8 @@ import {
 import { createContext, useContext, useRef, useState, type ReactNode } from 'react';
 import { ELEMENT_DEFS } from '../model/elements';
 import { useProjectStore } from '../model/projectStore';
-import { findElement, findInProject, findParent } from '../model/tree';
-import type { ElementType } from '../model/types';
+import { canPlaceInside, findElement, findInProject, findParent } from '../model/tree';
+import type { ElementType, UIElement } from '../model/types';
 
 export type DragData = { source: 'palette'; elementType: ElementType } | { source: 'element'; id: string };
 
@@ -40,9 +40,21 @@ const deepestUnderPointer: CollisionDetection = (args) => {
   return pointerWithin(args).sort((a, b) => area(a.id) - area(b.id));
 };
 
+/** Boxes lay out their children by `direction`; List cards by `cardDirection`. */
+function isRow(el: UIElement | null): boolean {
+  const pv = el?.type === 'list' ? el.props.cardDirection : el?.props.direction;
+  return pv?.kind === 'static' && pv.value === 'row';
+}
+
 const rectOf = (id: string) => document.querySelector(`[data-el-id="${id}"]`)?.getBoundingClientRect() ?? null;
 
-function computeTarget(overId: string, x: number, y: number, draggingId: string | null): DropTarget | null {
+function computeTarget(
+  overId: string,
+  x: number,
+  y: number,
+  draggingId: string | null,
+  draggingType: ElementType | null,
+): DropTarget | null {
   const { project, activeScreenId } = useProjectStore.getState();
   const screen = project.screens.find((s) => s.id === activeScreenId);
   if (!screen) return null;
@@ -51,7 +63,7 @@ function computeTarget(overId: string, x: number, y: number, draggingId: string 
   if (!over || !rect) return null;
 
   const parent = findParent(screen.root, overId);
-  const parentRow = parent?.props.direction?.kind === 'static' && parent.props.direction.value === 'row';
+  const parentRow = isRow(parent);
   const beforeAfter = (): DropTarget | null => {
     if (!parent) return null;
     const i = parent.children.findIndex((c) => c.id === overId);
@@ -68,7 +80,7 @@ function computeTarget(overId: string, x: number, y: number, draggingId: string 
     if (parent && (pos < band || pos > size - band)) {
       target = beforeAfter();
     } else {
-      const row = over.props.direction?.kind === 'static' && over.props.direction.value === 'row';
+      const row = isRow(over);
       let index = over.children.length;
       for (let i = 0; i < over.children.length; i++) {
         const r = rectOf(over.children[i].id);
@@ -83,11 +95,13 @@ function computeTarget(overId: string, x: number, y: number, draggingId: string 
     target = beforeAfter();
   }
 
-  // Never drop an element inside itself.
+  // Never drop an element inside itself, and keep List cards to what they can repeat.
   if (target && draggingId) {
     const dragged = findElement(screen.root, draggingId);
     if (dragged && findElement(dragged, target.parentId)) return null;
+    if (dragged && !canPlaceInside(screen.root, target.parentId, dragged)) return null;
   }
+  if (target && draggingType && !canPlaceInside(screen.root, target.parentId, draggingType)) return null;
   return target;
 }
 
@@ -114,7 +128,7 @@ export function DesignDnd({ children }: { children: ReactNode }) {
   const onDragMove = (e: DragMoveEvent) => {
     if (!e.over) return setDropTarget(null);
     const { x, y } = pointer(e);
-    setDropTarget(computeTarget(String(e.over.id), x, y, draggingId));
+    setDropTarget(computeTarget(String(e.over.id), x, y, draggingId, active?.source === 'palette' ? active.elementType : null));
   };
   const onDragEnd = (e: DragEndEvent) => {
     const data = e.active.data.current as DragData | undefined;

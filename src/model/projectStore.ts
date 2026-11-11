@@ -3,7 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import { defaultConfig, getNodeDef, inputPins } from '../engine/registry';
 import { ELEMENT_DEFS } from './elements';
 import { defaultInitial, makeElement, makeProject, makeScreen, newId, nextElementName, nextName } from './factory';
-import { collectIds, findElement, findInProject, findParent } from './tree';
+import { canPlaceInside, collectIds, findElement, findInProject, findParent } from './tree';
 import type { ElementType, GraphEdge, Project, PropValue, Variable } from './types';
 
 export type Tab = 'design' | 'logic';
@@ -106,9 +106,10 @@ export const useProjectStore = create<ProjectStore>()(
       // ---- UI elements ------------------------------------------------------
       addElement: (type, parentId, index) => {
         const el = makeElement(type, nextElementName(get().project, type));
+        const where = findInProject(get().project, parentId);
+        if (!where || !canPlaceInside(where.screen.root, parentId, type)) return '';
         mutate((p) => {
-          const parent = findInProject(p, parentId)?.el;
-          if (!parent || !ELEMENT_DEFS[parent.type].canHaveChildren) return;
+          const parent = findInProject(p, parentId)!.el;
           const i = index ?? parent.children.length;
           parent.children.splice(i, 0, el);
         });
@@ -123,7 +124,7 @@ export const useProjectStore = create<ProjectStore>()(
           // Can't drop an element inside itself.
           if (findElement(found.el, parentId)) return;
           const target = findInProject(p, parentId);
-          if (!target || !ELEMENT_DEFS[target.el.type].canHaveChildren) return;
+          if (!target || !canPlaceInside(target.screen.root, parentId, found.el)) return;
           const oldParent = findParent(found.screen.root, id);
           if (!oldParent) return;
           const oldIndex = oldParent.children.findIndex((c) => c.id === id);

@@ -1,9 +1,9 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { memo, useMemo } from 'react';
-import { CATEGORIES, getNodeDef, inputPins } from '../engine/registry';
+import { CATEGORIES, getNodeDef, inputPins, outputPins } from '../engine/registry';
 import type { NameLookup, Pin } from '../engine/types';
 import { useProjectStore } from '../model/projectStore';
-import { findInProject } from '../model/tree';
+import { makeNameLookup } from '../model/tree';
 import { useRuntimeStore } from '../runtime/runtimeStore';
 import { ConfigFieldInput, InlineValueInput } from '../app/fields';
 
@@ -18,14 +18,7 @@ export const TYPE_COLORS: Record<string, string> = {
 
 export function useNameLookup(): NameLookup {
   const project = useProjectStore((s) => s.project);
-  return useMemo(
-    () => ({
-      element: (id) => (typeof id === 'string' ? findInProject(project, id)?.el.name : undefined),
-      variable: (id) => project.variables.find((v) => v.id === id)?.name,
-      screen: (id) => project.screens.find((s) => s.id === id)?.name,
-    }),
-    [project],
-  );
+  return useMemo(() => makeNameLookup(project), [project]);
 }
 
 function PinHandle({ pin, side }: { pin: Pin; side: 'in' | 'out' }) {
@@ -65,9 +58,10 @@ function BlockNodeInner({ id, selected }: NodeProps) {
 
   const inputs = inputPins(def, config);
   const execIns = inputs.filter((p) => p.kind === 'exec');
-  const execOuts = def.outputs.filter((p) => p.kind === 'exec');
+  const outputs = outputPins(def, config, names);
+  const execOuts = outputs.filter((p) => p.kind === 'exec');
   const dataIns = inputs.filter((p) => p.kind === 'data');
-  const dataOuts = def.outputs.filter((p) => p.kind === 'data');
+  const dataOuts = outputs.filter((p) => p.kind === 'data');
   // Config fields that are shown in the sentence/fields area (pin defaults are inline).
   const fields = def.configFields;
 

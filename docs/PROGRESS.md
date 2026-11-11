@@ -15,6 +15,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | v1: local prototype | 2026-11-10 | [#1](https://github.com/vrund1999-ai/code_blocks/pull/1) | See below |
 | Testing and CI | 2026-11-10 | [#2](https://github.com/vrund1999-ai/code_blocks/pull/2) | See below |
 | Records | 2026-11-10 | [#4](https://github.com/vrund1999-ai/code_blocks/pull/4) | See below |
+| List cards | 2026-11-10 | [#5](https://github.com/vrund1999-ai/code_blocks/pull/5) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -36,6 +37,13 @@ Records included:
 - **Blocks:** *Make record* (one input per field, added and renamed on the block), *Get field*, *Change field* and *Set field of variable*. Lists of records work with the existing list blocks and *For each*.
 - **Engine:** blocks can now have input pins that depend on their settings (`dynamicInputs`). Removing a field also removes its wire.
 - **Tests:** 17 new unit tests and 8 new end-to-end tests.
+
+List cards included:
+- **Card templates:** drop Text, Images, Buttons and Boxes into a List to design a card. The card repeats for every item. Without elements inside, a List still shows one line per item.
+- **Item fields:** inside a card, any linkable setting can show a field of the card's item (*A field of this card's item*). The designer previews the first starting item, or shows the field name, like `‹name›`.
+- **Card buttons:** *When button clicked* gets *List item* and *Position* pins when its button is inside a card.
+- **Rules:** text boxes, checkboxes and lists can't go in cards, because they keep one value per element.
+- **Tests:** 8 new unit tests and 7 new end-to-end tests.
 
 ---
 
@@ -79,12 +87,13 @@ Records included:
 | UX-10 | Resizable preview | ⬜ | | |
 | UX-11 | Touch support | ⬜ | | |
 | UX-12 | Projects menu click-outside | ⬜ | | |
+| UX-13 | Item-linked settings outside a List | ⬜ | | |
 
 ### 4. UI elements and styling
 | ID | Item | Status | Completed | PR |
 | --- | --- | --- | --- | --- |
 | EL-1 | Dropdown | ⬜ | | |
-| EL-2 | List item templates (cards) | ⬜ | | |
+| EL-2 | List item templates (cards) | ✅ | 2026-11-10 | [#5](https://github.com/vrund1999-ai/code_blocks/pull/5) |
 | EL-3 | Number input / slider | ⬜ | | |
 | EL-4 | Grid / columns layout | ⬜ | | |
 | EL-5 | Link, divider, spacer | ⬜ | | |
@@ -140,4 +149,4 @@ Records included:
 
 ---
 
-**Totals:** 3 / 65 done · 0 in progress
+**Totals:** 4 / 66 done · 0 in progress

@@ -134,4 +134,17 @@ describe('projectStore', () => {
     expect(store().project.graph.edges).toHaveLength(2);
     expect(node().config.f_b).toBe('36');
   });
+
+  it('builds List cards but keeps text boxes out of them', () => {
+    const list = store().addElement('list', root().id);
+    const name = store().addElement('text', list);
+    expect(store().addElement('input', list)).toBe('');
+    expect(store().selection).toEqual({ kind: 'element', id: name });
+
+    const box = store().addElement('input', root().id);
+    store().moveElement(box, list, 0);
+    expect(root().children.map((c) => c.id)).toEqual([list, box]);
+    store().moveElement(name, root().id, 0);
+    expect(root().children.map((c) => c.id)).toEqual([name, list, box]);
+  });
 });

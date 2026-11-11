@@ -48,6 +48,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
 ## How it works
 
 - **🎨 Design tab:** drag Boxes, Text, Buttons, Text Boxes, Checkboxes, Images and Lists onto a screen. Click any element to change it in the Settings panel. Use 🔗 *link* to tie a setting to a variable, so it updates live.
+  - Drop elements inside a **List** to design a card that repeats for every item. Inside a card, 🔗 *link* can show *a field of this card's item*, such as a contact's name.
 - **⚡ Logic tab:** a node graph.
   - **When…** blocks start things, for example *When button clicked*.
   - White arrows decide what happens next: **Do…** blocks, and **Decide & repeat** blocks such as *If*, *Repeat* and *For each*.

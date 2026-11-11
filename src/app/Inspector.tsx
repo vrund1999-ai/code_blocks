@@ -2,8 +2,11 @@ import { useReactFlow } from '@xyflow/react';
 import { CATEGORIES, getNodeDef, inputPins } from '../engine/registry';
 import { ELEMENT_DEFS, type PropField } from '../model/elements';
 import { useProjectStore } from '../model/projectStore';
-import { findInProject } from '../model/tree';
-import type { ElementType, PropValue, UIElement, ValueType } from '../model/types';
+import { useMemo } from 'react';
+import { isRecord, toList } from '../engine/convert';
+import { recordFields } from '../engine/nodes/records';
+import { enclosingListInProject, findInProject } from '../model/tree';
+import type { ElementType, Project, PropValue, UIElement, ValueType } from '../model/types';
 import { ConfigFieldInput, InlineValueInput } from './fields';
 
 const EVENT_FOR: Partial<Record<ElementType, { type: string; label: string }>> = {
@@ -17,39 +20,91 @@ function compatible(bindable: ValueType, varType: ValueType) {
   return bindable === varType || bindable === 'text';
 }
 
+/** Field names used anywhere in the project, to suggest for a card's item fields. */
+function knownFieldNames(project: Project): string[] {
+  const names = new Set<string>();
+  const addKeys = (v: unknown) => {
+    for (const x of [v, ...toList(v)]) if (isRecord(x)) Object.keys(x).forEach((k) => names.add(k));
+  };
+  for (const v of project.variables) addKeys(v.initial);
+  for (const n of project.graph.nodes) {
+    if (n.type === 'data.makeRecord') recordFields(n.config).forEach((f) => f.name.trim() && names.add(f.name.trim()));
+    if (n.type === 'data.getField' || n.type === 'data.setField') {
+      if (typeof n.config.field === 'string' && n.config.field.trim()) names.add(n.config.field.trim());
+    }
+  }
+  return [...names].sort((a, b) => a.localeCompare(b));
+}
+
+const ITEM = '__item';
+
 function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
-  const variables = useProjectStore((s) => s.project.variables);
+  const project = useProjectStore((s) => s.project);
+  const variables = project.variables;
   const setElementProp = useProjectStore((s) => s.setElementProp);
   const pv: PropValue = el.props[field.key] ?? { kind: 'static', value: ELEMENT_DEFS[el.type].defaults[field.key] };
   const set = (v: PropValue) => setElementProp(el.id, field.key, v);
   const bindOptions = field.bindable ? variables.filter((v) => compatible(field.bindable!, v.type)) : [];
-  const bound = pv.kind === 'variable';
+  // Inside a List's card, a setting can also show a field of the card's item.
+  const inCard = useMemo(() => enclosingListInProject(project, el.id) !== null, [project, el.id]);
+  const fieldNames = useMemo(() => (inCard ? knownFieldNames(project) : []), [inCard, project]);
+  const bound = pv.kind === 'variable' || pv.kind === 'item';
   // A list's items only make sense bound to a variable.
   const bindOnly = field.bindable === 'list';
+  const canBind = bindOptions.length > 0 || inCard;
+  const unbound: PropValue = { kind: 'static', value: ELEMENT_DEFS[el.type].defaults[field.key] };
+  const firstBinding: PropValue = inCard
+    ? { kind: 'item', field: fieldNames[0] ?? '' }
+    : bindOptions[0]
+      ? { kind: 'variable', variableId: bindOptions[0].id }
+      : pv;
 
   let editor: React.ReactNode;
   if (bound || bindOnly) {
+    const listId = `fields-${el.id}-${field.key}`;
     editor = (
-      <select
-        className="field-input bound"
-        value={pv.kind === 'variable' ? pv.variableId : ''}
-        onChange={(e) =>
-          set(
-            e.target.value
-              ? { kind: 'variable', variableId: e.target.value }
-              : { kind: 'static', value: ELEMENT_DEFS[el.type].defaults[field.key] },
-          )
-        }
-      >
-        <option value="">{bindOptions.length ? 'Pick a variable…' : '(create a list variable first)'}</option>
-        {bindOptions.map((v) => (
-          <option key={v.id} value={v.id}>
-            🔗 {v.name}
+      <>
+        <select
+          className="field-input bound"
+          aria-label={`${field.label}: linked to`}
+          value={pv.kind === 'variable' ? pv.variableId : pv.kind === 'item' ? ITEM : ''}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v === ITEM) set({ kind: 'item', field: pv.kind === 'item' ? pv.field : (fieldNames[0] ?? '') });
+            else set(v ? { kind: 'variable', variableId: v } : unbound);
+          }}
+        >
+          <option value="">
+            {canBind ? 'Pick a variable…' : bindOnly ? '(create a list variable first)' : '(create a variable first)'}
           </option>
-        ))}
-      </select>
+          {inCard && <option value={ITEM}>📋 A field of this card’s item</option>}
+          {bindOptions.map((v) => (
+            <option key={v.id} value={v.id}>
+              🔗 {v.name}
+            </option>
+          ))}
+        </select>
+        {pv.kind === 'item' && (
+          <>
+            <input
+              className="field-input"
+              aria-label={`${field.label}: item field`}
+              placeholder="field name, e.g. name"
+              list={listId}
+              value={pv.field}
+              onChange={(e) => set({ kind: 'item', field: e.target.value })}
+            />
+            <datalist id={listId}>
+              {fieldNames.map((n) => (
+                <option key={n} value={n} />
+              ))}
+            </datalist>
+            <div className="hint">Each card shows this field of its item. Leave it empty to show the whole item.</div>
+          </>
+        )}
+      </>
     );
-  } else {
+  } else if (pv.kind === 'static') {
     const value = pv.value;
     switch (field.type) {
       case 'boolean':
@@ -101,16 +156,8 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
           <button
             className={`bind-toggle ${bound ? 'on' : ''}`}
             title={bound ? 'Stop using a variable' : 'Use a variable for this (it updates when the variable changes)'}
-            onClick={() =>
-              set(
-                bound
-                  ? { kind: 'static', value: ELEMENT_DEFS[el.type].defaults[field.key] }
-                  : bindOptions[0]
-                    ? { kind: 'variable', variableId: bindOptions[0].id }
-                    : pv,
-              )
-            }
-            disabled={!bound && bindOptions.length === 0}
+            onClick={() => set(bound ? unbound : firstBinding)}
+            disabled={!bound && !canBind}
           >
             🔗 {bound ? 'linked' : 'link'}
           </button>

@@ -16,6 +16,7 @@ import {
 import { useCallback, useEffect, useMemo, useState, type DragEvent } from 'react';
 import { CATEGORIES, canConnect, defaultConfig, findPin, getNodeDef } from '../engine/registry';
 import { useProjectStore } from '../model/projectStore';
+import { makeNameLookup } from '../model/tree';
 import { BlockNode, TYPE_COLORS } from './BlockNode';
 
 export const NODE_DRAG_MIME = 'application/x-codeblocks-node';
@@ -103,7 +104,11 @@ export function LogicCanvas() {
       const t = gn.find((n) => n.id === c.target);
       const sd = s && getNodeDef(s.type);
       const td = t && getNodeDef(t.type);
-      const sp = sd && c.sourceHandle ? findPin(sd, 'out', c.sourceHandle) : undefined;
+      const { project } = useProjectStore.getState();
+      const sp =
+        sd && c.sourceHandle
+          ? findPin(sd, 'out', c.sourceHandle, { ...defaultConfig(sd), ...s.config }, makeNameLookup(project))
+          : undefined;
       const tp = td && c.targetHandle ? findPin(td, 'in', c.targetHandle, { ...defaultConfig(td), ...t.config }) : undefined;
       return Boolean(sp && tp && canConnect(sp, tp));
     },
@@ -113,8 +118,10 @@ export function LogicCanvas() {
   const onConnect = useCallback(
     (c: Connection) => {
       if (!isValidConnection(c)) return;
-      const s = useProjectStore.getState().project.graph.nodes.find((n) => n.id === c.source)!;
-      const pin = findPin(getNodeDef(s.type)!, 'out', c.sourceHandle!)!;
+      const { project } = useProjectStore.getState();
+      const s = project.graph.nodes.find((n) => n.id === c.source)!;
+      const def = getNodeDef(s.type)!;
+      const pin = findPin(def, 'out', c.sourceHandle!, { ...defaultConfig(def), ...s.config }, makeNameLookup(project))!;
       addEdge({
         source: c.source,
         sourcePin: c.sourceHandle!,
