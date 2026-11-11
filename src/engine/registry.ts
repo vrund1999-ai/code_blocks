@@ -2,11 +2,13 @@ import { actionNodes } from './nodes/actions';
 import { dataNodes } from './nodes/data';
 import { eventNodes } from './nodes/events';
 import { flowNodes } from './nodes/flow';
+import { listNodes } from './nodes/lists';
 import { recordNodes } from './nodes/records';
+import { textNodes } from './nodes/text';
 import { webNodes } from './nodes/web';
 import type { NameLookup, NodeCategory, NodeDef, Pin } from './types';
 
-const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...recordNodes, ...webNodes];
+const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...textNodes, ...listNodes, ...recordNodes, ...webNodes];
 
 export const NODE_DEFS: Record<string, NodeDef> = Object.fromEntries(ALL.map((d) => [d.type, d]));
 
@@ -14,7 +16,9 @@ export const CATEGORIES: { id: NodeCategory; label: string; color: string; hint:
   { id: 'events', label: 'When…', color: '#e8590c', hint: 'Start here: things that happen' },
   { id: 'actions', label: 'Do…', color: '#1c7ed6', hint: 'Things your app does' },
   { id: 'flow', label: 'Decide & repeat', color: '#9c36b5', hint: 'Choices and loops' },
-  { id: 'data', label: 'Values', color: '#2f9e44', hint: 'Text, numbers, maths, lists and records' },
+  { id: 'data', label: 'Values', color: '#2f9e44', hint: 'Numbers, maths and comparisons' },
+  { id: 'text', label: 'Text', color: '#0c8599', hint: 'Join, change and search text' },
+  { id: 'lists', label: 'Lists & records', color: '#d6336c', hint: 'Find, sort and filter items' },
 ];
 
 export function nodesInCategory(cat: NodeCategory): NodeDef[] {

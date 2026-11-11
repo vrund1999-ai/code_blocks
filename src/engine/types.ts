@@ -3,7 +3,7 @@
 
 import type { ElementType, GraphNode, ValueType } from '../model/types';
 
-export type NodeCategory = 'events' | 'actions' | 'flow' | 'data';
+export type NodeCategory = 'events' | 'actions' | 'flow' | 'data' | 'text' | 'lists';
 
 export interface Pin {
   id: string;

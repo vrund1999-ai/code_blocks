@@ -78,3 +78,50 @@ export function looseEquals(a: unknown, b: unknown): boolean {
   if (typeof a === 'boolean' || typeof b === 'boolean') return toBool(a) === toBool(b);
   return toText(a) === toText(b);
 }
+
+/** The checks shared by *Compare* and *Filter list*. */
+export type CheckOp = '=' | '!=' | '>' | '<' | 'contains' | 'empty' | 'notEmpty';
+
+export function checkValues(op: string, a: unknown, b: unknown): boolean {
+  switch (op) {
+    case '!=':
+      return !looseEquals(a, b);
+    case '>':
+      return toNumber(a) > toNumber(b);
+    case '<':
+      return toNumber(a) < toNumber(b);
+    case 'contains':
+      return toText(a).toLowerCase().includes(toText(b).toLowerCase());
+    case 'empty':
+      return isEmptyValue(a);
+    case 'notEmpty':
+      return !isEmptyValue(a);
+    default:
+      return looseEquals(a, b);
+  }
+}
+
+/**
+ * A list item, or one field of it when `field` is given (for lists of
+ * records). Items without that field give ''.
+ */
+export function itemField(item: unknown, field: string): unknown {
+  if (field.trim() === '') return item;
+  if (!isRecord(item)) return '';
+  const key = findField(item, field);
+  return key === undefined ? '' : item[key];
+}
+
+const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+/** Orders values the way people expect: numbers by size, text A → Z ignoring capitals. */
+export function compareForSort(a: unknown, b: unknown): number {
+  const ta = toText(a).trim();
+  const tb = toText(b).trim();
+  const na = Number(ta);
+  const nb = Number(tb);
+  if (ta !== '' && tb !== '' && !isNaN(na) && !isNaN(nb)) return na - nb;
+  // Empty values go last.
+  if (ta === '' || tb === '') return ta === tb ? 0 : ta === '' ? 1 : -1;
+  return collator.compare(ta, tb);
+}
