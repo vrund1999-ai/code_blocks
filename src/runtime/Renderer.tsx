@@ -1,5 +1,6 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
 import { toBool, toList, toNumber, toText } from '../engine/convert';
+import { cardValue, type CardItem } from './cards';
 import { useProjectStore } from '../model/projectStore';
 import type { UIElement } from '../model/types';
 import { fireChange, fireClick, fireListDelete } from './controller';
@@ -17,14 +18,17 @@ export interface DesignHooks {
   dropIndex(containerId: string): number | null;
 }
 
-/** Resolve an element's props: logic overrides > variable bindings > static values. */
-function useResolvedProps(el: UIElement, mode: RenderMode): Record<string, unknown> {
+const CardContext = createContext<CardItem | null>(null);
+
+/** Resolve an element's props: logic overrides > variable / item bindings > static values. */
+function useResolvedProps(el: UIElement, mode: RenderMode, card: CardItem | null): Record<string, unknown> {
   const variables = useProjectStore((s) => s.project.variables);
   const runVars = useRuntimeStore((s) => s.vars);
   const overrides = useRuntimeStore((s) => s.elements[el.id]);
   const out: Record<string, unknown> = {};
   for (const [k, pv] of Object.entries(el.props)) {
     if (pv.kind === 'static') out[k] = pv.value;
+    else if (pv.kind === 'item') out[k] = cardValue(card, pv.field);
     else if (mode === 'run') out[k] = runVars[pv.variableId];
     else out[k] = variables.find((v) => v.id === pv.variableId)?.initial;
   }
@@ -50,7 +54,8 @@ export function ElementView({
   design?: DesignHooks;
   isRoot?: boolean;
 }) {
-  const p = useResolvedProps(el, mode);
+  const card = useContext(CardContext);
+  const p = useResolvedProps(el, mode, card);
   const visible = toBool(p.visible ?? true);
   if (!visible && mode !== 'design') return null;
 
@@ -68,12 +73,7 @@ export function ElementView({
         background: toText(p.background) || undefined,
       };
       const drop = design?.dropIndex(el.id) ?? null;
-      const kids: ReactNode[] = [];
-      el.children.forEach((c, i) => {
-        if (drop === i) kids.push(<div key="__drop" className={`drop-bar ${row ? 'vertical' : ''}`} />);
-        kids.push(<ElementView key={c.id} el={c} mode={mode} design={design} />);
-      });
-      if (drop === el.children.length) kids.push(<div key="__drop" className={`drop-bar ${row ? 'vertical' : ''}`} />);
+      const kids = childViews(el, mode, design, row, drop);
       const empty = el.children.length === 0 && mode === 'design';
       content = (
         <div
@@ -102,7 +102,7 @@ export function ElementView({
       content = (
         <button
           className={`el el-button ${p.variant === 'secondary' ? 'secondary' : 'primary'}`}
-          onClick={run ? () => fireClick(el.id) : undefined}
+          onClick={run ? () => fireClick(el.id, card ? { item: card.item, index: card.index } : undefined) : undefined}
           tabIndex={run ? 0 : -1}
           type="button"
         >
@@ -176,36 +176,88 @@ export function ElementView({
     }
     case 'list': {
       const items = toList(p.items);
-      content = (
-        <div className="el el-list">
-          {items.length === 0 ? (
-            <div className="list-empty">{toText(p.emptyText)}</div>
-          ) : (
-            items.map((item, i) => (
-              <div className="list-row" key={i}>
-                <span>{toText(item)}</span>
-                {toBool(p.showDelete) && (
-                  <button
-                    className="list-delete"
-                    title="Delete"
-                    type="button"
-                    tabIndex={run ? 0 : -1}
-                    onClick={run ? () => fireListDelete(el.id, i + 1, item) : undefined}
-                  >
-                    ✕
-                  </button>
-                )}
+      const row = p.cardDirection === 'row';
+      const drop = design?.dropIndex(el.id) ?? null;
+      const deleteButton = (item: unknown, i: number) =>
+        toBool(p.showDelete) && (
+          <button
+            className="list-delete"
+            title="Delete"
+            aria-label="Delete"
+            type="button"
+            tabIndex={run ? 0 : -1}
+            onClick={run ? () => fireListDelete(el.id, i + 1, item) : undefined}
+          >
+            ✕
+          </button>
+        );
+      const cardClass = `list-card ${row ? 'cb-row' : 'cb-col'}`;
+
+      if (mode === 'design' && (el.children.length > 0 || drop !== null)) {
+        // The designer shows the card once; it repeats for every item when the app runs.
+        content = (
+          <div className="el el-list">
+            <CardContext.Provider value={{ item: items[0], index: 1, sample: true }}>
+              <div className="list-row card-row">
+                <div className={`${cardClass} template`}>{childViews(el, mode, design, row, drop)}</div>
+                {deleteButton(items[0], 0)}
               </div>
-            ))
-          )}
-        </div>
-      );
+            </CardContext.Provider>
+            <div className="list-hint">↻ This card repeats for each item in the list</div>
+          </div>
+        );
+      } else if (el.children.length > 0) {
+        content = (
+          <div className="el el-list">
+            {items.length === 0 ? (
+              <div className="list-empty">{toText(p.emptyText)}</div>
+            ) : (
+              items.map((item, i) => (
+                <CardContext.Provider key={i} value={{ item, index: i + 1, sample: false }}>
+                  <div className="list-row card-row">
+                    <div className={cardClass}>{childViews(el, mode, undefined, row, null)}</div>
+                    {deleteButton(item, i)}
+                  </div>
+                </CardContext.Provider>
+              ))
+            )}
+          </div>
+        );
+      } else {
+        content = (
+          <div className="el el-list">
+            {items.length === 0 ? (
+              <div className="list-empty">{toText(p.emptyText)}</div>
+            ) : (
+              items.map((item, i) => (
+                <div className="list-row" key={i}>
+                  <span>{toText(item)}</span>
+                  {deleteButton(item, i)}
+                </div>
+              ))
+            )}
+            {mode === 'design' && <div className="list-hint">Drop elements here to show each item as a card</div>}
+          </div>
+        );
+      }
       break;
     }
   }
 
   if (!visible) content = <div className="hidden-in-design">{content}</div>;
   return <>{design ? design.wrap(el, isRoot, content) : content}</>;
+}
+
+/** A box's (or List card's) children, with the drop indicator where a drag would land. */
+function childViews(el: UIElement, mode: RenderMode, design: DesignHooks | undefined, row: boolean, drop: number | null) {
+  const bar = <div key="__drop" className={`drop-bar ${row ? 'vertical' : ''}`} />;
+  const kids: ReactNode[] = [];
+  el.children.forEach((c, i) => {
+    if (drop === i) kids.push(bar);
+    kids.push(<ElementView key={c.id} el={c} mode={mode} design={design} />);
+  });
+  if (drop === el.children.length) kids.push(bar);
+  return kids;
 }
 
 /** Renders a whole screen of the app, plus run-mode toasts. */

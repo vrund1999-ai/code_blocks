@@ -1065,3 +1065,35 @@ textarea.field-input {
 .field-list > .chip {
   align-self: flex-start;
 }
+
+/* List cards (a List with elements inside it) */
+.list-row.card-row {
+  align-items: flex-start;
+  gap: 8px;
+}
+.list-card {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: 6px;
+}
+.list-card.cb-col {
+  flex-direction: column;
+}
+.list-card.cb-row {
+  flex-direction: row;
+  align-items: center;
+}
+.list-card.template {
+  min-height: 36px;
+  outline: 1.5px dashed #dee2e6;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.list-hint {
+  color: #adb5bd;
+  font-size: 11px;
+  text-align: center;
+  padding: 6px;
+  border-top: 1px dashed #e9ecef;
+}

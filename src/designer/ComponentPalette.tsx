@@ -1,7 +1,7 @@
 import { useDraggable } from '@dnd-kit/core';
 import { ELEMENT_DEFS, ELEMENT_ORDER } from '../model/elements';
 import { useProjectStore } from '../model/projectStore';
-import { findInProject, findParent } from '../model/tree';
+import { canPlaceInside, findInProject, findParent } from '../model/tree';
 import type { ElementType } from '../model/types';
 import type { DragData } from './DesignDnd';
 
@@ -30,6 +30,11 @@ function PaletteItem({ type }: { type: ElementType }) {
           }
         }
       }
+    }
+    // Text boxes, checkboxes and lists can't go in a List's cards: put them on the screen instead.
+    if (!canPlaceInside(screen.root, parentId, type)) {
+      parentId = screen.root.id;
+      index = undefined;
     }
     addElement(type, parentId, index);
   };
