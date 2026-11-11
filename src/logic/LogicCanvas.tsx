@@ -14,7 +14,7 @@ import {
   type NodeChange,
 } from '@xyflow/react';
 import { useCallback, useEffect, useMemo, useState, type DragEvent } from 'react';
-import { CATEGORIES, canConnect, findPin, getNodeDef } from '../engine/registry';
+import { CATEGORIES, canConnect, defaultConfig, findPin, getNodeDef } from '../engine/registry';
 import { useProjectStore } from '../model/projectStore';
 import { BlockNode, TYPE_COLORS } from './BlockNode';
 
@@ -104,7 +104,7 @@ export function LogicCanvas() {
       const sd = s && getNodeDef(s.type);
       const td = t && getNodeDef(t.type);
       const sp = sd && c.sourceHandle ? findPin(sd, 'out', c.sourceHandle) : undefined;
-      const tp = td && c.targetHandle ? findPin(td, 'in', c.targetHandle) : undefined;
+      const tp = td && c.targetHandle ? findPin(td, 'in', c.targetHandle, { ...defaultConfig(td), ...t.config }) : undefined;
       return Boolean(sp && tp && canConnect(sp, tp));
     },
     [],

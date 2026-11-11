@@ -1,5 +1,5 @@
 import { useReactFlow } from '@xyflow/react';
-import { CATEGORIES, getNodeDef } from '../engine/registry';
+import { CATEGORIES, getNodeDef, inputPins } from '../engine/registry';
 import { ELEMENT_DEFS, type PropField } from '../model/elements';
 import { useProjectStore } from '../model/projectStore';
 import { findInProject } from '../model/tree';
@@ -183,7 +183,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
   if (!def) return <p>Unknown block.</p>;
   const cat = CATEGORIES.find((c) => c.id === def.category)!;
   const config = { ...Object.fromEntries(def.configFields.map((f) => [f.key, f.default])), ...node.config };
-  const inlinePins = def.inputs.filter((p) => p.inline && !edges.some((e) => e.target === nodeId && e.targetPin === p.id));
+  const inlinePins = inputPins(def, config).filter((p) => p.inline && !edges.some((e) => e.target === nodeId && e.targetPin === p.id));
 
   return (
     <>

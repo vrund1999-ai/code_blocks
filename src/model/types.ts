@@ -2,7 +2,8 @@
 
 export const PROJECT_VERSION = 1;
 
-export type ValueType = 'text' | 'number' | 'boolean' | 'list' | 'any';
+/** A record is a plain object with named fields, e.g. { name: 'Ada', age: 36 }. */
+export type ValueType = 'text' | 'number' | 'boolean' | 'list' | 'record' | 'any';
 
 export type ElementType =
   | 'container'

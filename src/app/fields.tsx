@@ -1,4 +1,6 @@
+import { recordFields, type RecordField } from '../engine/nodes/records';
 import type { ConfigField } from '../engine/types';
+import { newId, nextName } from '../model/factory';
 import { useProjectStore } from '../model/projectStore';
 import { allElements } from '../model/tree';
 import { ELEMENT_DEFS } from '../model/elements';
@@ -25,6 +27,8 @@ export function ConfigFieldInput({
   );
 
   switch (field.type) {
+    case 'fields':
+      return <FieldListInput compact={compact} value={recordFields({ fields: value })} onChange={onChange} />;
     case 'element': {
       const opts = elements.filter((e) => !field.elementTypes || field.elementTypes.includes(e.type));
       const multiScreen = project.screens.length > 1;
@@ -102,6 +106,51 @@ export function ConfigFieldInput({
         />
       );
   }
+}
+
+/** Edits the named fields of a record: rename, remove, add. */
+function FieldListInput({
+  value,
+  onChange,
+  compact,
+}: {
+  value: RecordField[];
+  onChange(v: RecordField[]): void;
+  compact: boolean;
+}) {
+  const cls = `field-input ${compact ? 'nodrag nowheel compact' : ''}`;
+  const btn = `icon-btn ${compact ? 'nodrag' : ''}`;
+  return (
+    <div className="field-list">
+      {value.map((f, i) => (
+        <div className="field-list-row" key={f.id}>
+          <input
+            className={cls}
+            aria-label={`Field ${i + 1} name`}
+            value={f.name}
+            placeholder="field name"
+            onChange={(e) => onChange(value.map((x) => (x.id === f.id ? { ...x, name: e.target.value } : x)))}
+          />
+          <button
+            type="button"
+            className={btn}
+            title={`Remove field “${f.name}”`}
+            aria-label={`Remove field “${f.name}”`}
+            onClick={() => onChange(value.filter((x) => x.id !== f.id))}
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        className={`chip ${compact ? 'nodrag' : ''}`}
+        onClick={() => onChange([...value, { id: newId(), name: nextName(value.map((x) => x.name), 'field') }])}
+      >
+        + Add field
+      </button>
+    </div>
+  );
 }
 
 /** Inline value editor for an unconnected data input on a block. */

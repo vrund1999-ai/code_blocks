@@ -52,6 +52,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
   - **When…** blocks start things, for example *When button clicked*.
   - White arrows decide what happens next: **Do…** blocks, and **Decide & repeat** blocks such as *If*, *Repeat* and *For each*.
   - Coloured dotted wires carry **Values** into blocks, such as text, numbers, maths and comparisons.
+  - **Records** group values under named fields, like a contact card (`name: Ada, age: 36`). Build one with *Make record*, then read it with *Get field*. Records can be kept in a variable or added to a list.
   - Wires only connect where they make sense.
 - **▶ Run:** the app becomes live, both on the design canvas and in the preview beside the graph. Each block glows as it runs. A block that isn't set up properly is outlined in red, and the toolbar shows *show me*, which takes you to it.
 - Projects are saved automatically in your browser. Use **Projects** to start from a template (Hello Name, Counter, To-do List) and **Export / Import** to move projects around as `.json` files.
@@ -71,7 +72,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
 | `.github/` | CI workflow and Dependabot config |
 
 ### Adding a block
-Add a `NodeDef` to one of `src/engine/nodes/*.ts`. It declares pins, settings, a plain-English `sentence`, an optional `validate`, and `execute` (for actions and flow) or `evaluate` (for values). The palette, the block UI, connection checking and the inspector all pick it up automatically.
+Add a `NodeDef` to one of `src/engine/nodes/*.ts`. It declares pins, settings, a plain-English `sentence`, an optional `validate`, and `execute` (for actions and flow) or `evaluate` (for values). The palette, the block UI, connection checking and the inspector all pick it up automatically. If a block's inputs depend on its settings (like the fields of *Make record*), declare them with `dynamicInputs(config)`.
 
 ## Roadmap
 All the planned next steps are listed in [docs/ROADMAP.md](docs/ROADMAP.md), and their completion is tracked in [docs/PROGRESS.md](docs/PROGRESS.md).

@@ -31,6 +31,7 @@ export function makeProject(name = 'My App'): Project {
 }
 
 export function defaultInitial(type: Variable['type']): unknown {
+  if (type === 'record') return {};
   return type === 'number' ? 0 : type === 'boolean' ? false : type === 'list' ? [] : '';
 }
 

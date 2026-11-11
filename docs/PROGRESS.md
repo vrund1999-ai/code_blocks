@@ -14,6 +14,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | --- | --- | --- | --- |
 | v1: local prototype | 2026-11-10 | [#1](https://github.com/vrund1999-ai/code_blocks/pull/1) | See below |
 | Testing and CI | 2026-11-10 | [#2](https://github.com/vrund1999-ai/code_blocks/pull/2) | See below |
+| Records | 2026-11-10 | [#4](https://github.com/vrund1999-ai/code_blocks/pull/4) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -28,6 +29,13 @@ Testing and CI included:
 - **End-to-end suite:** 68 Playwright tests in `e2e/` covering every v1 feature.
 - **CI:** a GitHub Actions workflow that runs the type-check, the unit tests with coverage, the build and the end-to-end tests.
 - **Bug fix:** on the design canvas, an element now drops exactly where the drop indicator shows. Before, a drop inside a box could land after it instead.
+
+Records included:
+- **Record value type:** values with named fields, such as `name: Ada, age: 36`. They have their own purple pins and wires, and can be wired only into record, "any" or text inputs.
+- **Record variables:** set their starting fields in the Variables panel.
+- **Blocks:** *Make record* (one input per field, added and renamed on the block), *Get field*, *Change field* and *Set field of variable*. Lists of records work with the existing list blocks and *For each*.
+- **Engine:** blocks can now have input pins that depend on their settings (`dynamicInputs`). Removing a field also removes its wire.
+- **Tests:** 17 new unit tests and 8 new end-to-end tests.
 
 ---
 
@@ -90,13 +98,14 @@ Testing and CI included:
 | --- | --- | --- | --- | --- |
 | LB-1 | Text blocks | ⬜ | | |
 | LB-2 | List blocks | ⬜ | | |
-| LB-3 | Records value type | ⬜ | | |
+| LB-3 | Records value type | ✅ | 2026-11-10 | [#4](https://github.com/vrund1999-ai/code_blocks/pull/4) |
 | LB-4 | Math extras | ⬜ | | |
 | LB-5 | Date and time blocks | ⬜ | | |
 | LB-6 | Custom reusable blocks | ⬜ | | |
 | LB-7 | Local variables | ⬜ | | |
 | LB-8 | Repeat while / stop loop | ⬜ | | |
 | LB-9 | More events | ⬜ | | |
+| LB-10 | Typed starting values for lists and records | ⬜ | | |
 
 ### 6. Run mode and debugging
 | ID | Item | Status | Completed | PR |
@@ -131,4 +140,4 @@ Testing and CI included:
 
 ---
 
-**Totals:** 2 / 64 done · 0 in progress
+**Totals:** 3 / 65 done · 0 in progress

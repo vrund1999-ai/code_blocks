@@ -17,7 +17,8 @@ export interface Pin {
 export interface ConfigField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'boolean' | 'select' | 'element' | 'variable' | 'screen';
+  /** `fields` edits a list of named fields ({ id, name }[]), e.g. on "Make record". */
+  type: 'text' | 'number' | 'boolean' | 'select' | 'element' | 'variable' | 'screen' | 'fields';
   elementTypes?: ElementType[];
   variableTypes?: ValueType[];
   options?: { value: string; label: string }[];
@@ -64,6 +65,8 @@ export interface NodeDef {
   label: string;
   description: string;
   inputs: Pin[];
+  /** Extra input pins that depend on the block's settings (one per field, for example). */
+  dynamicInputs?(config: Record<string, unknown>): Pin[];
   outputs: Pin[];
   configFields: ConfigField[];
   /** Event nodes start runs; `event` names the trigger they listen to. */

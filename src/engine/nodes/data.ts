@@ -1,4 +1,4 @@
-import { looseEquals, toBool, toList, toNumber, toText } from '../convert';
+import { isEmptyValue, looseEquals, toBool, toList, toNumber, toText } from '../convert';
 import type { NodeDef } from '../types';
 
 const pick = (name: string | undefined, fallback: string) => (name ? `“${name}”` : fallback);
@@ -151,7 +151,7 @@ export const dataNodes: NodeDef[] = [
     async evaluate(ctx) {
       const a = await ctx.input('a');
       const op = ctx.config.op ?? '=';
-      if (op === 'empty') return { value: toText(a).trim() === '' || (Array.isArray(a) && a.length === 0) };
+      if (op === 'empty') return { value: isEmptyValue(a) };
       const b = await ctx.input('b');
       switch (op) {
         case '!=':

@@ -1,6 +1,6 @@
 // Connects the pure engine to the browser: runtime state, timers, storage.
 
-import { toBool, toList, toNumber, toText } from '../engine/convert';
+import { toBool, toList, toNumber, toRecord, toText } from '../engine/convert';
 import { Interpreter } from '../engine/interpreter';
 import type { GraphError, HostApi } from '../engine/types';
 import { appStoragePrefix } from '../model/persistence';
@@ -23,6 +23,8 @@ function coerce(type: Variable['type'] | undefined, value: unknown): unknown {
       return toBool(value);
     case 'list':
       return toList(value);
+    case 'record':
+      return toRecord(value);
     case 'text':
       return toText(value);
     default:

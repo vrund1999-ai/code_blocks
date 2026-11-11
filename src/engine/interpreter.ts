@@ -1,5 +1,5 @@
 import type { GraphEdge, GraphNode, LogicGraph } from '../model/types';
-import { NODE_DEFS } from './registry';
+import { inputPins, NODE_DEFS } from './registry';
 import { GraphError, type HostApi, type NodeContext, type NodeDef } from './types';
 
 export interface InterpreterOptions {
@@ -166,7 +166,7 @@ export class Interpreter {
   ): Promise<unknown> {
     const edge = this.dataIn.get(key(node.id, pinId));
     if (!edge) {
-      const pin = def.inputs.find((p) => p.id === pinId);
+      const pin = inputPins(def, config).find((p) => p.id === pinId);
       return config[pinId] ?? pin?.inline?.default;
     }
     const src = this.nodes.get(edge.source)!;
