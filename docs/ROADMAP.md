@@ -17,9 +17,10 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 | BE-4 | Table data viewer/editor inside the builder | P2 | Browse, add and edit rows by hand |
 | BE-5 | Table blocks: *Query table*, *Add row*, *Update row*, *Delete row* | P1 | Work on both client and server |
 | BE-6 | Server workflow triggers: *On HTTP request*, *On form submit*, *On schedule* | P1 | Graphs flagged to run server-side |
-| BE-7 | *Fetch from API* block (GET/POST, JSON result, pick a field) | P1 | Can ship before the server exists |
+| BE-7 | *Fetch from API* block (GET/POST, JSON result, pick a field) | P1 | Shipped: Get/Post/Put/Patch/Delete, a dotted *Pick field* path, JSON bodies from records, a *Headers* record, and an *If it fails* branch. It runs in the browser, so only APIs that allow browser apps (CORS) work, and headers such as API keys are visible to anyone using the app (see BE-8, BE-10) |
 | BE-8 | Server-side secrets store for API keys | P2 | Secrets never reach the client |
 | BE-9 | *Send email* block | P3 | Needs the server runtime |
+| BE-10 | Send *Fetch from API* requests through the server | P2 | Reaches APIs that block browser apps (CORS) and lets requests use secrets from BE-8. Needs the server runtime |
 
 ## 2. Platform
 | ID | Item | Priority | Notes |
