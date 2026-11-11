@@ -3,9 +3,10 @@ import { dataNodes } from './nodes/data';
 import { eventNodes } from './nodes/events';
 import { flowNodes } from './nodes/flow';
 import { recordNodes } from './nodes/records';
+import { webNodes } from './nodes/web';
 import type { NameLookup, NodeCategory, NodeDef, Pin } from './types';
 
-const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...recordNodes];
+const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...recordNodes, ...webNodes];
 
 export const NODE_DEFS: Record<string, NodeDef> = Object.fromEntries(ALL.map((d) => [d.type, d]));
 

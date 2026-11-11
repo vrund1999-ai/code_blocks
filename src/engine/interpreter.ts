@@ -152,6 +152,7 @@ export class Interpreter {
         run.execOutputs.set(node.id, { ...(run.execOutputs.get(node.id) ?? {}), ...values });
       },
       runBranch: (pinId) => this.runChain(node, pinId, run),
+      hasBranch: (pinId) => (this.execOut.get(key(node.id, pinId))?.length ?? 0) > 0,
     };
   }
 
