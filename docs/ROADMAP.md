@@ -46,12 +46,13 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 | UX-10 | Freely resizable preview (beyond phone/tablet/desktop) | P3 | |
 | UX-11 | Touch / tablet support for the editor | P3 | |
 | UX-12 | Projects menu: close on click-outside instead of mouse-leave | P3 | Today it closes by itself when deleting a project makes it shorter (found by the end-to-end tests) |
+| UX-13 | Handle item-linked settings when an element is moved out of a List | P3 | Today the setting stays linked to an item field and shows nothing; offer to unlink it, or warn |
 
 ## 4. UI elements and styling
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
 | EL-1 | Dropdown (select) element | P1 | |
-| EL-2 | List with item templates (cards with several fields) | P1 | Depends on LB-3 (records) |
+| EL-2 | List with item templates (cards with several fields) | P1 | Shipped: elements inside a List form a card that repeats per item, settings can show item fields, and card buttons pass their item to *When button clicked*. Text boxes, checkboxes and nested lists can't be repeated in cards yet |
 | EL-3 | Number input / slider | P2 | |
 | EL-4 | Grid / columns layout | P2 | |
 | EL-5 | Link, divider and spacer elements | P2 | |
@@ -71,7 +72,7 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 | LB-6 | Custom reusable blocks (functions) | P2 | |
 | LB-7 | Local variables scoped to a single run | P3 | |
 | LB-8 | *Repeat while* loop and *Stop loop* | P3 | |
-| LB-9 | More events: key pressed, list item clicked, hover | P2 | |
+| LB-9 | More events: key pressed, list item clicked, hover | P2 | A button inside a List card already reports its item (EL-2); this is for clicking the card itself |
 | LB-10 | Typed starting values for list items and record fields (numbers, yes/no) | P3 | The Variables panel stores them as text today; the forgiving conversions hide this in most cases |
 
 ## 6. Run mode and debugging
