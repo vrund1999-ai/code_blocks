@@ -3,7 +3,7 @@ import { dataNodes } from './nodes/data';
 import { eventNodes } from './nodes/events';
 import { flowNodes } from './nodes/flow';
 import { recordNodes } from './nodes/records';
-import type { NodeCategory, NodeDef, Pin } from './types';
+import type { NameLookup, NodeCategory, NodeDef, Pin } from './types';
 
 const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...recordNodes];
 
@@ -29,13 +29,19 @@ export function inputPins(def: NodeDef, config: Record<string, unknown> = {}): P
   return def.dynamicInputs ? [...def.inputs, ...def.dynamicInputs(config)] : def.inputs;
 }
 
+/** A block's output pins: the fixed ones plus any that depend on its settings. */
+export function outputPins(def: NodeDef, config: Record<string, unknown> = {}, names?: NameLookup): Pin[] {
+  return def.dynamicOutputs && names ? [...def.outputs, ...def.dynamicOutputs(config, names)] : def.outputs;
+}
+
 export function findPin(
   def: NodeDef,
   side: 'in' | 'out',
   pinId: string,
   config: Record<string, unknown> = {},
+  names?: NameLookup,
 ): Pin | undefined {
-  return (side === 'in' ? inputPins(def, config) : def.outputs).find((p) => p.id === pinId);
+  return (side === 'in' ? inputPins(def, config) : outputPins(def, config, names)).find((p) => p.id === pinId);
 }
 
 export function defaultConfig(def: NodeDef): Record<string, unknown> {

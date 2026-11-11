@@ -16,7 +16,12 @@ export type ElementType =
 
 export type PropValue =
   | { kind: 'static'; value: unknown }
-  | { kind: 'variable'; variableId: string };
+  | { kind: 'variable'; variableId: string }
+  /**
+   * Inside a List's card: a field of the item the card shows (`field: ''`
+   * means the whole item). Elements elsewhere treat it as unset.
+   */
+  | { kind: 'item'; field: string };
 
 export interface UIElement {
   id: string;

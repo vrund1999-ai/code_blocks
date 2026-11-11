@@ -67,7 +67,8 @@ function makeHost(gen: number): HostApi {
       if (el.type === 'checkbox') {
         if ('checked' in state) return state.checked;
         const p = el.props.checked;
-        return p?.kind === 'static' ? Boolean(p.value) : toBool(useRuntimeStore.getState().vars[p.variableId]);
+        if (p?.kind === 'variable') return toBool(useRuntimeStore.getState().vars[p.variableId]);
+        return p?.kind === 'static' ? Boolean(p.value) : false;
       }
       if ('value' in state) return state.value;
       const p = el.props.value;
@@ -135,8 +136,9 @@ export function stopApp() {
   useRuntimeStore.setState({ ...initialRuntime });
 }
 
-export function fireClick(elementId: string) {
-  void interpreter()?.trigger('click', (c) => c.element === elementId);
+/** `card` is set when the button is inside a List's card. */
+export function fireClick(elementId: string, card?: { item: unknown; index: number }) {
+  void interpreter()?.trigger('click', (c) => c.element === elementId, card ? { ...card } : {});
 }
 
 export function fireChange(elementId: string, value: unknown) {

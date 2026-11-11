@@ -23,6 +23,14 @@ export const eventNodes: NodeDef[] = [
     event: 'click',
     inputs: [],
     outputs: [execOut],
+    // A button inside a List's cards also says which item its card shows.
+    dynamicOutputs: (c, names) =>
+      names.inList(c.element)
+        ? [
+            { id: 'item', label: 'List item', kind: 'data', valueType: 'any' },
+            { id: 'index', label: 'Position', kind: 'data', valueType: 'number' },
+          ]
+        : [],
     configFields: [
       { key: 'element', label: 'Button', type: 'element', elementTypes: ['button'] },
     ],

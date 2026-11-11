@@ -43,6 +43,8 @@ export interface NameLookup {
   element(id: unknown): string | undefined;
   variable(id: unknown): string | undefined;
   screen(id: unknown): string | undefined;
+  /** Is this element inside a List's cards? */
+  inList(id: unknown): boolean;
 }
 
 export interface NodeContext {
@@ -68,6 +70,8 @@ export interface NodeDef {
   /** Extra input pins that depend on the block's settings (one per field, for example). */
   dynamicInputs?(config: Record<string, unknown>): Pin[];
   outputs: Pin[];
+  /** Extra output pins that depend on the block's settings and the project. */
+  dynamicOutputs?(config: Record<string, unknown>, names: NameLookup): Pin[];
   configFields: ConfigField[];
   /** Event nodes start runs; `event` names the trigger they listen to. */
   event?: string;

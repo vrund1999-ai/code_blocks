@@ -162,9 +162,9 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
     type: 'list',
     label: 'List',
     icon: '☰',
-    description: 'Shows every item of a list variable, one per row.',
-    canHaveChildren: false,
-    defaults: { items: [], emptyText: 'Nothing here yet', showDelete: true, visible: true },
+    description: 'Shows every item of a list variable. Drop elements inside it to design a card for each item.',
+    canHaveChildren: true,
+    defaults: { items: [], emptyText: 'Nothing here yet', showDelete: true, cardDirection: 'column', visible: true },
     fields: [
       {
         key: 'items',
@@ -175,6 +175,16 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
       },
       { key: 'emptyText', label: 'Text when empty', type: 'text' },
       { key: 'showDelete', label: 'Show delete buttons', type: 'boolean' },
+      {
+        key: 'cardDirection',
+        label: 'Arrange each card',
+        type: 'select',
+        options: [
+          { value: 'column', label: 'Top to bottom' },
+          { value: 'row', label: 'Side by side' },
+        ],
+        help: 'How the elements inside each card are laid out.',
+      },
       visibleField,
     ],
   },
