@@ -65,8 +65,8 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 ## 5. Logic blocks
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
-| LB-1 | Text blocks: uppercase/lowercase, contains, length, split, replace | P1 | |
-| LB-2 | List blocks: insert at, find, sort, filter, update item | P1 | |
+| LB-1 | Text blocks: uppercase/lowercase, contains, length, split, replace | P1 | Shipped: *Change text*, *Text contains* (contains / starts with / ends with), *Text length*, *Replace text*, *Split text* |
+| LB-2 | List blocks: insert at, find, sort, filter, update item | P1 | Shipped: *Find in list*, *Sort list*, *Filter list*, *Join list into text*, *Insert into list*, *Change item in list*. Find, sort, filter and join take an optional record field |
 | LB-3 | Records (objects with named fields) as a value type | P1 | Needed for tables and cards. Shipped: the record type, record variables, *Make record*, *Get field*, *Change field* and *Set field of variable* |
 | LB-4 | Math extras: round, min/max, remainder | P2 | |
 | LB-5 | Date and time blocks | P2 | |
