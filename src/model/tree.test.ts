@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeDef, outputPins } from '../engine/registry';
 import { makeElement, makeProject } from './factory';
-import { canPlaceInside, enclosingList, makeNameLookup } from './tree';
+import { ancestorIds, canPlaceInside, enclosingList, layerRows, makeNameLookup } from './tree';
 
 function cardsProject() {
   const project = makeProject('Cards');
@@ -49,5 +49,37 @@ describe('List cards in the element tree', () => {
     expect(outputPins(def, { element: save.id }, names).map((p) => p.id)).toEqual(['next', 'item', 'index']);
     expect(outputPins(def, { element: other.id }, names).map((p) => p.id)).toEqual(['next']);
     expect(outputPins(def, {}, names).map((p) => p.id)).toEqual(['next']);
+  });
+});
+
+describe('layer rows', () => {
+  const screen = makeElement('container', 'Screen');
+  const box = makeElement('container', 'Box');
+  const list = makeElement('list', 'People');
+  const name = makeElement('text', 'Name');
+  const title = makeElement('text', 'Title');
+  list.children.push(name);
+  box.children.push(list);
+  screen.children.push(title, box);
+
+  it('lists every element in order, with depth and whether it is in a card', () => {
+    const rows = layerRows(screen, new Set());
+    expect(rows.map((r) => [r.el.name, r.depth, r.inCard])).toEqual([
+      ['Screen', 0, false],
+      ['Title', 1, false],
+      ['Box', 1, false],
+      ['People', 2, false],
+      ['Name', 3, true],
+    ]);
+    expect(rows[3].parentId).toBe(box.id);
+  });
+
+  it('hides what is inside collapsed elements', () => {
+    expect(layerRows(screen, new Set([box.id])).map((r) => r.el.name)).toEqual(['Screen', 'Title', 'Box']);
+  });
+
+  it('finds the elements around an element, outermost first', () => {
+    expect(ancestorIds(screen, name.id)).toEqual([screen.id, box.id, list.id]);
+    expect(ancestorIds(screen, screen.id)).toEqual([]);
   });
 });

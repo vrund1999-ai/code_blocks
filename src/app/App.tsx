@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ComponentPalette } from '../designer/ComponentPalette';
 import { DesignCanvas, DeviceFrame } from '../designer/DesignCanvas';
 import { DesignDnd } from '../designer/DesignDnd';
+import { LayersPanel } from '../designer/LayersPanel';
 import { LogicCanvas } from '../logic/LogicCanvas';
 import { NodePalette } from '../logic/NodePalette';
 import { loadLastProject, saveProject } from '../model/persistence';
@@ -166,6 +167,7 @@ export function App() {
               <aside className="sidebar">
                 <ComponentPalette />
                 <ScreensPanel />
+                <LayersPanel />
                 <VariablesPanel />
               </aside>
               <DesignCanvas />
