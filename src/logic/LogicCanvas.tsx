@@ -10,14 +10,16 @@ import {
   type Connection,
   type Edge,
   type EdgeChange,
+  type FinalConnectionState,
   type Node,
   type NodeChange,
 } from '@xyflow/react';
-import { useCallback, useEffect, useMemo, useState, type DragEvent } from 'react';
-import { CATEGORIES, canConnect, defaultConfig, findPin, getNodeDef } from '../engine/registry';
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
+import { CATEGORIES, canConnect, defaultConfig, findPin, getNodeDef, type BlockSuggestion } from '../engine/registry';
 import { useProjectStore } from '../model/projectStore';
 import { makeNameLookup } from '../model/tree';
 import { BlockNode, TYPE_COLORS } from './BlockNode';
+import { BlockSuggestMenu, type SuggestRequest } from './BlockSuggestMenu';
 
 export const NODE_DRAG_MIME = 'application/x-codeblocks-node';
 const nodeTypes = { block: BlockNode };
@@ -25,8 +27,12 @@ const nodeTypes = { block: BlockNode };
 export function LogicCanvas() {
   const graph = useProjectStore((s) => s.project.graph);
   const selection = useProjectStore((s) => s.selection);
-  const { select, moveNodes, deleteNodes, deleteEdges, addEdge, addNode } = useProjectStore.getState();
+  const { select, moveNodes, deleteNodes, deleteEdges, addEdge, addNode, addWiredNode } = useProjectStore.getState();
   const rf = useReactFlow();
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [suggest, setSuggest] = useState<
+    (SuggestRequest & { nodeId: string; client: { x: number; y: number } }) | null
+  >(null);
 
   // Local React Flow node state (keeps measurements / drag positions); synced from the store.
   const [nodes, setNodes] = useState<Node[]>([]);
@@ -133,6 +139,41 @@ export function LogicCanvas() {
     [addEdge, isValidConnection],
   );
 
+  // A wire dropped on empty space opens a menu of blocks that fit it.
+  const onConnectEnd = useCallback((event: MouseEvent | TouchEvent, state: FinalConnectionState) => {
+    if (state.isValid || !state.fromNode || !state.fromHandle?.id) return;
+    const target = event.target as Element | null;
+    if (!target?.classList.contains('react-flow__pane')) return;
+    const point = 'changedTouches' in event ? event.changedTouches[0] : event;
+    const box = canvasRef.current?.getBoundingClientRect();
+    if (!point || !box) return;
+    const { project } = useProjectStore.getState();
+    const gn = project.graph.nodes.find((n) => n.id === state.fromNode!.id);
+    const def = gn && getNodeDef(gn.type);
+    if (!def) return;
+    const side = state.fromHandle.type === 'source' ? 'out' : 'in';
+    const pin = findPin(def, side, state.fromHandle.id, { ...defaultConfig(def), ...gn.config }, makeNameLookup(project));
+    if (!pin) return;
+    setSuggest({
+      at: { x: point.clientX - box.left, y: point.clientY - box.top },
+      client: { x: point.clientX, y: point.clientY },
+      pin,
+      side,
+      nodeId: gn.id,
+    });
+  }, []);
+
+  const closeSuggest = useCallback(() => setSuggest(null), []);
+
+  const pickSuggestion = (s: BlockSuggestion) => {
+    if (!suggest) return;
+    const pos = rf.screenToFlowPosition(suggest.client);
+    // Put the new block on the far side of the drop point, so the wire stays short.
+    const position = suggest.side === 'out' ? { x: pos.x + 10, y: pos.y - 30 } : { x: pos.x - 250, y: pos.y - 30 };
+    addWiredNode(s.def.type, position, { nodeId: suggest.nodeId, pinId: suggest.pin.id, side: suggest.side }, s.pin.id, s.pin.kind);
+    setSuggest(null);
+  };
+
   const onDrop = (e: DragEvent) => {
     const type = e.dataTransfer.getData(NODE_DRAG_MIME);
     if (!type) return;
@@ -143,6 +184,7 @@ export function LogicCanvas() {
 
   return (
     <div
+      ref={canvasRef}
       className="logic-canvas"
       onDragOver={(e) => {
         if (e.dataTransfer.types.includes(NODE_DRAG_MIME)) {
@@ -159,6 +201,7 @@ export function LogicCanvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onConnectEnd={onConnectEnd}
         isValidConnection={isValidConnection}
         onNodeDragStop={(_, __, dragged) =>
           moveNodes(Object.fromEntries(dragged.map((n) => [n.id, { x: n.position.x, y: n.position.y }])))
@@ -171,6 +214,7 @@ export function LogicCanvas() {
           if (edgeIds.length) deleteEdges(edgeIds);
         }}
         onPaneClick={() => select(null)}
+        onMoveStart={closeSuggest}
         deleteKeyCode={['Backspace', 'Delete']}
         fitView
         fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
@@ -190,6 +234,7 @@ export function LogicCanvas() {
           }}
         />
       </ReactFlow>
+      {suggest && <BlockSuggestMenu request={suggest} onPick={pickSuggestion} onClose={closeSuggest} />}
       {graph.nodes.length === 0 && (
         <div className="logic-empty">
           <h2>Make your app do things</h2>

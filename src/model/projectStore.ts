@@ -49,6 +49,17 @@ interface Actions {
   moveNodes(positions: Record<string, { x: number; y: number }>): void;
   deleteNodes(ids: string[]): void;
   addEdge(edge: Omit<GraphEdge, 'id'>): void;
+  /**
+   * Adds a block wired to a pin of another block, as one undo step. `from`
+   * is the pin the wire was dragged out of; `pin` is the new block's pin.
+   */
+  addWiredNode(
+    type: string,
+    position: { x: number; y: number },
+    from: { nodeId: string; pinId: string; side: 'in' | 'out' },
+    pin: string,
+    kind: GraphEdge['kind'],
+  ): string;
   deleteEdges(ids: string[]): void;
 
   undo(): void;
@@ -67,6 +78,20 @@ function initialState(project: Project): State {
     future: [],
     lastEdit: null,
   };
+}
+
+/**
+ * Adds a wire. A data input takes one value and an exec output leads to one
+ * next step, so a wire already there is replaced.
+ */
+function pushEdge(p: Project, edge: Omit<GraphEdge, 'id'>) {
+  if (edge.source === edge.target) return;
+  p.graph.edges = p.graph.edges.filter((e) =>
+    edge.kind === 'data'
+      ? !(e.kind === 'data' && e.target === edge.target && e.targetPin === edge.targetPin)
+      : !(e.kind === 'exec' && e.source === edge.source && e.sourcePin === edge.sourcePin),
+  );
+  p.graph.edges.push({ ...edge, id: newId() });
 }
 
 export const useProjectStore = create<ProjectStore>()(
@@ -269,17 +294,22 @@ export const useProjectStore = create<ProjectStore>()(
           if (s.selection?.kind === 'node' && gone.has(s.selection.id)) s.selection = null;
         });
       },
-      addEdge: (edge) =>
+      addEdge: (edge) => mutate((p) => pushEdge(p, edge)),
+      addWiredNode: (type, position, from, pin, kind) => {
+        const def = getNodeDef(type);
+        const id = newId();
         mutate((p) => {
-          if (edge.source === edge.target) return;
-          // A data input takes one value; an exec output leads to one next step.
-          p.graph.edges = p.graph.edges.filter((e) =>
-            edge.kind === 'data'
-              ? !(e.kind === 'data' && e.target === edge.target && e.targetPin === edge.targetPin)
-              : !(e.kind === 'exec' && e.source === edge.source && e.sourcePin === edge.sourcePin),
+          p.graph.nodes.push({ id, type, position, config: def ? defaultConfig(def) : {} });
+          pushEdge(
+            p,
+            from.side === 'out'
+              ? { source: from.nodeId, sourcePin: from.pinId, target: id, targetPin: pin, kind }
+              : { source: id, sourcePin: pin, target: from.nodeId, targetPin: from.pinId, kind },
           );
-          p.graph.edges.push({ ...edge, id: newId() });
-        }),
+        });
+        set((s) => void (s.selection = { kind: 'node', id }));
+        return id;
+      },
       deleteEdges: (ids) => {
         const gone = new Set(ids);
         mutate((p) => void (p.graph.edges = p.graph.edges.filter((e) => !gone.has(e.id))));

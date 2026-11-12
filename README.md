@@ -58,7 +58,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
   - **Text** blocks change, search, replace and split text. **Lists & records** blocks find, sort, filter and join list items. For a list of records, they can work on one field, such as sorting people by `age`.
   - **Records** group values under named fields, like a contact card (`name: Ada, age: 36`). Build one with *Make record*, then read it with *Get field*. Records can be kept in a variable or added to a list.
   - *Fetch from API* loads data from the web. Its JSON answer becomes records and lists, and *Pick field* (such as `current.temp`) takes one value out of it. *If it fails* runs when the server answers with an error or can't be reached.
-  - Wires only connect where they make sense.
+  - Wires only connect where they make sense. Drag a wire out of a pin and let go on empty space to pick from the blocks that fit it; the one you pick is added already connected.
 - **▶ Run:** the app becomes live, both on the design canvas and in the preview beside the graph. Each block glows as it runs. A block that isn't set up properly is outlined in red, and the toolbar shows *show me*, which takes you to it.
 - Projects are saved automatically in your browser. Use **Projects** to start from a template (Hello Name, Counter, To-do List) and **Export / Import** to move projects around as `.json` files.
 
