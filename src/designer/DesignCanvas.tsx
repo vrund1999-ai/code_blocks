@@ -6,11 +6,13 @@ import type { UIElement } from '../model/types';
 import { AppView, type DesignHooks } from '../runtime/Renderer';
 import { useRuntimeStore } from '../runtime/runtimeStore';
 import { useDesignDnd, type DragData } from './DesignDnd';
+import { useLayerHover } from './LayersPanel';
 
 function DesignNode({ el, isRoot, children }: { el: UIElement; isRoot: boolean; children: ReactNode }) {
   const { draggingId } = useDesignDnd();
   const selected = useProjectStore((s) => s.selection?.kind === 'element' && s.selection.id === el.id);
   const select = useProjectStore((s) => s.select);
+  const hovered = useLayerHover((s) => s.id === el.id);
   const drag = useDraggable({
     id: `el:${el.id}`,
     data: { source: 'element', id: el.id } satisfies DragData,
@@ -30,6 +32,7 @@ function DesignNode({ el, isRoot, children }: { el: UIElement; isRoot: boolean; 
         `el-wrap-${el.type}`,
         isRoot && 'el-wrap-root',
         selected && 'selected',
+        hovered && 'layer-hover',
         draggingId === el.id && 'dragging',
       ]
         .filter(Boolean)

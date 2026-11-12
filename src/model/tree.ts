@@ -107,3 +107,33 @@ export function makeNameLookup(project: Project): NameLookup {
     inList: (id) => typeof id === 'string' && enclosingListInProject(project, id) !== null,
   };
 }
+
+/** A row of the layers panel. */
+export interface LayerRow {
+  el: UIElement;
+  depth: number;
+  parentId: string | null;
+  /** Inside a List, elements make up the card that repeats for each item. */
+  inCard: boolean;
+}
+
+/** The layers panel rows that show: every element, minus the insides of collapsed ones. */
+export function layerRows(root: UIElement, collapsed: Set<string>): LayerRow[] {
+  const rows: LayerRow[] = [];
+  const visit = (el: UIElement, depth: number, parentId: string | null, inCard: boolean) => {
+    rows.push({ el, depth, parentId, inCard });
+    if (collapsed.has(el.id)) return;
+    for (const c of el.children) visit(c, depth + 1, el.id, inCard || el.type === 'list');
+  };
+  visit(root, 0, null, false);
+  return rows;
+}
+
+/** Ids of the elements that contain `id`, outermost first. */
+export function ancestorIds(root: UIElement, id: string): string[] {
+  const parents = new Map<string, string>();
+  walk(root, (el, parent) => void (parent && parents.set(el.id, parent.id)));
+  const out: string[] = [];
+  for (let p = parents.get(id); p; p = parents.get(p)) out.unshift(p);
+  return out;
+}

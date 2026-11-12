@@ -20,6 +20,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Text and list blocks | 2026-11-11 | [#7](https://github.com/vrund1999-ai/code_blocks/pull/7) | See below |
 | Wire suggestions | 2026-11-11 | [#9](https://github.com/vrund1999-ai/code_blocks/pull/9) | See below |
 | Copy and paste | 2026-11-11 | [#10](https://github.com/vrund1999-ai/code_blocks/pull/10) | See below |
+| Layers panel | 2026-11-11 | [#12](https://github.com/vrund1999-ai/code_blocks/pull/12) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -78,6 +79,13 @@ Copy and paste included:
 - **Between projects:** what you copied is kept when you open another project. Settings that point at an element, variable or screen the other project doesn't have are cleared.
 - **Tests:** 11 new unit tests and 7 new end-to-end tests.
 
+Layers panel included:
+- **Design tab:** a **Layers** panel in the sidebar shows the open screen as a tree. Click a row to select its element, even one deep inside boxes or a List's card. Elements in a card are shown in italics, and a List is marked *card for each item*.
+- **Finding things:** pointing at a row outlines its element on the canvas. Selecting an element on the canvas highlights its row and opens the rows around it.
+- **Editing:** double-click a row (or press F2) to rename its element; Enter saves and Escape cancels. Delete, copy and paste work on the selected row like on the canvas.
+- **Keyboard:** ↑ and ↓ move through the rows. → opens a row or goes into it, and ← closes it or goes up to the row around it.
+- **Tests:** 3 new unit tests and 5 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -110,7 +118,7 @@ Copy and paste included:
 | ID | Item | Status | Completed | PR |
 | --- | --- | --- | --- | --- |
 | UX-1 | Copy / paste / duplicate | ✅ | 2026-11-11 | [#10](https://github.com/vrund1999-ai/code_blocks/pull/10) |
-| UX-2 | Layers panel | ⬜ | | |
+| UX-2 | Layers panel | ✅ | 2026-11-11 | [#12](https://github.com/vrund1999-ai/code_blocks/pull/12) |
 | UX-3 | Wire-to-empty-space block suggestions | ✅ | 2026-11-11 | [#9](https://github.com/vrund1999-ai/code_blocks/pull/9) |
 | UX-4 | Context menus | ⬜ | | |
 | UX-5 | Multi-select in design | ⬜ | | |
@@ -122,6 +130,7 @@ Copy and paste included:
 | UX-11 | Touch support | ⬜ | | |
 | UX-12 | Projects menu click-outside | ⬜ | | |
 | UX-13 | Item-linked settings outside a List | ⬜ | | |
+| UX-14 | Drag to reorder in the layers panel | ⬜ | | |
 
 ### 4. UI elements and styling
 | ID | Item | Status | Completed | PR |
@@ -183,4 +192,4 @@ Copy and paste included:
 
 ---
 
-**Totals:** 9 / 67 done · 0 in progress
+**Totals:** 10 / 68 done · 0 in progress
