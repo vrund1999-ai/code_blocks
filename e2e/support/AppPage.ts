@@ -231,6 +231,19 @@ export class AppPage {
     await this.page.mouse.up();
   }
 
+  /** Drags a wire out of a pin and lets go on empty canvas, `dx`/`dy` pixels away. */
+  async dragWireToEmpty(block: Locator, pinId: string, side: 'source' | 'target', dx: number, dy = 0) {
+    const a = await box(this.handle(block, pinId, side));
+    await this.page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+    await this.page.mouse.down();
+    await this.page.mouse.move(a.x + a.width / 2 + dx, a.y + a.height / 2 + dy, { steps: 15 });
+    await this.page.mouse.up();
+  }
+  /** The menu of blocks that fit a wire dropped on empty space. */
+  get suggestMenu() {
+    return this.page.getByRole('dialog', { name: 'Blocks that fit this wire' });
+  }
+
   async fitView() {
     await this.page.locator('.react-flow__controls-fitview').click();
   }
