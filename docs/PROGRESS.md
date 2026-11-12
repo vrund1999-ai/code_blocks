@@ -19,6 +19,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Fetch from API | 2026-11-11 | [#6](https://github.com/vrund1999-ai/code_blocks/pull/6) | See below |
 | Text and list blocks | 2026-11-11 | [#7](https://github.com/vrund1999-ai/code_blocks/pull/7) | See below |
 | Wire suggestions | 2026-11-11 | [#9](https://github.com/vrund1999-ai/code_blocks/pull/9) | See below |
+| Copy and paste | 2026-11-11 | [#10](https://github.com/vrund1999-ai/code_blocks/pull/10) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -70,6 +71,13 @@ Wire suggestions included:
 - **Keyboard:** the search box has focus, Enter adds the first match and Escape closes the menu.
 - **Tests:** 7 new unit tests and 4 new end-to-end tests.
 
+Copy and paste included:
+- **Shortcuts:** Ctrl+C, Ctrl+X, Ctrl+V and Ctrl+D (⌘ on a Mac) copy, cut, paste and duplicate the selected element in the Design tab, or the selected blocks in the Logic tab. Both Settings panels have a **Duplicate** button. Typing in a field still copies and pastes text as usual.
+- **Elements:** a copy goes right after the selected element, with everything inside it. Copies get new names that count up ("Button 1" → "Button 2"). Text boxes, checkboxes and lists, which can't be in a List's cards, are pasted onto the screen instead.
+- **Blocks:** select several with Ctrl+click or a Shift+drag box. Copies keep the wires between them and land a little further along each time.
+- **Between projects:** what you copied is kept when you open another project. Settings that point at an element, variable or screen the other project doesn't have are cleared.
+- **Tests:** 11 new unit tests and 6 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -101,7 +109,7 @@ Wire suggestions included:
 ### 3. Editor UX
 | ID | Item | Status | Completed | PR |
 | --- | --- | --- | --- | --- |
-| UX-1 | Copy / paste / duplicate | ⬜ | | |
+| UX-1 | Copy / paste / duplicate | ✅ | 2026-11-11 | [#10](https://github.com/vrund1999-ai/code_blocks/pull/10) |
 | UX-2 | Layers panel | ⬜ | | |
 | UX-3 | Wire-to-empty-space block suggestions | ✅ | 2026-11-11 | [#9](https://github.com/vrund1999-ai/code_blocks/pull/9) |
 | UX-4 | Context menus | ⬜ | | |
@@ -175,4 +183,4 @@ Wire suggestions included:
 
 ---
 
-**Totals:** 8 / 67 done · 0 in progress
+**Totals:** 9 / 67 done · 0 in progress
