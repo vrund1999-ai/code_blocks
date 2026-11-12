@@ -1,4 +1,4 @@
-import { isEmptyValue, looseEquals, toBool, toList, toNumber, toText } from '../convert';
+import { checkValues, toBool, toList, toNumber, toText } from '../convert';
 import type { NodeDef } from '../types';
 
 const pick = (name: string | undefined, fallback: string) => (name ? `“${name}”` : fallback);
@@ -65,7 +65,7 @@ export const dataNodes: NodeDef[] = [
   },
   {
     type: 'data.join',
-    category: 'data',
+    category: 'text',
     label: 'Join text',
     description: 'Puts two pieces of text together.',
     inputs: [
@@ -150,19 +150,9 @@ export const dataNodes: NodeDef[] = [
       ] ?? 'Compare',
     async evaluate(ctx) {
       const a = await ctx.input('a');
-      const op = ctx.config.op ?? '=';
-      if (op === 'empty') return { value: isEmptyValue(a) };
-      const b = await ctx.input('b');
-      switch (op) {
-        case '!=':
-          return { value: !looseEquals(a, b) };
-        case '>':
-          return { value: toNumber(a) > toNumber(b) };
-        case '<':
-          return { value: toNumber(a) < toNumber(b) };
-        default:
-          return { value: looseEquals(a, b) };
-      }
+      const op = String(ctx.config.op ?? '=');
+      const b = op === 'empty' ? '' : await ctx.input('b');
+      return { value: checkValues(op, a, b) };
     },
   },
   {
@@ -228,7 +218,7 @@ export const dataNodes: NodeDef[] = [
   },
   {
     type: 'data.listLength',
-    category: 'data',
+    category: 'lists',
     label: 'Count items',
     description: 'How many items are in a list.',
     inputs: [{ id: 'list', label: 'List', kind: 'data', valueType: 'list' }],
@@ -241,7 +231,7 @@ export const dataNodes: NodeDef[] = [
   },
   {
     type: 'data.listItem',
-    category: 'data',
+    category: 'lists',
     label: 'Get item',
     description: 'Gets the item at a position in a list (1 is the first).',
     inputs: [

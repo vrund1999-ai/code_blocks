@@ -25,7 +25,7 @@ const pick = (name: string | undefined, fallback: string) => (name ? `“${name}
 export const recordNodes: NodeDef[] = [
   {
     type: 'data.makeRecord',
-    category: 'data',
+    category: 'lists',
     label: 'Make record',
     description: 'Groups several values into one record with named fields, like a contact card.',
     inputs: [],
@@ -75,7 +75,7 @@ export const recordNodes: NodeDef[] = [
   },
   {
     type: 'data.getField',
-    category: 'data',
+    category: 'lists',
     label: 'Get field',
     description: 'Reads one field of a record, such as the “name” of a contact.',
     inputs: [
@@ -96,7 +96,7 @@ export const recordNodes: NodeDef[] = [
   },
   {
     type: 'data.setField',
-    category: 'data',
+    category: 'lists',
     label: 'Change field',
     description: 'Gives you a copy of a record with one field changed, or added if it is new.',
     inputs: [
