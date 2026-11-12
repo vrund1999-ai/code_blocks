@@ -161,6 +161,20 @@ export class AppPage {
     });
   }
 
+  /**
+   * Turns on 🔗 link for a setting. For 50 ms after a drop, dnd-kit swallows
+   * clicks (so a drag never counts as a click), and a test can click that
+   * fast; so this clicks again until the setting shows as linked.
+   */
+  async linkSetting(label: string) {
+    const row = this.inspectorField(label);
+    const toggle = row.getByRole('button', { name: /link/ });
+    await expect(async () => {
+      if ((await toggle.textContent())?.trim().endsWith('link')) await toggle.click();
+      await expect(row.getByLabel(`${label}: linked to`)).toBeVisible({ timeout: 250 });
+    }).toPass();
+  }
+
   async setDevice(label: 'Phone' | 'Tablet' | 'Desktop') {
     await this.designCanvas.locator('.canvas-toolbar .chip', { hasText: label }).click();
   }
