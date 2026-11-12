@@ -50,6 +50,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
 ## How it works
 
 - **🎨 Design tab:** drag Boxes, Text, Buttons, Text Boxes, Checkboxes, Images and Lists onto a screen. Click any element to change it in the Settings panel. Use 🔗 *link* to tie a setting to a variable, so it updates live.
+  - The **Layers** panel shows the screen as a tree. Click a row to select an element, even one deep inside boxes, and double-click to rename it.
   - Drop elements inside a **List** to design a card that repeats for every item. Inside a card, 🔗 *link* can show *a field of this card's item*, such as a contact's name.
 - **⚡ Logic tab:** a node graph.
   - **When…** blocks start things, for example *When button clicked*.
@@ -70,7 +71,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
 | `src/model/` | Project JSON types, element definitions, Zustand store (undo/redo, copy and paste), persistence |
 | `src/engine/` | **Pure TypeScript** interpreter and block registry (`nodes/*.ts`), with no React or DOM |
 | `src/runtime/` | Browser host for the engine (`controller.ts`), live state, and the element `Renderer` |
-| `src/designer/` | Drag-and-drop design canvas (dnd-kit) |
+| `src/designer/` | Drag-and-drop design canvas (dnd-kit), element palette, layers panel |
 | `src/logic/` | Node-graph editor (React Flow) |
 | `src/app/` | Shell: toolbar, inspector, side panels |
 | `src/templates/` | Starter projects |
