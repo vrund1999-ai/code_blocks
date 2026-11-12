@@ -634,8 +634,30 @@ textarea.field-input {
   border-color: var(--accent);
 }
 .cb-row > .el-input,
-.cb-row > .el-wrap-input {
+.cb-row > .el-wrap-input,
+.cb-row > .el-dropdown,
+.cb-row > .el-wrap-dropdown {
   flex: 1;
+}
+.el-dropdown {
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  padding: 9px 10px;
+  min-width: 0;
+  width: 100%;
+  background: #fff;
+  font: inherit;
+  color: inherit;
+}
+.el-dropdown:disabled {
+  opacity: 1;
+  cursor: inherit;
+  /* In the designer, clicks go through to the element so it can be selected. */
+  pointer-events: none;
+}
+.el-dropdown:focus {
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
 }
 .el-checkbox {
   display: flex;

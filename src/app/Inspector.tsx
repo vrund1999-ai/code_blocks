@@ -13,6 +13,7 @@ const EVENT_FOR: Partial<Record<ElementType, { type: string; label: string }>> =
   button: { type: 'event.click', label: 'When clicked…' },
   input: { type: 'event.inputChange', label: 'When typed in…' },
   checkbox: { type: 'event.inputChange', label: 'When ticked…' },
+  dropdown: { type: 'event.inputChange', label: 'When a choice is picked…' },
   list: { type: 'event.listDelete', label: 'When item deleted…' },
 };
 
@@ -50,7 +51,7 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
   const fieldNames = useMemo(() => (inCard ? knownFieldNames(project) : []), [inCard, project]);
   const bound = pv.kind === 'variable' || pv.kind === 'item';
   // A list's items only make sense bound to a variable.
-  const bindOnly = field.bindable === 'list';
+  const bindOnly = Boolean(field.bindOnly);
   const canBind = bindOptions.length > 0 || inCard;
   const unbound: PropValue = { kind: 'static', value: ELEMENT_DEFS[el.type].defaults[field.key] };
   const firstBinding: PropValue = inCard
@@ -138,7 +139,11 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
         break;
       case 'textarea':
         editor = (
-          <textarea className="field-input" rows={2} value={String(value ?? '')} onChange={(e) => set({ kind: 'static', value: e.target.value })} />
+          <textarea
+            className="field-input"
+            // Grows with its lines (up to 6), so a dropdown's choices all show.
+            rows={Math.min(6, Math.max(2, String(value ?? '').split('\n').length))}
+            value={String(value ?? '')} onChange={(e) => set({ kind: 'static', value: e.target.value })} />
         );
         break;
       default:

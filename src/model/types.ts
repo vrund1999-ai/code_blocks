@@ -12,6 +12,7 @@ export type ElementType =
   | 'input'
   | 'image'
   | 'checkbox'
+  | 'dropdown'
   | 'list';
 
 export type PropValue =

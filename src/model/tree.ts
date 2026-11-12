@@ -82,7 +82,7 @@ export function enclosingListInProject(project: Project, id: string): UIElement 
  * Elements that keep one value per element (what is typed, ticked, or the
  * list's own items) can't be repeated in a List's cards.
  */
-export const NOT_IN_LIST_CARDS: ElementType[] = ['input', 'checkbox', 'list'];
+export const NOT_IN_LIST_CARDS: ElementType[] = ['input', 'checkbox', 'dropdown', 'list'];
 
 /** Can `el` (with everything inside it) go inside `parentId`? */
 export function canPlaceInside(root: UIElement, parentId: string, el: UIElement | ElementType): boolean {

@@ -30,13 +30,13 @@ export const actionNodes: NodeDef[] = [
     type: 'action.setInputValue',
     category: 'actions',
     label: 'Set text box value',
-    description: 'Puts text into a text box (use an empty value to clear it).',
+    description: 'Puts text into a text box, or picks a choice in a dropdown (use an empty value to clear it).',
     inputs: [
       ...flow,
       { id: 'value', label: 'Value', kind: 'data', valueType: 'text', inline: { type: 'text', default: '' } },
     ],
     outputs: [execOut],
-    configFields: [{ key: 'element', label: 'Text box', type: 'element', elementTypes: ['input'] }],
+    configFields: [{ key: 'element', label: 'Text box / dropdown', type: 'element', elementTypes: ['input', 'dropdown'] }],
     sentence: (c, n) => `Set value of ${pick(n.element(c.element), '…')}`,
     validate: (c) => (c.element ? null : 'This block has no text box picked.'),
     async execute(ctx) {
