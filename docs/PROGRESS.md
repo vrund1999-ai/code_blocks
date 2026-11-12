@@ -76,7 +76,7 @@ Copy and paste included:
 - **Elements:** a copy goes right after the selected element, with everything inside it. Copies get new names that count up ("Button 1" → "Button 2"). Text boxes, checkboxes and lists, which can't be in a List's cards, are pasted onto the screen instead.
 - **Blocks:** select several with Ctrl+click or a Shift+drag box. Copies keep the wires between them and land a little further along each time.
 - **Between projects:** what you copied is kept when you open another project. Settings that point at an element, variable or screen the other project doesn't have are cleared.
-- **Tests:** 11 new unit tests and 6 new end-to-end tests.
+- **Tests:** 11 new unit tests and 7 new end-to-end tests.
 
 ---
 

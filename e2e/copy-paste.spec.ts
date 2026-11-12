@@ -78,6 +78,23 @@ test.describe('Logic tab', () => {
     await expect(app.edges).toHaveCount(3);
   });
 
+  test('a Shift+drag box selects several blocks to duplicate together', async ({ app, page }) => {
+    await app.tab('Logic');
+    const a = (await app.block('event.click').boundingBox())!;
+    const b = (await app.block('action.setText').boundingBox())!;
+    const bottom = Math.max(a.y + a.height, b.y + b.height) + 10;
+    await page.keyboard.down('Shift');
+    await page.mouse.move(a.x - 15, a.y - 15);
+    await page.mouse.down();
+    await page.mouse.move(b.x + b.width + 15, bottom, { steps: 10 });
+    await page.mouse.up();
+    await page.keyboard.up('Shift');
+    await expect(app.page.locator('.react-flow__node.selected')).toHaveCount(2);
+    await page.keyboard.press('ControlOrMeta+d');
+    await expect(app.blocks).toHaveCount(6);
+    await expect(app.edges).toHaveCount(4);
+  });
+
   test('duplicate and cut blocks', async ({ app, page }) => {
     await app.tab('Logic');
     await app.block('data.join').locator('.block-title').click();
