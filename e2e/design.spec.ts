@@ -99,7 +99,7 @@ test.describe('inspector', () => {
     await app.goto();
 
     await app.select('Label');
-    await app.inspectorField('Text').getByRole('button', { name: /link/ }).click();
+    await app.linkSetting('Text');
     await expect(app.inspectorField('Text').locator('select.bound option:checked')).toHaveText(/message/);
     await expect(app.designCanvas.locator('.el-text')).toHaveText('Hello from a variable');
 

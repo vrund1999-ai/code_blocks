@@ -33,7 +33,7 @@ test.describe('designing a card', () => {
     await expect(list.locator('.list-hint')).toHaveText('↻ This card repeats for each item in the list');
 
     // Link the text to the "city" field of each card's item.
-    await app.inspectorField('Text').getByRole('button', { name: /link/ }).click();
+    await app.linkSetting('Text');
     await expect(app.inspector.getByLabel('Text: linked to')).toHaveValue('__item');
     await app.inspector.getByLabel('Text: item field').fill('city');
     await expect(list.locator('.list-card.template .el-text')).toHaveText('Paris');
