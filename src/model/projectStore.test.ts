@@ -148,3 +148,25 @@ describe('projectStore', () => {
     expect(root().children.map((c) => c.id)).toEqual([name, list, box]);
   });
 });
+
+describe('addWiredNode', () => {
+  it('adds a block wired after another, as one undo step', () => {
+    const click = store().addNode('event.click', { x: 0, y: 0 });
+    const toast = store().addWiredNode('action.toast', { x: 300, y: 0 }, { nodeId: click, pinId: 'next', side: 'out' }, 'in', 'exec');
+    const { nodes, edges } = store().project.graph;
+    expect(nodes.find((n) => n.id === toast)?.type).toBe('action.toast');
+    expect(edges).toMatchObject([{ source: click, sourcePin: 'next', target: toast, targetPin: 'in', kind: 'exec' }]);
+    expect(store().selection).toEqual({ kind: 'node', id: toast });
+    store().undo();
+    expect(store().project.graph.nodes.map((n) => n.id)).toEqual([click]);
+    expect(store().project.graph.edges).toEqual([]);
+  });
+
+  it('adds a block feeding an input, replacing the wire that was there', () => {
+    const set = store().addNode('action.setText', { x: 400, y: 0 });
+    const a = store().addNode('data.text', { x: 0, y: 0 });
+    store().addEdge({ source: a, sourcePin: 'value', target: set, targetPin: 'text', kind: 'data' });
+    const b = store().addWiredNode('data.join', { x: 0, y: 100 }, { nodeId: set, pinId: 'text', side: 'in' }, 'value', 'data');
+    expect(store().project.graph.edges).toMatchObject([{ source: b, sourcePin: 'value', target: set, targetPin: 'text' }]);
+  });
+});

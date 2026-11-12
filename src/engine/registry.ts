@@ -71,3 +71,38 @@ export function canConnect(from: Pin, to: Pin): boolean {
   if (a === 'list' || b === 'list' || a === 'record' || b === 'record') return false;
   return true; // text/number/boolean convert between each other
 }
+
+/** A block that can be wired to a pin, and which of its pins the wire goes to. */
+export interface BlockSuggestion {
+  def: NodeDef;
+  pin: Pin;
+  /** How many of the block's pins would fit; more than one means a choice was made. */
+  fits: number;
+}
+
+/**
+ * Blocks that fit a wire dragged out of `pin` into empty space. `side` is
+ * the side of the pin the wire starts from: from an output, the new block
+ * gets the wire on one of its inputs; from an input, on one of its outputs.
+ * For each block, the pin whose type matches best is picked: the same type,
+ * then "any", then a type that converts. Blocks keep their palette order.
+ */
+export function suggestBlocks(pin: Pin, side: 'in' | 'out', names?: NameLookup): BlockSuggestion[] {
+  const rank = (other: Pin) => {
+    const a = pin.valueType ?? 'any';
+    const b = other.valueType ?? 'any';
+    return a === b ? 0 : a === 'any' || b === 'any' ? 1 : 2;
+  };
+  const out: BlockSuggestion[] = [];
+  for (const def of ALL) {
+    const config = defaultConfig(def);
+    const pins =
+      side === 'out'
+        ? inputPins(def, config).filter((p) => canConnect(pin, p))
+        : outputPins(def, config, names).filter((p) => canConnect(p, pin));
+    if (!pins.length) continue;
+    const best = pins.reduce((a, b) => (rank(b) < rank(a) ? b : a));
+    out.push({ def, pin: best, fits: pins.length });
+  }
+  return out;
+}

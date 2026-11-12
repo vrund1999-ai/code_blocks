@@ -914,6 +914,44 @@ textarea.field-input {
   background: var(--bg);
 }
 
+/* menu of blocks that fit a wire dropped on empty space */
+.suggest-menu {
+  position: absolute;
+  z-index: 20;
+  width: 260px;
+  max-height: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+.suggest-title {
+  font-size: 12px;
+  font-weight: 600;
+}
+.suggest-list {
+  overflow-y: auto;
+  min-height: 0;
+}
+.suggest-cat .node-cat-title {
+  margin: 6px 0 4px;
+  font-size: 11px;
+}
+.suggest-item {
+  cursor: pointer;
+}
+.suggest-pin {
+  color: var(--muted, #868e96);
+  font-size: 11px;
+}
+.suggest-none {
+  padding: 8px 2px;
+}
+
 /* blocks */
 .block {
   background: #fff;
