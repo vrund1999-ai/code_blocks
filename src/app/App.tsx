@@ -9,7 +9,7 @@ import { loadLastProject, saveProject } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { stopApp } from '../runtime/controller';
 import { AppView } from '../runtime/Renderer';
-import { useRuntimeStore } from '../runtime/runtimeStore';
+import { pushToast, useRuntimeStore } from '../runtime/runtimeStore';
 import { TEMPLATES } from '../templates';
 import { Inspector } from './Inspector';
 import { ScreensPanel, VariablesPanel } from './SidePanels';
@@ -40,6 +40,43 @@ function useBootAndAutosave() {
   }, []);
 }
 
+const MOD_KEY = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl';
+
+/** "“Say Hello”" or "3 blocks": what the clipboard holds, for messages. */
+function clipName(): string {
+  const clip = useProjectStore.getState().clipboard;
+  if (!clip) return 'nothing';
+  if (clip.kind === 'elements') return `“${clip.elements[0].name}”`;
+  return clip.nodes.length === 1 ? 'a block' : `${clip.nodes.length} blocks`;
+}
+
+/** Copy, cut, paste and duplicate for the selected element or blocks. */
+function clipboardShortcut(e: KeyboardEvent): boolean {
+  const s = useProjectStore.getState();
+  const key = e.key.toLowerCase();
+  // Let the browser copy text the user has highlighted, such as in the preview.
+  if ((key === 'c' || key === 'x') && window.getSelection()?.toString()) return false;
+  if (key === 'c' || key === 'x') {
+    const n = key === 'c' ? s.copySelection() : s.cutSelection();
+    if (!n) return false;
+    pushToast(`${key === 'c' ? 'Copied' : 'Cut'} ${clipName()}. Press ${MOD_KEY}+V to paste.`);
+  } else if (key === 'v') {
+    if (!s.clipboard) return false;
+    if (!s.paste().length) {
+      pushToast(
+        s.clipboard.kind === 'elements'
+          ? 'Elements can be pasted in the Design tab.'
+          : 'Blocks can be pasted in the Logic tab.',
+      );
+    }
+  } else if (key === 'd') {
+    s.duplicateSelection();
+  } else {
+    return false;
+  }
+  return true;
+}
+
 function useShortcuts() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -53,6 +90,9 @@ function useShortcuts() {
       } else if (mod && e.key.toLowerCase() === 'y') {
         e.preventDefault();
         s.redo();
+      } else if (mod && !e.shiftKey && !e.altKey && 'cxvd'.includes(e.key.toLowerCase()) && e.key.length === 1) {
+        // Ctrl+D would bookmark the page, so it is always taken.
+        if (clipboardShortcut(e) || e.key.toLowerCase() === 'd') e.preventDefault();
       } else if ((e.key === 'Delete' || e.key === 'Backspace') && s.tab === 'design' && s.selection?.kind === 'element') {
         e.preventDefault();
         s.deleteElement(s.selection.id);

@@ -51,11 +51,13 @@ export function LogicCanvas() {
     });
   }, [graph.nodes]);
 
-  // Reflect selection made elsewhere (Inspector, error "show me" links).
+  // Reflect selection made elsewhere (Inspector, error "show me" links, paste).
   useEffect(() => {
-    const id = selection?.kind === 'node' ? selection.id : null;
-    setNodes((ns) => ns.map((n) => (Boolean(n.selected) === (n.id === id) ? n : { ...n, selected: n.id === id })));
+    const ids = new Set(selection?.kind === 'node' ? (selection.ids ?? [selection.id]) : []);
+    setNodes((ns) => ns.map((n) => (Boolean(n.selected) === ids.has(n.id) ? n : { ...n, selected: ids.has(n.id) })));
   }, [selection]);
+  const nodesRef = useRef(nodes);
+  nodesRef.current = nodes;
 
   const edges: Edge[] = useMemo(
     () =>
@@ -81,10 +83,28 @@ export function LogicCanvas() {
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      setNodes((ns) => applyNodeChanges(changes.filter((c) => c.type !== 'remove'), ns));
-      for (const c of changes) {
-        if (c.type === 'select' && c.selected) select({ kind: 'node', id: c.id });
+      const next = applyNodeChanges(
+        changes.filter((c) => c.type !== 'remove'),
+        nodesRef.current,
+      );
+      nodesRef.current = next;
+      setNodes(next);
+      if (!changes.some((c) => c.type === 'select')) return;
+      // Several blocks can be selected (Ctrl+click, or Shift+drag a box) to copy or move them together.
+      const ids = next.filter((n) => n.selected).map((n) => n.id);
+      const current = useProjectStore.getState().selection;
+      if (!ids.length) {
+        if (current?.kind === 'node') select(null);
+        return;
       }
+      const picked = changes.find((c) => c.type === 'select' && c.selected);
+      const id =
+        picked && 'id' in picked
+          ? picked.id
+          : current?.kind === 'node' && ids.includes(current.id)
+            ? current.id
+            : ids[ids.length - 1];
+      select({ kind: 'node', id, ids: ids.length > 1 ? ids : undefined });
     },
     [select],
   );

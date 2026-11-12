@@ -170,7 +170,7 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
 }
 
 function ElementInspector({ el, isRoot }: { el: UIElement; isRoot: boolean }) {
-  const { renameElement, deleteElement, addNode, setTab } = useProjectStore.getState();
+  const { renameElement, deleteElement, addNode, setTab, duplicateSelection } = useProjectStore.getState();
   const def = ELEMENT_DEFS[el.type];
   const event = EVENT_FOR[el.type];
   const rf = useReactFlow();
@@ -212,6 +212,11 @@ function ElementInspector({ el, isRoot }: { el: UIElement; isRoot: boolean }) {
           </button>
         )}
         {!isRoot && (
+          <button className="btn" onClick={duplicateSelection} title="Copy: Ctrl+C · Paste: Ctrl+V · Duplicate: Ctrl+D">
+            Duplicate
+          </button>
+        )}
+        {!isRoot && (
           <button className="btn danger" onClick={() => deleteElement(el.id)}>
             Delete
           </button>
@@ -224,7 +229,8 @@ function ElementInspector({ el, isRoot }: { el: UIElement; isRoot: boolean }) {
 function NodeInspector({ nodeId }: { nodeId: string }) {
   const node = useProjectStore((s) => s.project.graph.nodes.find((n) => n.id === nodeId));
   const edges = useProjectStore((s) => s.project.graph.edges);
-  const { updateNodeConfig, deleteNodes } = useProjectStore.getState();
+  const { updateNodeConfig, deleteNodes, duplicateSelection } = useProjectStore.getState();
+  const many = useProjectStore((s) => (s.selection?.kind === 'node' ? (s.selection.ids?.length ?? 1) : 1));
   if (!node) return null;
   const def = getNodeDef(node.type);
   if (!def) return <p>Unknown block.</p>;
@@ -259,6 +265,9 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
         </div>
       ))}
       <div className="inspector-actions">
+        <button className="btn" onClick={duplicateSelection} title="Copy: Ctrl+C · Paste: Ctrl+V · Duplicate: Ctrl+D">
+          {many > 1 ? `Duplicate ${many} blocks` : 'Duplicate'}
+        </button>
         <button className="btn danger" onClick={() => deleteNodes([nodeId])}>
           Delete block
         </button>

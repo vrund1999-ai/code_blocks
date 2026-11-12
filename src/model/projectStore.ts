@@ -1,13 +1,15 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { defaultConfig, getNodeDef, inputPins } from '../engine/registry';
+import { cloneElements, cloneNodes, PASTE_OFFSET, type Clip } from './clipboard';
 import { ELEMENT_DEFS } from './elements';
 import { defaultInitial, makeElement, makeProject, makeScreen, newId, nextElementName, nextName } from './factory';
 import { canPlaceInside, collectIds, findElement, findInProject, findParent } from './tree';
-import type { ElementType, GraphEdge, Project, PropValue, Variable } from './types';
+import type { ElementType, GraphEdge, Project, PropValue, UIElement, Variable } from './types';
 
 export type Tab = 'design' | 'logic';
-export type Selection = { kind: 'element'; id: string } | { kind: 'node'; id: string } | null;
+/** `ids` lists every selected block when there are several; `id` is the main one. */
+export type Selection = { kind: 'element'; id: string } | { kind: 'node'; id: string; ids?: string[] } | null;
 
 const HISTORY_LIMIT = 100;
 const COALESCE_MS = 1000;
@@ -21,6 +23,8 @@ interface State {
   future: Project[];
   /** Used to merge rapid edits (typing) into one undo step. */
   lastEdit: { key: string; at: number } | null;
+  /** What was last copied. Kept when another project is opened. */
+  clipboard: Clip | null;
 }
 
 interface Actions {
@@ -62,6 +66,15 @@ interface Actions {
   ): string;
   deleteEdges(ids: string[]): void;
 
+  /** Copies the selected element or blocks. Returns how many things were copied. */
+  copySelection(): number;
+  /** Copies the selection, then deletes it. */
+  cutSelection(): number;
+  /** Pastes what was copied: elements in the Design tab, blocks in the Logic tab. Returns the new ids. */
+  paste(): string[];
+  /** Copies and pastes the selection in one go, leaving the clipboard alone. */
+  duplicateSelection(): string[];
+
   undo(): void;
   redo(): void;
 }
@@ -77,6 +90,7 @@ function initialState(project: Project): State {
     past: [],
     future: [],
     lastEdit: null,
+    clipboard: null,
   };
 }
 
@@ -115,10 +129,35 @@ export const useProjectStore = create<ProjectStore>()(
       });
     };
 
+    /** Puts a copy of `clip` (the clipboard by default) into the project and selects it. */
+    const pasteClip = (times: number, clip = get().clipboard): string[] => {
+      if (!clip) return [];
+      const { project } = get();
+      if (clip.kind === 'nodes') {
+        const d = PASTE_OFFSET * times;
+        const copy = cloneNodes(clip.nodes, clip.edges, project, { x: d, y: d });
+        mutate((p) => {
+          p.graph.nodes.push(...copy.nodes);
+          p.graph.edges.push(...copy.edges);
+        });
+        const ids = copy.nodes.map((n) => n.id);
+        set((s) => void (s.selection = { kind: 'node', id: ids[ids.length - 1], ids }));
+        return ids;
+      }
+      const elements = cloneElements(clip.elements, project);
+      const { parentId, index } = pasteSpot(get(), elements);
+      mutate((p) => {
+        const parent = findInProject(p, parentId)!.el;
+        parent.children.splice(index ?? parent.children.length, 0, ...elements);
+      });
+      set((s) => void (s.selection = { kind: 'element', id: elements[0].id }));
+      return elements.map((e) => e.id);
+    };
+
     return {
       ...initialState(makeProject()),
 
-      loadProject: (project) => set(() => initialState(project)),
+      loadProject: (project) => set((s) => ({ ...initialState(project), clipboard: s.clipboard })),
       setTab: (tab) => set((s) => void (s.tab = tab)),
       select: (sel) => set((s) => void (s.selection = sel)),
       setActiveScreen: (id) =>
@@ -290,9 +329,7 @@ export const useProjectStore = create<ProjectStore>()(
           p.graph.nodes = p.graph.nodes.filter((n) => !gone.has(n.id));
           p.graph.edges = p.graph.edges.filter((e) => !gone.has(e.source) && !gone.has(e.target));
         });
-        set((s) => {
-          if (s.selection?.kind === 'node' && gone.has(s.selection.id)) s.selection = null;
-        });
+        set((s) => fixSelection(s));
       },
       addEdge: (edge) => mutate((p) => pushEdge(p, edge)),
       addWiredNode: (type, position, from, pin, kind) => {
@@ -313,6 +350,35 @@ export const useProjectStore = create<ProjectStore>()(
       deleteEdges: (ids) => {
         const gone = new Set(ids);
         mutate((p) => void (p.graph.edges = p.graph.edges.filter((e) => !gone.has(e.id))));
+      },
+
+      // ---- Copy and paste ---------------------------------------------------------
+      copySelection: () => {
+        const clip = copyOf(get());
+        if (!clip) return 0;
+        set((s) => void (s.clipboard = clip));
+        return clip.kind === 'elements' ? clip.elements.length : clip.nodes.length;
+      },
+      cutSelection: () => {
+        const clip = copyOf(get());
+        if (!clip) return 0;
+        set((s) => void (s.clipboard = clip));
+        if (clip.kind === 'elements') {
+          get().deleteElement(clip.elements[0].id);
+          return clip.elements.length;
+        }
+        get().deleteNodes(clip.nodes.map((n) => n.id));
+        return clip.nodes.length;
+      },
+      paste: () => {
+        const clip = get().clipboard;
+        if (!clip || (clip.kind === 'elements') !== (get().tab === 'design')) return [];
+        if (clip.kind === 'nodes') set((s) => void (s.clipboard = { ...clip, pastes: clip.pastes + 1 }));
+        return pasteClip(clip.kind === 'nodes' ? clip.pastes + 1 : 1);
+      },
+      duplicateSelection: () => {
+        const clip = copyOf(get());
+        return clip ? pasteClip(1, clip) : [];
       },
 
       // ---- History --------------------------------------------------------------
@@ -338,10 +404,49 @@ export const useProjectStore = create<ProjectStore>()(
   }),
 );
 
+/** A copy of what is selected in the open tab: an element, or blocks with the wires between them. */
+function copyOf(s: State): Clip | null {
+  const sel = s.selection;
+  if (s.tab === 'design' && sel?.kind === 'element') {
+    const found = findInProject(s.project, sel.id);
+    // A screen's background can't be copied: it isn't inside anything.
+    if (!found || found.screen.root.id === sel.id) return null;
+    return { kind: 'elements', elements: [structuredClone(found.el)] };
+  }
+  if (s.tab === 'logic' && sel?.kind === 'node') {
+    const ids = new Set(sel.ids ?? [sel.id]);
+    const nodes = s.project.graph.nodes.filter((n) => ids.has(n.id));
+    if (!nodes.length) return null;
+    const edges = s.project.graph.edges.filter((e) => ids.has(e.source) && ids.has(e.target));
+    return { kind: 'nodes', nodes: structuredClone(nodes), edges: structuredClone(edges), pastes: 0 };
+  }
+  return null;
+}
+
+/**
+ * Where pasted elements go: right after the selected element on the open
+ * screen, or at the end of the screen when nothing is selected or they can't
+ * go there (such as a text box into a List's cards).
+ */
+function pasteSpot(s: State, elements: UIElement[]): { parentId: string; index?: number } {
+  const screen = s.project.screens.find((x) => x.id === s.activeScreenId) ?? s.project.screens[0];
+  const sel = s.selection;
+  if (sel?.kind === 'element') {
+    const parent = findParent(screen.root, sel.id);
+    if (parent && elements.every((el) => canPlaceInside(screen.root, parent.id, el))) {
+      return { parentId: parent.id, index: parent.children.findIndex((c) => c.id === sel.id) + 1 };
+    }
+  }
+  return { parentId: screen.root.id };
+}
+
 /** After undo/redo, drop references to things that no longer exist. */
 function fixSelection(s: State) {
   if (!s.project.screens.some((x) => x.id === s.activeScreenId)) s.activeScreenId = s.project.screens[0].id;
   const sel = s.selection;
   if (sel?.kind === 'element' && !findInProject(s.project, sel.id)) s.selection = null;
-  if (sel?.kind === 'node' && !s.project.graph.nodes.some((n) => n.id === sel.id)) s.selection = null;
+  if (sel?.kind === 'node') {
+    const ids = (sel.ids ?? [sel.id]).filter((id) => s.project.graph.nodes.some((n) => n.id === id));
+    s.selection = ids.length ? { kind: 'node', id: ids.includes(sel.id) ? sel.id : ids[ids.length - 1], ids } : null;
+  }
 }
