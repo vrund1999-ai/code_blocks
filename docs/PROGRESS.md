@@ -18,6 +18,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | List cards | 2026-11-10 | [#5](https://github.com/vrund1999-ai/code_blocks/pull/5) | See below |
 | Fetch from API | 2026-11-11 | [#6](https://github.com/vrund1999-ai/code_blocks/pull/6) | See below |
 | Text and list blocks | 2026-11-11 | [#7](https://github.com/vrund1999-ai/code_blocks/pull/7) | See below |
+| Wire suggestions | 2026-11-11 | [#9](https://github.com/vrund1999-ai/code_blocks/pull/9) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -63,6 +64,12 @@ Text and list blocks included:
 - **Engine:** *Compare* and *Filter list* share the same checks. Sorting puts numbers in size order and text A → Z, ignoring capitals.
 - **Tests:** 17 new unit tests and 6 new end-to-end tests, including a search box that filters List cards.
 
+Wire suggestions included:
+- **Logic tab:** drag a wire out of a pin and let go on empty space, and a menu shows the blocks that fit it, grouped like the palette, with a search box. From an output it offers what can come next or use the value; from an input, what can lead there or give the value.
+- **Wiring:** the picked block appears next to the drop point already wired, on the pin whose type matches best (the same type, then “any”, then one that converts). Adding it is one undo step.
+- **Keyboard:** the search box has focus, Enter adds the first match and Escape closes the menu.
+- **Tests:** 7 new unit tests and 4 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -96,7 +103,7 @@ Text and list blocks included:
 | --- | --- | --- | --- | --- |
 | UX-1 | Copy / paste / duplicate | ⬜ | | |
 | UX-2 | Layers panel | ⬜ | | |
-| UX-3 | Wire-to-empty-space block suggestions | ⬜ | | |
+| UX-3 | Wire-to-empty-space block suggestions | ✅ | 2026-11-11 | [#9](https://github.com/vrund1999-ai/code_blocks/pull/9) |
 | UX-4 | Context menus | ⬜ | | |
 | UX-5 | Multi-select in design | ⬜ | | |
 | UX-6 | Graph comments / groups | ⬜ | | |
@@ -168,4 +175,4 @@ Text and list blocks included:
 
 ---
 
-**Totals:** 7 / 67 done · 0 in progress
+**Totals:** 8 / 67 done · 0 in progress
