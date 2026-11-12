@@ -60,13 +60,14 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
   - *Fetch from API* loads data from the web. Its JSON answer becomes records and lists, and *Pick field* (such as `current.temp`) takes one value out of it. *If it fails* runs when the server answers with an error or can't be reached.
   - Wires only connect where they make sense. Drag a wire out of a pin and let go on empty space to pick from the blocks that fit it; the one you pick is added already connected.
 - **▶ Run:** the app becomes live, both on the design canvas and in the preview beside the graph. Each block glows as it runs. A block that isn't set up properly is outlined in red, and the toolbar shows *show me*, which takes you to it.
+- **Copy and paste:** Ctrl+C / Ctrl+X / Ctrl+V copy, cut and paste the selected element or blocks, and Ctrl+D duplicates them (⌘ on a Mac). Select several blocks with Ctrl+click or a Shift+drag box; their copies keep the wires between them. Ctrl+Z / Ctrl+Y undo and redo.
 - Projects are saved automatically in your browser. Use **Projects** to start from a template (Hello Name, Counter, To-do List) and **Export / Import** to move projects around as `.json` files.
 
 ## Code layout
 
 | Path | What's there |
 | --- | --- |
-| `src/model/` | Project JSON types, element definitions, Zustand store (undo/redo), persistence |
+| `src/model/` | Project JSON types, element definitions, Zustand store (undo/redo, copy and paste), persistence |
 | `src/engine/` | **Pure TypeScript** interpreter and block registry (`nodes/*.ts`), with no React or DOM |
 | `src/runtime/` | Browser host for the engine (`controller.ts`), live state, and the element `Renderer` |
 | `src/designer/` | Drag-and-drop design canvas (dnd-kit) |

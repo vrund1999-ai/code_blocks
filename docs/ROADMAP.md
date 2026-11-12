@@ -35,7 +35,7 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 ## 3. Editor UX
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
-| UX-1 | Copy / paste / duplicate for elements and blocks | P1 | |
+| UX-1 | Copy / paste / duplicate for elements and blocks | P1 | Shipped: Ctrl+C/X/V/D and *Duplicate* buttons; several blocks can be selected and keep the wires between them; the clipboard works across projects. Copying several elements at once waits for UX-5 |
 | UX-2 | Layers panel: a tree outline of the screen | P1 | Easier selection of nested items |
 | UX-3 | Drag a wire into empty space → suggest compatible blocks | P1 | Big help for beginners. Shipped: a searchable menu of blocks that fit, from outputs and inputs; the picked block is added already wired, in one undo step |
 | UX-4 | Right-click context menus (design and logic) | P2 | |
