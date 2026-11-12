@@ -8,6 +8,14 @@
   - Never use fixed sleeps (`waitForTimeout`). Use auto-retrying `expect`, and `page.clock` for timers and waits.
 - A failing test that exposes an app bug: fix the bug. If the bug is too big for the current PR, mark the test `test.fixme` with a new roadmap ID instead.
 
+## Evidence of local testing in PRs
+Every PR description needs a **Local testing** section that proves the change works:
+- **Commands and results:** list each command you ran (`npm run check`, `npm run test:e2e`, any `--repeat-each` runs), with a short excerpt of its output, such as the pass/fail summary lines. Put the excerpts in a collapsed `<details>` block. If any test failed or was skipped, say so; don't leave it out.
+- **Screenshots for user-facing changes:** before/after, or the new feature in use, captured with a throwaway Playwright spec (delete it afterwards).
+  - `gh` can't upload images. Instead, push them to the `pr-assets` branch under `pr-<number>/`. Link them as `https://github.com/vrund1999-ai/code_blocks/blob/pr-assets/pr-<number>/<file>.png?raw=true`.
+  - Never commit screenshots to a feature branch or `main`.
+- **Manual checks:** say what you checked by hand that the tests don't cover, if anything.
+
 ## Keep docs/ up to date
 After every change that adds, finishes or changes planned work, update the `docs/` folder in the same branch/PR:
 
