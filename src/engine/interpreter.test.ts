@@ -236,4 +236,40 @@ describe('Interpreter', () => {
     await new Interpreter(graph, host, { onNodeRun: (id) => ran.push(id) }).runEvent('e');
     expect(ran).toEqual(['e', 't']);
   });
+
+  it('reports each value read through a data wire', async () => {
+    const { host } = makeHost();
+    host.setElementProp('name', 'value', 'Ada');
+    const graph: LogicGraph = {
+      nodes: [
+        n('click', 'event.click', { element: 'btn' }),
+        n('get', 'data.getInputValue', { element: 'name' }),
+        n('join', 'data.join', { a: 'Hello ' }),
+        n('set', 'action.setText', { element: 'label' }),
+        n('rep', 'flow.repeat', { times: 3 }),
+        n('toast', 'action.toast'),
+      ],
+      edges: [
+        ex('click', 'next', 'set'),
+        ex('set', 'next', 'rep'),
+        ex('rep', 'body', 'toast'),
+        da('get', 'value', 'join', 'b'),
+        da('join', 'value', 'set', 'text'),
+        da('rep', 'count', 'toast', 'message'),
+      ],
+    };
+    const seen: [string, unknown][] = [];
+    await new Interpreter(graph, host, { onValue: (id, v) => seen.push([id, v]) }).trigger(
+      'click',
+      (c) => c.element === 'btn',
+    );
+    expect(seen).toEqual([
+      ['get-value-join-b', 'Ada'],
+      ['join-value-set-text', 'Hello Ada'],
+      // A loop's wire reports every pass.
+      ['rep-count-toast-message', 1],
+      ['rep-count-toast-message', 2],
+      ['rep-count-toast-message', 3],
+    ]);
+  });
 });
