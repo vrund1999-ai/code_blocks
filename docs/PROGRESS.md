@@ -23,6 +23,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Layers panel | 2026-11-11 | [#12](https://github.com/vrund1999-ai/code_blocks/pull/12) | See below |
 | Dropdown | 2026-11-11 | [#13](https://github.com/vrund1999-ai/code_blocks/pull/13) | See below |
 | Styling | 2026-11-12 | [#14](https://github.com/vrund1999-ai/code_blocks/pull/14) | See below |
+| Live values on wires | 2026-11-12 | [#15](https://github.com/vrund1999-ai/code_blocks/pull/15) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -102,6 +103,12 @@ Styling included:
 - **Older projects** load unchanged: elements without the new settings keep their usual look.
 - **Tests:** 6 new unit tests and 3 new end-to-end tests.
 
+Live values on wires included:
+- **Logic tab:** while the app runs, each data wire shows the last value that passed through it in a small label, which pulses when a new value passes. Text shows in quotes, yes / no for true and false, and lists and records are summed up ("list of 3 items", "{name, city}"). Point at a label to see the whole value. Stop clears them.
+- **Readable at any zoom:** labels keep their size when the canvas is zoomed out, and sit above the blocks.
+- **Engine:** the interpreter reports each value read through a wire (`onValue`); the app stores them at most every 50 ms, so loops stay fast.
+- **Tests:** 4 new unit tests and 2 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -179,7 +186,7 @@ Styling included:
 ### 6. Run mode and debugging
 | ID | Item | Status | Completed | PR |
 | --- | --- | --- | --- | --- |
-| RT-1 | Live values on wires | ⬜ | | |
+| RT-1 | Live values on wires | ✅ | 2026-11-12 | [#15](https://github.com/vrund1999-ai/code_blocks/pull/15) |
 | RT-2 | Run log panel | ⬜ | | |
 | RT-3 | Step-through debugger | ⬜ | | |
 | RT-4 | Cancel waits on Stop | ⬜ | | |
@@ -209,4 +216,4 @@ Styling included:
 
 ---
 
-**Totals:** 12 / 69 done · 0 in progress
+**Totals:** 13 / 69 done · 0 in progress

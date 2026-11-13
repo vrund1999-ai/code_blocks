@@ -1125,6 +1125,37 @@ textarea.field-input {
 .react-flow__handle.valid {
   outline: 3px solid rgba(47, 158, 68, 0.5);
 }
+/* Wire values sit above the blocks, so a short wire's label isn't hidden. */
+.react-flow__edgelabel-renderer {
+  z-index: 1001;
+}
+/* A data wire's live value while the app runs (RT-1). */
+.wire-value {
+  position: absolute;
+  pointer-events: all;
+  cursor: help;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #fff;
+  border: 1.5px solid #adb5bd;
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #212529;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+  animation: wire-value-pulse 0.6s ease-out;
+}
+@keyframes wire-value-pulse {
+  from {
+    background: #fff3bf;
+  }
+  to {
+    background: #fff;
+  }
+}
 .react-flow__edge.selected .react-flow__edge-path {
   stroke-width: 4 !important;
   filter: drop-shadow(0 0 3px rgba(91, 91, 214, 0.6));

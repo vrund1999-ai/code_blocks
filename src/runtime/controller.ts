@@ -48,6 +48,37 @@ function flash(nodeId: string) {
   }, 600);
 }
 
+// Wire values are collected and stored together, at most every WIRE_FLUSH_MS,
+// so a loop reading thousands of values doesn't re-render for each one.
+const WIRE_FLUSH_MS = 50;
+let pendingWires = new Map<string, unknown>();
+let wireTimer: ReturnType<typeof setTimeout> | null = null;
+
+function flushWires() {
+  wireTimer = null;
+  if (!pendingWires.size) return;
+  const batch = pendingWires;
+  pendingWires = new Map();
+  useRuntimeStore.setState((s) => {
+    const wires = { ...s.wires };
+    for (const [id, value] of batch) wires[id] = { value, n: (wires[id]?.n ?? 0) + 1 };
+    return { wires };
+  });
+}
+
+function wireValue(gen: number, edgeId: string, value: unknown) {
+  if (gen !== generation) return;
+  // Blocks never change a list or record in place (they copy it first), so no copy is needed here.
+  pendingWires.set(edgeId, value);
+  wireTimer ??= setTimeout(flushWires, WIRE_FLUSH_MS);
+}
+
+function clearWires() {
+  if (wireTimer) clearTimeout(wireTimer);
+  wireTimer = null;
+  pendingWires = new Map();
+}
+
 function onError(err: GraphError) {
   useRuntimeStore.setState({ error: { nodeId: err.nodeId, message: err.message } });
   pushToast(err.message, 'error', 5000);
@@ -114,7 +145,12 @@ function makeHost(gen: number): HostApi {
 /** A fresh interpreter over the current graph, so edits apply immediately. */
 function interpreter(): Interpreter | null {
   if (!host || !useRuntimeStore.getState().running) return null;
-  return new Interpreter(project().graph, host, { onNodeRun: flash, onError });
+  const gen = generation;
+  return new Interpreter(project().graph, host, {
+    onNodeRun: flash,
+    onError,
+    onValue: (edgeId, value) => wireValue(gen, edgeId, value),
+  });
 }
 
 export function startApp() {
@@ -137,6 +173,7 @@ export function startApp() {
 
 export function stopApp() {
   generation++;
+  clearWires();
   timers.forEach(clearInterval);
   timers = [];
   host = null;

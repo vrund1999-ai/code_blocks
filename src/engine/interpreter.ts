@@ -7,6 +7,8 @@ export interface InterpreterOptions {
   maxSteps?: number;
   /** Called every time an action/flow/event node runs (for highlighting). */
   onNodeRun?(nodeId: string): void;
+  /** Called with each value read through a data wire (for showing live values). */
+  onValue?(edgeId: string, value: unknown): void;
   /** Called for errors in event runs. If omitted, errors are re-thrown. */
   onError?(err: GraphError): void;
   defs?: Record<string, NodeDef>;
@@ -170,6 +172,18 @@ export class Interpreter {
       const pin = inputPins(def, config).find((p) => p.id === pinId);
       return config[pinId] ?? pin?.inline?.default;
     }
+    const value = await this.readEdge(edge, run, cache, evaluating);
+    this.opts.onValue?.(edge.id, value);
+    return value;
+  }
+
+  /** The value a data wire carries: its source block's output. */
+  private async readEdge(
+    edge: GraphEdge,
+    run: RunState,
+    cache: Map<string, Record<string, unknown>>,
+    evaluating: Set<string>,
+  ): Promise<unknown> {
     const src = this.nodes.get(edge.source)!;
     const srcDef = this.defOf(src);
 

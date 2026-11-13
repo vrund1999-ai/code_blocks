@@ -17,6 +17,11 @@ export interface RuntimeState {
   /** Nodes currently lit up because they just ran. */
   flashing: Record<string, true>;
   error: { nodeId: string; message: string } | null;
+  /**
+   * The last value read through each data wire, by edge id. `n` counts the
+   * reads, so the label can pulse each time a value passes.
+   */
+  wires: Record<string, { value: unknown; n: number }>;
 }
 
 export const initialRuntime: RuntimeState = {
@@ -27,6 +32,7 @@ export const initialRuntime: RuntimeState = {
   toasts: [],
   flashing: {},
   error: null,
+  wires: {},
 };
 
 export const useRuntimeStore = create<RuntimeState>()(() => ({ ...initialRuntime }));

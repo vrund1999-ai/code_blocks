@@ -20,9 +20,12 @@ import { useProjectStore } from '../model/projectStore';
 import { makeNameLookup } from '../model/tree';
 import { BlockNode, TYPE_COLORS } from './BlockNode';
 import { BlockSuggestMenu, type SuggestRequest } from './BlockSuggestMenu';
+import { ValueEdge } from './ValueEdge';
 
 export const NODE_DRAG_MIME = 'application/x-codeblocks-node';
 const nodeTypes = { block: BlockNode };
+// Data wires show their live value while the app runs.
+const edgeTypes = { value: ValueEdge };
 
 export function LogicCanvas() {
   const graph = useProjectStore((s) => s.project.graph);
@@ -67,6 +70,7 @@ export function LogicCanvas() {
         const color = e.kind === 'exec' ? '#495057' : TYPE_COLORS[pin?.valueType ?? 'any'];
         return {
           id: e.id,
+          type: e.kind === 'data' ? 'value' : undefined,
           source: e.source,
           sourceHandle: e.sourcePin,
           target: e.target,
@@ -217,6 +221,7 @@ export function LogicCanvas() {
       <ReactFlow
         nodes={nodes}
         edges={edges}
+        edgeTypes={edgeTypes}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}

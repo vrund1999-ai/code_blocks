@@ -81,7 +81,7 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 ## 6. Run mode and debugging
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
-| RT-1 | Show live values on wires while running | P1 | |
+| RT-1 | Show live values on wires while running | P1 | Shipped: each data wire shows the last value read through it, summed up for lists and records, with the whole value on hover; cleared on Stop |
 | RT-2 | Run log panel (which blocks ran, with values) | P2 | |
 | RT-3 | Step-through debugger with breakpoints | P3 | |
 | RT-4 | Cancel pending *Wait* blocks immediately on Stop | P2 | Today a pending wait finishes, but its effects are ignored |
