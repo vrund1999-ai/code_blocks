@@ -240,6 +240,8 @@ textarea {
   right: 0;
   width: 420px;
   padding: 10px;
+  max-height: calc(100vh - 70px);
+  overflow-y: auto;
 }
 .server-status {
   margin: 0 0 8px;
@@ -1672,4 +1674,30 @@ textarea.field-input {
   font-size: 12px;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* ---------- Secrets (☁ Server menu) ---------- */
+.server-secrets {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.server-secrets .server-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.secret-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.link-btn.danger {
+  color: var(--danger);
+}
+.secret-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 6px;
+  margin-top: 6px;
 }

@@ -81,3 +81,20 @@ export const sendForm = (projectId: string, form: string, values: Record<string,
 /** The full address of one of the project's web addresses. */
 export const hookUrl = (projectId: string, path: string) =>
   `${location.origin}/api/hooks/${encodeURIComponent(projectId)}/${path}`;
+
+/** A secret the server keeps for the project. Its value never comes back. */
+export interface SecretInfo {
+  name: string;
+  updatedAt: string;
+}
+
+const secretUrl = (projectId: string, name: string) => `${base(projectId)}/secrets/${encodeURIComponent(name)}`;
+
+export const listSecrets = (projectId: string) =>
+  call<{ secrets: SecretInfo[] }>(`${base(projectId)}/secrets`, {}, SERVER_OFFLINE).then((r) => r.secrets);
+
+export const saveSecret = (projectId: string, name: string, value: string) =>
+  call<SecretInfo>(secretUrl(projectId, name), { method: 'PUT', body: JSON.stringify({ value }) }, SERVER_OFFLINE);
+
+export const deleteSecret = (projectId: string, name: string) =>
+  call<{ ok: true }>(secretUrl(projectId, name), { method: 'DELETE' }, SERVER_OFFLINE);
