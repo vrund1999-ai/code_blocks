@@ -79,6 +79,12 @@ export interface HostApi {
    * Only hosts running such a workflow have it.
    */
   reply?(value: unknown, status: number): void;
+  /**
+   * The value of one of the project's secrets (such as an API key), or
+   * undefined when there is no such secret. Only the server has it, so
+   * secrets never reach the app.
+   */
+  secret?(name: string): string | undefined;
   /** Sends a form to the project's server workflows and gives their reply. Only the app has it. */
   sendForm?(form: string, values: Record<string, unknown>): Promise<unknown>;
 }

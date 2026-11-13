@@ -108,4 +108,31 @@ describe('server blocks', () => {
     const onServer = await run({}, [n('e', 'server.schedule'), n('send', 'server.sendForm', { form: 'x' })], [ex('e', 'send')]);
     expect(onServer.errors[0]).toMatchObject({ nodeId: 'send', message: '“Send form to server” only works in the app.' });
   });
+
+  it('reads secrets on the server only, and says when one is missing', async () => {
+    const nodes = () => [
+      n('e', 'server.schedule'),
+      n('key', 'server.secret', { name: ' Weather_Key ' }),
+      n('set', 'action.setVariable', { variable: 'k' }),
+    ];
+    const edges = [ex('e', 'set'), da('key', 'value', 'set', 'value')];
+    const asked: string[] = [];
+    const ok = await run({ secret: (name) => (asked.push(name), name === 'Weather_Key' ? 'abcd1234' : undefined) }, nodes(), edges);
+    expect(ok.errors).toEqual([]);
+    expect(ok.vars.k).toBe('abcd1234');
+    expect(asked).toEqual(['Weather_Key']);
+
+    const missing = await run({ secret: () => undefined }, nodes(), edges);
+    expect(missing.errors[0]).toMatchObject({ nodeId: 'key', message: 'There’s no secret “Weather_Key” on the server. Add it in ☁ Server → Secrets.' });
+
+    const inApp = await run({}, nodes(), edges);
+    expect(inApp.errors[0].nodeId).toBe('key');
+    expect(inApp.errors[0].message).toMatch(/^Secrets only work in server workflows/);
+  });
+
+  it('checks secret names', () => {
+    const secret = getNodeDef('server.secret')!;
+    expect(secret.validate!({ name: 'API_KEY_2' })).toBeNull();
+    for (const name of ['', '2KEY', 'my key', 'x'.repeat(65)]) expect(secret.validate!({ name })).toMatch(/letters, numbers and _/);
+  });
 });

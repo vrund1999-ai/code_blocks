@@ -9,7 +9,7 @@ All of the first P1 wave (v1 follow-ups, data tables and server workflows) is do
 
 1. ✅ **QE-10:** show React Flow's attribution again. A small fix, and React Flow asks that only Pro subscribers hide it.
 2. ✅ **BE-13:** try server workflows without deploying, to finish the server workflow work from BE-6.
-3. **BE-8**, then **BE-10:** a secrets store, and *Fetch from API* through the server, so API keys never reach the browser.
+3. ✅ **BE-8**, then **BE-10:** a secrets store, and *Fetch from API* through the server, so API keys never reach the browser.
 4. **QE-4:** validate the project file format. The server will soon store whole projects (PL-2), so it has to check them first.
 5. **PL-1**, **PL-2**, then **PL-3:** sign-in, projects saved on the server, and apps published to a shareable address.
 6. **BE-11:** host the server, once sign-in (PL-1) and request limits are in place.
@@ -30,10 +30,10 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | BE-5 | Table blocks: *Query table*, *Add row*, *Update row*, *Delete row* | P1 | Shipped as *Get rows* (with an optional *where column is* filter), *Add row*, *Update row* and *Delete row* in a new *Tables* group. Rows are records keyed by column name plus `id`. They run in the app (through the server's row routes) and on the server (`TablesApi` in `HostApi`) |
 | BE-6 | Server workflow triggers: *On HTTP request*, *On form submit*, *On schedule* | P1 | Shipped as an *On the server* group: *When web address is called* (`/api/hooks/:projectId/:path`), *When form is sent* (sent from the app by *Send form to server*), *On a schedule* (every N minutes / hours, or daily at a time) and *Reply*. They run from a copy of the project sent with *☁ Server → Deploy*, kept in SQLite, so edits go live only when deployed again. The deploy and web address routes have no sign-in yet (PL-1, BE-11) |
 | BE-7 | *Fetch from API* block (GET/POST, JSON result, pick a field) | P1 | Shipped: Get/Post/Put/Patch/Delete, a dotted *Pick field* path, JSON bodies from records, a *Headers* record, and an *If it fails* branch. It runs in the browser, so only APIs that allow browser apps (CORS) work, and headers such as API keys are visible to anyone using the app (see BE-8, BE-10) |
-| BE-8 | Server-side secrets store for API keys | P1 | Secrets never reach the client |
+| BE-8 | Server-side secrets store for API keys | P1 | Shipped: *☁ Server → Secrets* adds, replaces and deletes a project's secrets; the server keeps them in SQLite and only ever sends their names back. The *Secret* block reads one in server workflows (it stops with a message in the app), and runs hide the values of secrets they read as ••• in replies, messages, errors, variables and run details. That hiding is a safety net: a workflow that changes a secret before showing it can still reveal it |
 | BE-9 | *Send email* block | P3 | Needs the server runtime |
 | BE-10 | Send *Fetch from API* requests through the server | P1 | Reaches APIs that block browser apps (CORS) and lets requests use secrets from BE-8. Needs the server runtime |
-| BE-11 | Host the server runtime: a production build, deployment, and limits on where runs may send web requests | P1 | The server listens on 127.0.0.1 by default. Before it is reachable from the internet, block requests to private networks and add per-project rate limits. Deploying and web addresses need sign-in and limits too (PL-1) |
+| BE-11 | Host the server runtime: a production build, deployment, and limits on where runs may send web requests | P1 | The server listens on 127.0.0.1 by default. Before it is reachable from the internet, block requests to private networks and add per-project rate limits. Deploying and web addresses need sign-in and limits too (PL-1). So do the secret routes and `POST /api/run`, which can read a project's secrets; secrets should also be encrypted in the database before hosting |
 | BE-12 | Clean up rows of deleted tables and projects | P3 | Deleting a table or project in the editor leaves its rows on the server, so undo can bring a table back with its rows. Remove them after a while, or when a project is deleted for good |
 | BE-13 | Try server workflows without deploying | P1 | Shipped: a *Try it* section in the settings of *When web address is called*, *When form is sent* and *On a schedule* (*Run now*). It runs the editor's current copy once on the server with sample data, through `POST /api/run` with `replies: true`, and shows the reply, messages and errors; the blocks that ran go to the Run log. Tries use the real tables and saved values |
 
@@ -61,7 +61,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | UX-9 | Guided onboarding tutorial for first-time users | P2 | |
 | UX-10 | Freely resizable preview (beyond phone/tablet/desktop) | P3 | |
 | UX-11 | Touch / tablet support for the editor | P3 | |
-| UX-12 | Projects menu: close on click-outside instead of mouse-leave | P3 | Today it closes by itself when deleting a project makes it shorter (found by the end-to-end tests) |
+| UX-12 | Projects menu: close on click-outside instead of mouse-leave | P3 | Today it closes by itself when deleting a project makes it shorter (found by the end-to-end tests). This also makes `persistence.spec.ts` › *lists, switches between and deletes projects* flaky in CI: the menu can close just after the test checks it is open (seen on #27, where all three tries failed and a re-run passed) |
 | UX-13 | Handle item-linked settings when an element is moved out of a List | P3 | Today the setting stays linked to an item field and shows nothing; offer to unlink it, or warn |
 | UX-14 | Drag rows in the layers panel to move elements | P3 | Follow-up to UX-2; today elements are moved by dragging on the canvas |
 

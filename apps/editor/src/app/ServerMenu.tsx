@@ -1,12 +1,13 @@
 // The ☁ Server menu: deploy the project so its server workflows (web
 // addresses, forms, schedules) run, see what the deployed copy answers to,
-// and look at its latest runs.
+// look at its latest runs, and keep its secrets.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { deploy, describeSummary, refreshDeployment, refreshRuns, undeploy, useDeployStore } from '../data/deployStore';
 import { fingerprint, hookUrl, SERVER_OFFLINE } from '../data/serverApi';
 import { useProjectStore } from '../model/projectStore';
 import { pushToast } from '../runtime/runtimeStore';
+import { SecretsSection } from './SecretsSection';
 
 function showBlock(nodeId: string) {
   const { project, setTab, select } = useProjectStore.getState();
@@ -192,6 +193,7 @@ export function ServerMenu() {
           ) : (
             <p className="hint">No runs yet.</p>
           )}
+          {mine && status !== 'offline' && status !== 'checking' && <SecretsSection projectId={project.id} />}
         </div>
       )}
     </div>

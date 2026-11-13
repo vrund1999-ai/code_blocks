@@ -8,6 +8,7 @@ import { defaultConfig, getNodeDef } from '@code-blocks/engine/registry';
 import type { Deployment, DeploymentStore } from './deployments';
 import type { RowStore } from './rows';
 import { runGraph } from './run';
+import type { SecretStore } from './secrets';
 import type { KeyValueStore } from './store';
 import type { DeployRequest } from './validate';
 
@@ -49,6 +50,7 @@ export interface WorkflowsOptions {
   deployments: DeploymentStore;
   store: KeyValueStore;
   rows: RowStore;
+  secrets?: SecretStore;
   timeLimitMs?: number;
 }
 
@@ -152,7 +154,7 @@ export class Workflows {
     for (const { node } of blocks) {
       const run = await runGraph(
         { graph: d.graph, variables: d.variables, tables: d.tables, projectId: d.projectId, nodeId: node.id, payload },
-        { store: this.opts.store, rows: this.opts.rows, timeLimitMs: this.opts.timeLimitMs, replies },
+        { store: this.opts.store, rows: this.opts.rows, secrets: this.opts.secrets, timeLimitMs: this.opts.timeLimitMs, replies },
       );
       result.messages.push(...run.messages);
       if (run.reply) result.reply = run.reply;

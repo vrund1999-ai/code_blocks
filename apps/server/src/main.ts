@@ -2,7 +2,7 @@
 // It listens on this computer only (127.0.0.1) unless HOST says otherwise,
 // because runs can make web requests from wherever the server is.
 
-// Table rows, deployed projects and saved values are kept in DB_FILE
+// Table rows, deployed projects, saved values and secrets are kept in DB_FILE
 // (data/code-blocks.db by default, inside apps/server); DB_FILE=:memory:
 // keeps them only while the server runs.
 
@@ -13,6 +13,7 @@ import { createApp } from './app';
 import { openDatabase } from './db';
 import { SqliteDeployments } from './deployments';
 import { SqliteRowStore } from './rows';
+import { SqliteSecrets } from './secrets';
 import { SqliteStore } from './store';
 import { Workflows } from './workflows';
 
@@ -24,11 +25,12 @@ if (dbFile !== ':memory:') mkdirSync(dirname(dbFile), { recursive: true });
 const db = openDatabase(dbFile);
 const rows = new SqliteRowStore(db);
 const store = new SqliteStore(db);
+const secrets = new SqliteSecrets(db);
 const deployments = new SqliteDeployments(db);
-const workflows = new Workflows({ deployments, store, rows });
+const workflows = new Workflows({ deployments, store, rows, secrets });
 workflows.start();
 
-serve({ fetch: createApp({ rows, store, workflows }).fetch, port, hostname }, (info) => {
+serve({ fetch: createApp({ rows, store, secrets, workflows }).fetch, port, hostname }, (info) => {
   console.log(`Code Blocks server running at http://${info.address}:${info.port}/api`);
   console.log(`Data: ${dbFile === ':memory:' ? 'in memory' : dbFile}`);
   console.log(`Deployed projects: ${deployments.all().length}`);
