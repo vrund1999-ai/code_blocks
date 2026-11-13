@@ -82,7 +82,7 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
 | RT-1 | Show live values on wires while running | P1 | Shipped: each data wire shows the last value read through it, summed up for lists and records, with the whole value on hover; cleared on Stop |
-| RT-2 | Run log panel (which blocks ran, with values) | P2 | |
+| RT-2 | Run log panel (which blocks ran, with values) | P2 | Shipped: a Run log under the Logic tab's preview, grouped by event, with each block's inputs and errors; click a line to show its block |
 | RT-3 | Step-through debugger with breakpoints | P3 | |
 | RT-4 | Cancel pending *Wait* blocks immediately on Stop | P2 | Today a pending wait finishes, but its effects are ignored |
 | RT-5 | Navigation history and a *Go back* block | P2 | |
@@ -107,4 +107,4 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 | QE-8 | Visual regression screenshots for the editor and templates | P3 | Playwright `toHaveScreenshot` |
 | QE-9 | Raise unit test coverage (about 24% today) | P2 | Runtime controller, persistence, model tree |
 | QE-10 | Review React Flow's `hideAttribution` setting | P2 | React Flow asks that only Pro subscribers hide the attribution |
-| QE-11 | Make the end-to-end tests reliable in Firefox and WebKit | P3 | Drag tests are marked `test.fixme` there: pointer drags hang in Firefox automation, and some drops don't register in WebKit. Local headless Firefox on Windows also hit graphics-process crashes and timeouts under parallel load. In WebKit, Ctrl+click selects only one block in the Logic tab, so that copy test is marked `test.fixme` there too. CI runs Chromium only. |
+| QE-11 | Make the end-to-end tests reliable in Firefox and WebKit | P3 | Drag tests are marked `test.fixme` there: pointer drags hang in Firefox automation, and some drops don't register in WebKit. Local headless Firefox on Windows also hit graphics-process crashes and timeouts under parallel load. In WebKit, Ctrl+click selects only one block in the Logic tab, so that copy test is marked `test.fixme` there too, as is pasting into a settings text box, which depends on the system clipboard there and fails on some runs. CI runs Chromium only. |

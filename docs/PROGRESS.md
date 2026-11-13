@@ -24,6 +24,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Dropdown | 2026-11-11 | [#13](https://github.com/vrund1999-ai/code_blocks/pull/13) | See below |
 | Styling | 2026-11-12 | [#14](https://github.com/vrund1999-ai/code_blocks/pull/14) | See below |
 | Live values on wires | 2026-11-12 | [#15](https://github.com/vrund1999-ai/code_blocks/pull/15) | See below |
+| Run log | 2026-11-12 | [#16](https://github.com/vrund1999-ai/code_blocks/pull/16) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -109,6 +110,12 @@ Live values on wires included:
 - **Engine:** the interpreter reports each value read through a wire (`onValue`); the app stores them at most every 50 ms, so loops stay fast.
 - **Tests:** 4 new unit tests and 2 new end-to-end tests.
 
+Run log included:
+- **Logic tab:** a **Run log** under the preview lists every block that ran, newest last. Each event (a click, a typed value…) starts a group with its time and what it carried, such as *New value: “Bo”*. Each block shows its sentence and the inputs it used, such as *Text: “Hello, Ada”*. Errors show in red.
+- Click a line to select its block and bring it into view. The log stays after Stop and clears when the app runs again, or with *Clear*. It keeps the newest 500 lines, so long loops stay fast.
+- **Engine:** the interpreter reports event data (`onNodeRun`) and the inputs a running block reads (`onInput`).
+- **Tests:** 7 new unit tests and 2 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -187,7 +194,7 @@ Live values on wires included:
 | ID | Item | Status | Completed | PR |
 | --- | --- | --- | --- | --- |
 | RT-1 | Live values on wires | ✅ | 2026-11-12 | [#15](https://github.com/vrund1999-ai/code_blocks/pull/15) |
-| RT-2 | Run log panel | ⬜ | | |
+| RT-2 | Run log panel | ✅ | 2026-11-12 | [#16](https://github.com/vrund1999-ai/code_blocks/pull/16) |
 | RT-3 | Step-through debugger | ⬜ | | |
 | RT-4 | Cancel waits on Stop | ⬜ | | |
 | RT-5 | Navigation history / Go back | ⬜ | | |
@@ -216,4 +223,4 @@ Live values on wires included:
 
 ---
 
-**Totals:** 13 / 69 done · 0 in progress
+**Totals:** 14 / 69 done · 0 in progress

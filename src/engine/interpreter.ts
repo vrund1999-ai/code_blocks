@@ -5,8 +5,14 @@ import { GraphError, type HostApi, type NodeContext, type NodeDef } from './type
 export interface InterpreterOptions {
   /** Max exec steps for a single run before we assume an endless loop. */
   maxSteps?: number;
-  /** Called every time an action/flow/event node runs (for highlighting). */
-  onNodeRun?(nodeId: string): void;
+  /**
+   * Called every time an action/flow/event node runs (for highlighting and
+   * the run log). Event nodes also pass what the event carries, such as a
+   * typed value.
+   */
+  onNodeRun?(nodeId: string, payload?: Record<string, unknown>): void;
+  /** Called when a running action/flow node reads one of its inputs (for the run log). */
+  onInput?(nodeId: string, pinId: string, value: unknown): void;
   /** Called with each value read through a data wire (for showing live values). */
   onValue?(edgeId: string, value: unknown): void;
   /** Called for errors in event runs. If omitted, errors are re-thrown. */
@@ -120,13 +126,13 @@ export class Interpreter {
     const problem = def.validate?.(config);
     if (problem) throw new GraphError(node.id, problem);
 
-    this.opts.onNodeRun?.(node.id);
+    this.opts.onNodeRun?.(node.id, def.event ? run.payload : undefined);
 
     let next: string | null | void = 'next';
     if (def.event) {
       run.execOutputs.set(node.id, { ...run.payload });
     } else if (def.execute) {
-      const ctx = this.makeContext(node, def, config, run, new Map(), new Set());
+      const ctx = this.makeContext(node, def, config, run, new Map(), new Set(), true);
       next = await def.execute(ctx);
       if (next === undefined) next = 'next';
     } else {
@@ -143,13 +149,19 @@ export class Interpreter {
     run: RunState,
     cache: Map<string, Record<string, unknown>>,
     evaluating: Set<string>,
+    /** Report the inputs it reads (for the blocks that run, not value blocks). */
+    report = false,
   ): NodeContext {
     return {
       host: this.host,
       node,
       config,
       payload: run.payload,
-      input: (pinId) => this.readInput(node, def, config, pinId, run, cache, evaluating),
+      input: async (pinId) => {
+        const value = await this.readInput(node, def, config, pinId, run, cache, evaluating);
+        if (report) this.opts.onInput?.(node.id, pinId, value);
+        return value;
+      },
       setOutputs: (values) => {
         run.execOutputs.set(node.id, { ...(run.execOutputs.get(node.id) ?? {}), ...values });
       },

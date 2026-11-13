@@ -6,6 +6,7 @@ import { DesignDnd } from '../designer/DesignDnd';
 import { LayersPanel } from '../designer/LayersPanel';
 import { LogicCanvas } from '../logic/LogicCanvas';
 import { NodePalette } from '../logic/NodePalette';
+import { RunLog } from '../logic/RunLog';
 import { loadLastProject, saveProject } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { stopApp } from '../runtime/controller';
@@ -106,7 +107,7 @@ function useShortcuts() {
   }, []);
 }
 
-/** Live app preview docked beside the logic graph. */
+/** Live app preview docked beside the logic graph, with the run log under it. */
 function LogicPreview() {
   const running = useRuntimeStore((s) => s.running);
   const runScreen = useRuntimeStore((s) => s.screenId);
@@ -133,6 +134,7 @@ function LogicPreview() {
           <AppView screenId={running && runScreen ? runScreen : screenId} mode={running ? 'run' : 'static'} />
         </DeviceFrame>
       </div>
+      <RunLog />
     </div>
   );
 }
