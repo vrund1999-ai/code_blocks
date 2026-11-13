@@ -36,11 +36,23 @@ describe('server routes', () => {
     expect(await res.json()).toMatchObject({ ok: false, error: { nodeId: 'msg' } });
   });
 
+  it('lets Reply blocks answer when replies are asked for', async () => {
+    const graph = {
+      nodes: [node('hook', 'server.http', { path: 'hi' }), node('reply', 'server.reply', { value: 'Hi', status: 201 })],
+      edges: [exec('hook', 'reply')],
+    };
+    const tried = await post({ graph, nodeId: 'hook', payload: { body: '', query: {}, method: 'GET' }, replies: true });
+    expect(await tried.json()).toMatchObject({ ok: true, reply: { value: 'Hi', status: 201 } });
+    const plain = await post({ graph, nodeId: 'hook' });
+    expect(await plain.json()).toMatchObject({ ok: false, error: { nodeId: 'reply' } });
+  });
+
   it.each([
     ['not JSON', 'nope', 'The request body must be JSON.'],
     ['not an object', [1], 'Send a JSON object.'],
     ['no graph', { nodeId: 'start' }, '"graph" needs "nodes" and "edges" lists.'],
     ['a broken wire', { ...hello, graph: { ...hello.graph, edges: [{ id: 'x' }] } }, /graph\.edges\[0\] needs/],
+    ['replies that are not true or false', { ...hello, replies: 'yes' }, '"replies" must be true or false.'],
     ['a missing block', { ...hello, nodeId: 'nope' }, 'There is no block "nope" in the graph.'],
     ['a block that is not an event', { ...hello, nodeId: 'msg' }, 'Block "msg" is not an event block, so it can\'t start a run.'],
     ['a bad variable', { ...hello, variables: [{ id: 'v', type: 'date' }] }, /variables\[0\] needs/],

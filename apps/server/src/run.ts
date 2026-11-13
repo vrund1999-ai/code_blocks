@@ -25,6 +25,11 @@ export interface RunRequest {
   tables: DataTable[];
   /** Keeps saved values and table rows apart per project. */
   projectId: string;
+  /**
+   * Lets *Reply* blocks answer, as when a web address or a form started the
+   * run. Used to try a server workflow from the editor before deploying it.
+   */
+  replies?: boolean;
 }
 
 export interface RunStep {

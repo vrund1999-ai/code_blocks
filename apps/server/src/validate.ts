@@ -120,12 +120,14 @@ export function parseRunRequest(body: unknown): RunRequest | string {
 
   if (body.payload !== undefined && !isObject(body.payload)) return '"payload" must be an object.';
   if (body.projectId !== undefined && !isString(body.projectId)) return '"projectId" must be text.';
+  if (body.replies !== undefined && typeof body.replies !== 'boolean') return '"replies" must be true or false.';
 
   return {
     ...parts,
     nodeId: body.nodeId,
     payload: (body.payload as Record<string, unknown>) ?? {},
     projectId: (body.projectId as string) ?? 'default',
+    ...(body.replies ? { replies: true } : {}),
   };
 }
 

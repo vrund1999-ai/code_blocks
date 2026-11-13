@@ -42,7 +42,8 @@ export function createApp(opts: AppOptions = {}) {
   app.get('/health', (c) => c.json({ ok: true }));
 
   // Runs one event block of a graph and returns what happened. The graph,
-  // its variables and what the event carries come with the request.
+  // its variables and what the event carries come with the request. The
+  // editor uses it to try server workflows without deploying them.
   app.post(
     '/run',
     bodyLimit({ maxSize: MAX_BODY_BYTES, onError: (c) => c.json(problem('The request is too big (over 1 MB).'), 413) }),
@@ -55,7 +56,7 @@ export function createApp(opts: AppOptions = {}) {
       }
       const req = parseRunRequest(body);
       if (typeof req === 'string') return c.json(problem(req), 400);
-      return c.json(await runGraph(req, { store, rows, timeLimitMs: opts.timeLimitMs }));
+      return c.json(await runGraph(req, { store, rows, timeLimitMs: opts.timeLimitMs, replies: req.replies }));
     },
   );
 
