@@ -922,6 +922,116 @@ textarea.field-input {
 .logic-preview .device-body {
   min-height: 420px;
 }
+/* ---------- run log (RT-2) ---------- */
+.run-log {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--border);
+  background: #fff;
+  min-height: 0;
+}
+.run-log.open {
+  flex-basis: 38%;
+  min-height: 140px;
+}
+.run-log-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+}
+.run-log-toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.run-log-count {
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--muted);
+}
+.link-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--accent);
+}
+.link-btn:hover {
+  text-decoration: underline;
+}
+.run-log-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 8px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  font-size: 12px;
+}
+.log-row {
+  padding: 3px 12px 3px 26px;
+  cursor: pointer;
+  border-left: 3px solid transparent;
+}
+.log-row:hover {
+  background: var(--accent-soft);
+}
+.log-row.log-event {
+  padding-left: 12px;
+  margin-top: 4px;
+  border-left-color: #f76707;
+  font-weight: 600;
+}
+.log-row.log-error {
+  color: #c92a2a;
+  background: #fff5f5;
+  border-left-color: #e03131;
+}
+.log-line {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+.log-time {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.log-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+.log-value {
+  background: #f1f3f5;
+  border-radius: 999px;
+  padding: 0 7px;
+  font-size: 11px;
+  font-weight: 400;
+  color: #495057;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.log-value b {
+  color: #212529;
+}
+.log-empty,
+.log-dropped {
+  padding: 4px 12px;
+  color: var(--muted);
+  cursor: default;
+}
 .preview-tab {
   position: absolute;
   right: 12px;

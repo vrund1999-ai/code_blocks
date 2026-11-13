@@ -7,6 +7,7 @@ import { appStoragePrefix } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { findInProject } from '../model/tree';
 import type { Variable } from '../model/types';
+import { clearRunLog, logError, logInput, logStep } from './runLog';
 import { initialRuntime, pushToast, setElementState, useRuntimeStore } from './runtimeStore';
 
 /** A *Fetch from API* request that takes longer than this counts as failed. */
@@ -146,9 +147,18 @@ function makeHost(gen: number): HostApi {
 function interpreter(): Interpreter | null {
   if (!host || !useRuntimeStore.getState().running) return null;
   const gen = generation;
+  const alive = () => gen === generation;
   return new Interpreter(project().graph, host, {
-    onNodeRun: flash,
-    onError,
+    onNodeRun: (nodeId, payload) => {
+      flash(nodeId);
+      if (alive()) logStep(nodeId, payload);
+    },
+    onInput: (nodeId, pinId, value) => alive() && logInput(nodeId, pinId, value),
+    onError: (err) => {
+      if (!alive()) return;
+      logError(err.nodeId, err.message);
+      onError(err);
+    },
     onValue: (edgeId, value) => wireValue(gen, edgeId, value),
   });
 }
@@ -157,6 +167,8 @@ export function startApp() {
   stopApp();
   const gen = ++generation;
   host = makeHost(gen);
+  // The log of the last run stays after Stop, until the app runs again.
+  clearRunLog();
   const p = project();
   const vars: Record<string, unknown> = {};
   for (const v of p.variables) vars[v.id] = structuredClone(v.initial);

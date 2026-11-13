@@ -272,4 +272,27 @@ describe('Interpreter', () => {
       ['rep-count-toast-message', 3],
     ]);
   });
+
+  it('reports the blocks that run, with event data and the inputs they read', async () => {
+    const { host } = makeHost();
+    const graph: LogicGraph = {
+      nodes: [
+        n('change', 'event.inputChange', { element: 'box' }),
+        n('join', 'data.join', { a: 'Hi ' }),
+        n('set', 'action.setText', { element: 'label' }),
+      ],
+      edges: [ex('change', 'next', 'set'), da('change', 'value', 'join', 'b'), da('join', 'value', 'set', 'text')],
+    };
+    const log: unknown[] = [];
+    await new Interpreter(graph, host, {
+      onNodeRun: (id, payload) => log.push(['run', id, payload]),
+      onInput: (id, pin, value) => log.push(['input', id, pin, value]),
+    }).trigger('change', (c) => c.element === 'box', { value: 'Bo' });
+    // Value blocks (Join) don't run on their own: their result shows as the input of the block that used it.
+    expect(log).toEqual([
+      ['run', 'change', { value: 'Bo' }],
+      ['run', 'set', undefined],
+      ['input', 'set', 'text', 'Hi Bo'],
+    ]);
+  });
 });
