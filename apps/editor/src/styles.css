@@ -1635,3 +1635,41 @@ textarea.field-input {
   background: #fff5f5;
   color: var(--danger);
 }
+
+/* ---------- Try it (server event blocks) ---------- */
+.try-panel {
+  margin: 16px 0 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.try-panel > .hint {
+  margin: 0 0 10px;
+}
+.try-panel label.prop-row {
+  display: block;
+}
+.try-result {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #ebfbee;
+  font-size: 13px;
+}
+.try-result.failed {
+  background: #fff5f5;
+}
+.try-line {
+  margin-bottom: 6px;
+}
+.try-reply {
+  margin: 0 0 6px;
+  padding: 6px 8px;
+  max-height: 160px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

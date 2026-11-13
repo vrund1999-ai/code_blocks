@@ -147,3 +147,71 @@ test('server blocks: the palette group, and settings problems shown when deployi
   await app.serverMenu.getByRole('button', { name: 'show me' }).click();
   await expect(app.inspectorField('Web address name').locator('input')).toHaveValue('two words');
 });
+
+test('a web address can be tried from its block without deploying', async ({ appNoBoot: app, seed }) => {
+  await seed(helloAddress().project);
+  await app.goto();
+  await app.tab('Logic');
+  await app.block('server.http').click({ position: { x: 20, y: 10 } });
+  const panel = app.inspector.getByRole('region', { name: 'Try it' });
+  // A GET sends no data, so there is only a box for the address values.
+  await expect(panel.getByRole('textbox')).toHaveCount(1);
+
+  await app.inspectorField('Address values').locator('textarea').fill('oops');
+  await panel.getByRole('button', { name: '▶ Try it' }).click();
+  await expect(panel.getByRole('alert')).toContainText('This line has no name: “oops”');
+
+  await app.inspectorField('Address values').locator('textarea').fill('name: Ada');
+  await panel.getByRole('button', { name: '▶ Try it' }).click();
+  const result = panel.getByRole('status', { name: 'Try result' });
+  await expect(result).toContainText('✓ Finished in 2 steps.');
+  await expect(result).toContainText('Reply 200');
+  await expect(panel.getByLabel('Reply')).toHaveText('Hi Ada');
+
+  // The blocks that ran are in the Run log, with their values.
+  const log = app.page.getByRole('region', { name: 'Run log' });
+  await expect(log.locator('.log-row').first()).toContainText('▶ When GET /hello is called');
+  await expect(log).toContainText('Answer: “Hi Ada”');
+
+  // Trying doesn't deploy, or count as a change.
+  await expect(app.serverButton).not.toContainText('Live');
+  await expect(app.serverButton).not.toContainText('Changes not deployed');
+  await app.openServer();
+  await expect(app.serverMenu.getByRole('status')).toHaveText(/^Not deployed/);
+  await expect(app.serverMenu).toContainText('No runs yet.');
+});
+
+test('a form and a schedule can be tried, and errors point to their block', async ({ appNoBoot: app, seed }) => {
+  const b = signUp();
+  b.node('server.schedule', { every: 'hours', amount: 2 });
+  await seed(b.project);
+  await app.goto();
+  await app.tab('Logic');
+
+  await app.block('server.form').click({ position: { x: 20, y: 10 } });
+  const panel = app.inspector.getByRole('region', { name: 'Try it' });
+  await app.inspectorField('Values sent').locator('textarea').fill('name: Grace');
+  await panel.getByRole('button', { name: '▶ Try it' }).click();
+  await expect(panel.getByLabel('Reply')).toHaveText('Thanks, Grace');
+  await expect(panel.getByRole('status', { name: 'Try result' })).toContainText('💬 Saved on the server');
+
+  // The row it added is real.
+  await app.tab('Data');
+  await expect(app.dataArea.getByLabel('Row 1 Name')).toHaveValue('Grace');
+  await app.tab('Logic');
+
+  // The sample stays while the editor is open; a broken block shows where the run stopped.
+  await app.block('table.add').click({ position: { x: 20, y: 10 } });
+  await app.inspectorField('Table').locator('select').selectOption('');
+  await app.block('server.form').click({ position: { x: 20, y: 10 } });
+  await expect(app.inspectorField('Values sent').locator('textarea')).toHaveValue('name: Grace');
+  await panel.getByRole('button', { name: '▶ Try it' }).click();
+  await expect(panel.getByRole('status', { name: 'Try result' })).toContainText('⚠');
+  await panel.getByRole('button', { name: 'show me' }).click();
+  await expect(app.block('table.add')).toHaveClass(/selected/);
+
+  await app.block('server.schedule').click({ position: { x: 20, y: 10 } });
+  await panel.getByRole('button', { name: '▶ Run now' }).click();
+  await expect(panel.getByRole('status', { name: 'Try result' })).toContainText('✓ Finished in 1 step.');
+  await expect(panel).toContainText('No “Reply” block ran.');
+});

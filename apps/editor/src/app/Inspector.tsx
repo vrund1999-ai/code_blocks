@@ -8,6 +8,8 @@ import { recordFields } from '@code-blocks/engine/nodes/records';
 import { enclosingListInProject, findInProject } from '../model/tree';
 import type { ElementType, Project, PropValue, UIElement, ValueType } from '../model/types';
 import { ConfigFieldInput, InlineValueInput } from './fields';
+import { TryPanel } from './TryPanel';
+import { TRYABLE } from '../data/tryApi';
 
 const EVENT_FOR: Partial<Record<ElementType, { type: string; label: string }>> = {
   button: { type: 'event.click', label: 'When clicked…' },
@@ -304,6 +306,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
           <div className="hint">Or connect a value block into “{p.label}”.</div>
         </div>
       ))}
+      {TRYABLE.includes(node.type) && <TryPanel nodeId={nodeId} type={node.type} config={config} />}
       <div className="inspector-actions">
         <button className="btn" onClick={duplicateSelection} title="Copy: Ctrl+C · Paste: Ctrl+V · Duplicate: Ctrl+D">
           {many > 1 ? `Duplicate ${many} blocks` : 'Duplicate'}
