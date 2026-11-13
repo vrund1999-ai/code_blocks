@@ -5,7 +5,7 @@
 import type { ElementType, GraphNode, ValueType } from './graph';
 import type { CellValue, DataTable, StoredRow } from './tables';
 
-export type NodeCategory = 'events' | 'actions' | 'flow' | 'data' | 'text' | 'lists' | 'tables';
+export type NodeCategory = 'events' | 'actions' | 'flow' | 'data' | 'text' | 'lists' | 'tables' | 'server';
 
 export interface Pin {
   id: string;
@@ -74,6 +74,13 @@ export interface HostApi {
   httpRequest(req: HttpRequest): Promise<HttpResponse>;
   /** Data tables. Hosts without them leave this out, and table blocks say so. */
   tables?: TablesApi;
+  /**
+   * Answers the web address call or form that started a server workflow.
+   * Only hosts running such a workflow have it.
+   */
+  reply?(value: unknown, status: number): void;
+  /** Sends a form to the project's server workflows and gives their reply. Only the app has it. */
+  sendForm?(form: string, values: Record<string, unknown>): Promise<unknown>;
 }
 
 export interface NameLookup {
