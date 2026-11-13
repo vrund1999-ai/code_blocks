@@ -7,7 +7,7 @@ Priority: **P1** comes next, **P2** is important but can wait, and **P3** is nic
 ## Next up
 All of the first P1 wave (v1 follow-ups, data tables and server workflows) is done. This is the order for the second wave:
 
-1. **QE-10:** show React Flow's attribution again. A small fix, and React Flow asks that only Pro subscribers hide it.
+1. ✅ **QE-10:** show React Flow's attribution again. A small fix, and React Flow asks that only Pro subscribers hide it.
 2. **BE-13:** try server workflows without deploying, to finish the server workflow work from BE-6.
 3. **BE-8**, then **BE-10:** a secrets store, and *Fetch from API* through the server, so API keys never reach the browser.
 4. **QE-4:** validate the project file format. The server will soon store whole projects (PL-2), so it has to check them first.
@@ -122,5 +122,5 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | QE-7 | Export an app as standalone HTML or generated code | P3 | |
 | QE-8 | Visual regression screenshots for the editor and templates | P3 | Playwright `toHaveScreenshot` |
 | QE-9 | Raise unit test coverage (about 24% today) | P2 | Runtime controller, persistence, model tree |
-| QE-10 | Review React Flow's `hideAttribution` setting | P1 | React Flow asks that only Pro subscribers hide the attribution |
+| QE-10 | Review React Flow's `hideAttribution` setting | P1 | Shipped: the Logic tab shows React Flow's attribution again, in the bottom-right corner under the minimap. React Flow asks that only Pro subscribers hide it |
 | QE-11 | Make the end-to-end tests reliable in Firefox and WebKit | P3 | Drag tests are marked `test.fixme` there: pointer drags hang in Firefox automation, and some drops don't register in WebKit. Local headless Firefox on Windows also hit graphics-process crashes and timeouts under parallel load. In WebKit, Ctrl+click selects only one block in the Logic tab, so that copy test is marked `test.fixme` there too, as is pasting into a settings text box, which depends on the system clipboard there and fails on some runs. CI runs Chromium only. |

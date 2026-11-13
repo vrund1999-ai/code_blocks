@@ -4,10 +4,12 @@ test.beforeEach(async ({ app }) => {
   await app.tab('Logic');
 });
 
-test('shows the Hello Name graph with a minimap', async ({ app, page }) => {
+test('shows the Hello Name graph with a minimap and the React Flow attribution', async ({ app, page }) => {
   await expect(app.blocks).toHaveCount(4);
   await expect(app.edges).toHaveCount(3);
   await expect(page.locator('.react-flow__minimap')).toBeVisible();
+  // React Flow asks that only Pro subscribers hide its attribution (QE-10).
+  await expect(page.locator('.react-flow__attribution').getByRole('link', { name: 'React Flow' })).toBeVisible();
   await expect(app.block('event.click')).toContainText('Say Hello');
 });
 
