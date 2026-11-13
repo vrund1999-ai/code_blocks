@@ -272,9 +272,9 @@ Server workflows included:
 | QE-7 | Export as standalone app / code | ⬜ | | |
 | QE-8 | Visual regression screenshots | ⬜ | | |
 | QE-9 | Raise unit test coverage | ⬜ | | |
-| QE-10 | React Flow attribution review | ⬜ | | |
+| QE-10 | React Flow attribution review | ✅ | 2026-11-13 | [#25](https://github.com/vrund1999-ai/code_blocks/pull/25) |
 | QE-11 | Drag tests in Firefox / WebKit | ⬜ | | |
 
 ---
 
-**Totals:** 20 / 73 done · 0 in progress
+**Totals:** 21 / 73 done · 0 in progress

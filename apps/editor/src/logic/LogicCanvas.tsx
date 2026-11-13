@@ -245,7 +245,6 @@ export function LogicCanvas() {
         fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
         minZoom={0.2}
         maxZoom={1.5}
-        proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1.5} />
         <Controls showInteractive={false} />
