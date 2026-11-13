@@ -44,7 +44,7 @@ export function createApp(opts: AppOptions = {}) {
       }
       const req = parseRunRequest(body);
       if (typeof req === 'string') return c.json(problem(req), 400);
-      return c.json(await runGraph(req, { store, timeLimitMs: opts.timeLimitMs }));
+      return c.json(await runGraph(req, { store, rows, timeLimitMs: opts.timeLimitMs }));
     },
   );
 

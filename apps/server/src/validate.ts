@@ -2,6 +2,7 @@
 
 import type { GraphEdge, GraphNode } from '@code-blocks/engine/graph';
 import { getNodeDef } from '@code-blocks/engine/registry';
+import { COLUMN_TYPES, type DataTable, type TableColumn } from '@code-blocks/engine/tables';
 import type { ServerVariable } from './host';
 import type { RunRequest } from './run';
 
@@ -48,6 +49,20 @@ function parseVariable(v: unknown, i: number): ServerVariable | string {
   return { id: v.id, type: v.type as string, initial: v.initial ?? null };
 }
 
+function parseTable(v: unknown, i: number): DataTable | string {
+  if (!isObject(v) || !isString(v.id) || !isString(v.name) || !Array.isArray(v.columns)) {
+    return `tables[${i}] needs an "id", a "name" and a list of "columns".`;
+  }
+  const columns: TableColumn[] = [];
+  for (const [j, c] of v.columns.entries()) {
+    if (!isObject(c) || !isString(c.id) || !isString(c.name) || !COLUMN_TYPES.includes(c.type as TableColumn['type'])) {
+      return `tables[${i}].columns[${j}] needs an "id", a "name" and a "type" of ${COLUMN_TYPES.join(', ')}.`;
+    }
+    columns.push({ id: c.id, name: c.name, type: c.type as TableColumn['type'] });
+  }
+  return { id: v.id, name: v.name, columns };
+}
+
 /** The request, or a message saying what is wrong with it. */
 export function parseRunRequest(body: unknown): RunRequest | string {
   if (!isObject(body)) return 'Send a JSON object.';
@@ -76,6 +91,14 @@ export function parseRunRequest(body: unknown): RunRequest | string {
     variables.push(variable);
   }
 
+  if (body.tables !== undefined && !Array.isArray(body.tables)) return '"tables" must be a list.';
+  const tables: DataTable[] = [];
+  for (const [i, raw] of ((body.tables as unknown[]) ?? []).entries()) {
+    const table = parseTable(raw, i);
+    if (isString(table)) return table;
+    tables.push(table);
+  }
+
   if (!isString(body.nodeId)) return '"nodeId" must name the event block to run.';
   const start = nodes.find((n) => n.id === body.nodeId);
   if (!start) return `There is no block "${body.nodeId}" in the graph.`;
@@ -89,6 +112,7 @@ export function parseRunRequest(body: unknown): RunRequest | string {
     nodeId: body.nodeId,
     payload: (body.payload as Record<string, unknown>) ?? {},
     variables,
+    tables,
     projectId: (body.projectId as string) ?? 'default',
   };
 }

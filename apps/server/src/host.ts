@@ -3,7 +3,9 @@
 // *Show a message* are collected and returned with the run.
 
 import { coerceTo } from '@code-blocks/engine/convert';
+import type { DataTable, StoredRow } from '@code-blocks/engine/tables';
 import { HostError, type HostApi } from '@code-blocks/engine/types';
+import { MAX_PAGE, type RowStore } from './rows';
 import type { KeyValueStore } from './store';
 
 /** A *Fetch from API* request that takes longer than this counts as failed. */
@@ -19,6 +21,9 @@ export interface ServerHostOptions {
   projectId: string;
   variables: ServerVariable[];
   store: KeyValueStore;
+  /** The project's data tables (their columns) and where their rows are kept. */
+  tables: DataTable[];
+  rows: RowStore;
   /** Aborted when the run has to stop. Every host call after that stops the run. */
   signal: AbortSignal;
   /** The message shown when `signal` stops the run. */
@@ -36,7 +41,7 @@ export const READS_SCREEN = 'This block reads what’s on screen, so it only wor
 export const NAVIGATES = 'Go to screen only works in the app, not on the server.';
 
 export function createServerHost(opts: ServerHostOptions): ServerHost {
-  const { projectId, store, signal } = opts;
+  const { projectId, store, rows, signal } = opts;
   const types = new Map(opts.variables.map((v) => [v.id, v.type]));
   const vars: Record<string, unknown> = {};
   for (const v of opts.variables) vars[v.id] = structuredClone(v.initial);
@@ -98,6 +103,30 @@ export function createServerHost(opts: ServerHostOptions): ServerHost {
         signal: AbortSignal.any([signal, AbortSignal.timeout(FETCH_TIMEOUT_MS)]),
       });
       return { status: res.status, statusText: res.statusText, text: await res.text() };
+    },
+    tables: {
+      table: (id) => opts.tables.find((t) => t.id === id),
+      rows: async (tableId) => {
+        check();
+        const all: StoredRow[] = [];
+        for (;;) {
+          const page = rows.list(projectId, tableId, { limit: MAX_PAGE, offset: all.length });
+          all.push(...page.rows);
+          if (page.rows.length === 0 || all.length >= page.total) return all;
+        }
+      },
+      add: async (tableId, values) => {
+        check();
+        return rows.add(projectId, tableId, values);
+      },
+      update: async (tableId, rowId, values) => {
+        check();
+        return rows.update(projectId, tableId, rowId, values);
+      },
+      remove: async (tableId, rowId) => {
+        check();
+        return rows.remove(projectId, tableId, rowId);
+      },
     },
   };
   return { host, vars, messages };

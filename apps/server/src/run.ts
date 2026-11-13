@@ -1,8 +1,10 @@
 // Runs one event block of a graph on the server and reports what happened.
 
 import type { LogicGraph } from '@code-blocks/engine/graph';
+import type { DataTable } from '@code-blocks/engine/tables';
 import { Interpreter } from '@code-blocks/engine/interpreter';
 import { createServerHost, type ServerVariable } from './host';
+import type { RowStore } from './rows';
 import type { KeyValueStore } from './store';
 
 /** Longest a run may take, waits and web requests included. */
@@ -19,7 +21,9 @@ export interface RunRequest {
   /** What the event carries, such as `{ value: 'Ada' }` for *When value changes*. */
   payload: Record<string, unknown>;
   variables: ServerVariable[];
-  /** Keeps saved values apart per project. */
+  /** The project's data tables, for table blocks. Their rows are kept by the server. */
+  tables: DataTable[];
+  /** Keeps saved values and table rows apart per project. */
   projectId: string;
 }
 
@@ -47,6 +51,7 @@ export interface RunResult {
 
 export interface RunOptions {
   store: KeyValueStore;
+  rows: RowStore;
   timeLimitMs?: number;
 }
 
@@ -58,6 +63,8 @@ export async function runGraph(req: RunRequest, opts: RunOptions): Promise<RunRe
     projectId: req.projectId,
     variables: req.variables,
     store: opts.store,
+    tables: req.tables,
+    rows: opts.rows,
     signal: abort.signal,
     stoppedMessage,
   });

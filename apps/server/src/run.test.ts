@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CHANGES_SCREEN, NAVIGATES, READS_SCREEN } from './host';
 import { MAX_STEPS_LOGGED, runGraph, type RunRequest } from './run';
+import { SqliteRowStore } from './rows';
 import { MemoryStore } from './store';
 import { data, exec, node } from './testGraph';
 
@@ -9,11 +10,13 @@ const request = (over: Partial<RunRequest>): RunRequest => ({
   nodeId: 'start',
   payload: {},
   variables: [],
+  tables: [],
   projectId: 'p1',
   ...over,
 });
 
 const store = () => new MemoryStore();
+const rowStore = () => new SqliteRowStore(':memory:');
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -34,7 +37,7 @@ describe('runGraph', () => {
         },
         variables: [{ id: 'count', type: 'number', initial: 1 }],
       }),
-      { store: store() },
+      { rows: rowStore(), store: store() },
     );
     expect(result).toEqual({
       ok: true,
@@ -62,7 +65,7 @@ describe('runGraph', () => {
         payload: { value: '42' },
         variables: [{ id: 'age', type: 'number', initial: 0 }],
       }),
-      { store: store() },
+      { rows: rowStore(), store: store() },
     );
     expect(result.ok).toBe(true);
     expect(result.vars).toEqual({ age: 42 });
@@ -78,7 +81,7 @@ describe('runGraph', () => {
             edges: [exec('start', 'b')],
           },
         }),
-        { store: store() },
+        { rows: rowStore(), store: store() },
       );
     expect((await run('action.setText', { element: 'title' })).error).toEqual({ nodeId: 'b', message: CHANGES_SCREEN });
     expect((await run('action.goToScreen', { screen: 's2' })).error).toEqual({ nodeId: 'b', message: NAVIGATES });
@@ -94,7 +97,7 @@ describe('runGraph', () => {
           edges: [exec('start', 'msg'), data('read', 'value', 'msg', 'message')],
         },
       }),
-      { store: store() },
+      { rows: rowStore(), store: store() },
     );
     expect(read).toMatchObject({ ok: false, error: { nodeId: 'read', message: READS_SCREEN }, messages: [] });
   });
@@ -120,9 +123,9 @@ describe('runGraph', () => {
             edges: [exec('start', 'load'), exec('load', 'msg'), data('load', 'found', 'msg', 'message')],
           },
         }),
-        { store: shared },
+        { rows: rowStore(), store: shared },
       );
-    await runGraph(save, { store: shared });
+    await runGraph(save, { rows: rowStore(), store: shared });
     expect((await load('p1')).messages).toEqual(['true']);
     expect((await load('p2')).messages).toEqual(['false']);
   });
@@ -139,7 +142,7 @@ describe('runGraph', () => {
           edges: [exec('start', 'wait'), exec('wait', 'msg')],
         },
       }),
-      { store: store(), timeLimitMs: 50 },
+      { rows: rowStore(), store: store(), timeLimitMs: 50 },
     );
     expect(result).toMatchObject({
       ok: false,
@@ -162,7 +165,7 @@ describe('runGraph', () => {
           edges: [exec('start', 'get'), exec('get', 'msg'), data('get', 'result', 'msg', 'message')],
         },
       }),
-      { store: store() },
+      { rows: rowStore(), store: store() },
     );
     expect(result.messages).toEqual(['Ada']);
     expect(fetchMock).toHaveBeenCalledWith('https://api.example.com/me', expect.objectContaining({ method: 'GET' }));
@@ -181,11 +184,46 @@ describe('runGraph', () => {
         },
         variables: [{ id: 'n', type: 'number', initial: 0 }],
       }),
-      { store: store() },
+      { rows: rowStore(), store: store() },
     );
     expect(result.vars).toEqual({ n: 600 });
     expect(result.steps).toHaveLength(MAX_STEPS_LOGGED);
     expect(result.dropped).toBe(602 - MAX_STEPS_LOGGED);
     expect(result.steps.at(-1)).toEqual({ nodeId: 'add', inputs: { amount: 1 } });
+  });
+
+  it('runs table blocks against the server’s rows', async () => {
+    const rows = rowStore();
+    rows.add('p1', 'contacts', { c_name: 'Ada' });
+    const tables = [{ id: 'contacts', name: 'Contacts', columns: [{ id: 'c_name', name: 'Name', type: 'text' as const }] }];
+    const result = await runGraph(
+      request({
+        tables,
+        graph: {
+          nodes: [
+            node('start', 'event.screenLoad', { screen: 's' }),
+            node('rec', 'data.makeRecord', { fields: [{ id: 'a', name: 'Name' }], f_a: 'Bo' }),
+            node('add', 'table.add', { table: 'contacts' }),
+            node('get', 'table.query', { table: 'contacts' }),
+            node('msg', 'action.toast'),
+          ],
+          edges: [
+            exec('start', 'add'),
+            exec('add', 'get'),
+            exec('get', 'msg'),
+            data('rec', 'value', 'add', 'values'),
+            data('get', 'count', 'msg', 'message'),
+          ],
+        },
+      }),
+      { rows, store: store() },
+    );
+    expect(result).toMatchObject({ ok: true, messages: ['2'] });
+    expect(rows.list('p1', 'contacts').rows).toEqual([
+      { id: 1, values: { c_name: 'Ada' } },
+      { id: 2, values: { c_name: 'Bo' } },
+    ]);
+    // Another project doesn't see these rows.
+    expect(rows.list('p2', 'contacts').total).toBe(0);
   });
 });
