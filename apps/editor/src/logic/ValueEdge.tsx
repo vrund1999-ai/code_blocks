@@ -1,5 +1,5 @@
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, useStore, type EdgeProps } from '@xyflow/react';
-import { previewValue } from '../engine/preview';
+import { previewValue } from '@code-blocks/engine/preview';
 import { useRuntimeStore } from '../runtime/runtimeStore';
 
 /**

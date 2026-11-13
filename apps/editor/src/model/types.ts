@@ -2,18 +2,9 @@
 
 export const PROJECT_VERSION = 1;
 
-/** A record is a plain object with named fields, e.g. { name: 'Ada', age: 36 }. */
-export type ValueType = 'text' | 'number' | 'boolean' | 'list' | 'record' | 'any';
-
-export type ElementType =
-  | 'container'
-  | 'text'
-  | 'button'
-  | 'input'
-  | 'image'
-  | 'checkbox'
-  | 'dropdown'
-  | 'list';
+// The logic graph's types belong to the engine, which also runs without the editor.
+import type { ElementType, LogicGraph, ValueType } from '@code-blocks/engine/graph';
+export type { ElementType, GraphEdge, GraphNode, LogicGraph, ValueType } from '@code-blocks/engine/graph';
 
 export type PropValue =
   | { kind: 'static'; value: unknown }
@@ -44,28 +35,6 @@ export interface Variable {
   name: string;
   type: Exclude<ValueType, 'any'>;
   initial: unknown;
-}
-
-export interface GraphNode {
-  id: string;
-  /** Key into the node registry. */
-  type: string;
-  position: { x: number; y: number };
-  config: Record<string, unknown>;
-}
-
-export interface GraphEdge {
-  id: string;
-  source: string;
-  sourcePin: string;
-  target: string;
-  targetPin: string;
-  kind: 'exec' | 'data';
-}
-
-export interface LogicGraph {
-  nodes: GraphNode[];
-  edges: GraphEdge[];
 }
 
 export interface Project {

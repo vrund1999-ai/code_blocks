@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { CATEGORIES, suggestBlocks, type BlockSuggestion } from '../engine/registry';
-import type { Pin } from '../engine/types';
+import { CATEGORIES, suggestBlocks, type BlockSuggestion } from '@code-blocks/engine/registry';
+import type { Pin } from '@code-blocks/engine/types';
 
 export interface SuggestRequest {
   /** Where the wire was dropped, in pixels inside the logic canvas. */

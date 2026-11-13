@@ -15,7 +15,7 @@ import {
   type NodeChange,
 } from '@xyflow/react';
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
-import { CATEGORIES, canConnect, defaultConfig, findPin, getNodeDef, type BlockSuggestion } from '../engine/registry';
+import { CATEGORIES, canConnect, defaultConfig, findPin, getNodeDef, type BlockSuggestion } from '@code-blocks/engine/registry';
 import { useProjectStore } from '../model/projectStore';
 import { makeNameLookup } from '../model/tree';
 import { BlockNode, TYPE_COLORS } from './BlockNode';

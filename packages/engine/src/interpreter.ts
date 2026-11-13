@@ -1,4 +1,4 @@
-import type { GraphEdge, GraphNode, LogicGraph } from '../model/types';
+import type { GraphEdge, GraphNode, LogicGraph } from './graph';
 import { inputPins, NODE_DEFS } from './registry';
 import { GraphError, type HostApi, type NodeContext, type NodeDef } from './types';
 

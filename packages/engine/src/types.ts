@@ -1,7 +1,8 @@
-// Engine types. This module (and everything in src/engine) must stay free of
-// React / DOM imports so the same interpreter can later run on a server.
+// Engine types. This package must stay free of React, DOM and Node imports so
+// the same interpreter can run in the editor and on a server. Its tsconfig
+// leaves out the DOM and Node types to make sure of that.
 
-import type { ElementType, GraphNode, ValueType } from '../model/types';
+import type { ElementType, GraphNode, ValueType } from './graph';
 
 export type NodeCategory = 'events' | 'actions' | 'flow' | 'data' | 'text' | 'lists';
 

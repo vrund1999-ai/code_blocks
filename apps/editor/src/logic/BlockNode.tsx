@@ -1,7 +1,7 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { memo, useMemo } from 'react';
-import { CATEGORIES, getNodeDef, inputPins, outputPins } from '../engine/registry';
-import type { NameLookup, Pin } from '../engine/types';
+import { CATEGORIES, getNodeDef, inputPins, outputPins } from '@code-blocks/engine/registry';
+import type { NameLookup, Pin } from '@code-blocks/engine/types';
 import { useProjectStore } from '../model/projectStore';
 import { makeNameLookup } from '../model/tree';
 import { useRuntimeStore } from '../runtime/runtimeStore';

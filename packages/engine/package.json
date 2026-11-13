@@ -1,0 +1,10 @@
+{
+  "name": "@code-blocks/engine",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Runs logic graphs. Plain TypeScript with no React or browser APIs, so it can run in the editor and on a server.",
+  "exports": {
+    "./*": "./src/*.ts"
+  }
+}

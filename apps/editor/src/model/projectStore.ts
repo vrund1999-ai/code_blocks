@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { defaultConfig, getNodeDef, inputPins } from '../engine/registry';
+import { defaultConfig, getNodeDef, inputPins } from '@code-blocks/engine/registry';
 import { cloneElements, cloneNodes, PASTE_OFFSET, type Clip } from './clipboard';
 import { ELEMENT_DEFS } from './elements';
 import { defaultInitial, makeElement, makeProject, makeScreen, newId, nextElementName, nextName } from './factory';

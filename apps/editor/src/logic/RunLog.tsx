@@ -1,8 +1,8 @@
 import { useReactFlow } from '@xyflow/react';
 import { memo, useEffect, useRef, useState } from 'react';
-import { defaultConfig, findPin, getNodeDef, inputPins } from '../engine/registry';
-import { previewValue } from '../engine/preview';
-import type { NameLookup } from '../engine/types';
+import { defaultConfig, findPin, getNodeDef, inputPins } from '@code-blocks/engine/registry';
+import { previewValue } from '@code-blocks/engine/preview';
+import type { NameLookup } from '@code-blocks/engine/types';
 import { useProjectStore } from '../model/projectStore';
 import type { GraphNode } from '../model/types';
 import { clearRunLog, useRunLog, type LogEntry } from '../runtime/runLog';

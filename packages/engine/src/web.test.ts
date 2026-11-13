@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { GraphEdge, GraphNode, LogicGraph } from '../model/types';
+import type { GraphEdge, GraphNode, LogicGraph } from './graph';
 import { Interpreter } from './interpreter';
 import { methodOf, normalizeUrl, parseBody, pickPath } from './nodes/web';
 import { getNodeDef, inputPins } from './registry';

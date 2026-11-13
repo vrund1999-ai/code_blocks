@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toList, toRecord, toText } from '../engine/convert';
+import { toList, toRecord, toText } from '@code-blocks/engine/convert';
 import { nextName } from '../model/factory';
 import { useProjectStore } from '../model/projectStore';
 import type { Variable } from '../model/types';

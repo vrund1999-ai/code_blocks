@@ -1,6 +1,6 @@
 import { useReactFlow } from '@xyflow/react';
 import { useState } from 'react';
-import { CATEGORIES, nodesInCategory } from '../engine/registry';
+import { CATEGORIES, nodesInCategory } from '@code-blocks/engine/registry';
 import { useProjectStore } from '../model/projectStore';
 import { NODE_DRAG_MIME } from './LogicCanvas';
 

@@ -1,7 +1,7 @@
 // Copy and paste: copies of elements and blocks that get fresh ids when
 // pasted, so the same copy can be pasted many times, even into another project.
 
-import { getNodeDef } from '../engine/registry';
+import { getNodeDef } from '@code-blocks/engine/registry';
 import { defaultProps } from './elements';
 import { newId, nextName } from './factory';
 import { allElements, findInProject, walk } from './tree';

@@ -1,5 +1,5 @@
-import { recordFields, type RecordField } from '../engine/nodes/records';
-import type { ConfigField } from '../engine/types';
+import { recordFields, type RecordField } from '@code-blocks/engine/nodes/records';
+import type { ConfigField } from '@code-blocks/engine/types';
 import { newId, nextName } from '../model/factory';
 import { useProjectStore } from '../model/projectStore';
 import { allElements } from '../model/tree';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getNodeDef, outputPins } from '../engine/registry';
+import { getNodeDef, outputPins } from '@code-blocks/engine/registry';
 import { makeElement, makeProject } from './factory';
 import { ancestorIds, canPlaceInside, enclosingList, layerRows, makeNameLookup } from './tree';
 

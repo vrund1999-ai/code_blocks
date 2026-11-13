@@ -1,6 +1,6 @@
 // List cards: what an element inside a List's card shows for its item.
 
-import { findField, toRecord } from '../engine/convert';
+import { findField, toRecord } from '@code-blocks/engine/convert';
 
 /**
  * The item a List card is showing. In the designer the card is drawn once,

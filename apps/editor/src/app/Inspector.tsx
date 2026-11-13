@@ -1,10 +1,10 @@
 import { useReactFlow } from '@xyflow/react';
-import { CATEGORIES, getNodeDef, inputPins } from '../engine/registry';
+import { CATEGORIES, getNodeDef, inputPins } from '@code-blocks/engine/registry';
 import { ELEMENT_DEFS, type PropField } from '../model/elements';
 import { useProjectStore } from '../model/projectStore';
 import { useMemo } from 'react';
-import { isRecord, toList } from '../engine/convert';
-import { recordFields } from '../engine/nodes/records';
+import { isRecord, toList } from '@code-blocks/engine/convert';
+import { recordFields } from '@code-blocks/engine/nodes/records';
 import { enclosingListInProject, findInProject } from '../model/tree';
 import type { ElementType, Project, PropValue, UIElement, ValueType } from '../model/types';
 import { ConfigFieldInput, InlineValueInput } from './fields';

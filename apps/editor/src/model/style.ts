@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { toNumber, toText } from '../engine/convert';
+import { toNumber, toText } from '@code-blocks/engine/convert';
 
 /** Shadow choices, from none to strong. */
 export const SHADOWS: Record<string, string | undefined> = {

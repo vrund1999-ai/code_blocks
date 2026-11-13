@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { GraphEdge, GraphNode, LogicGraph } from '../model/types';
+import type { GraphEdge, GraphNode, LogicGraph } from './graph';
 import { findField, isEmptyValue, isRecord, looseEquals, toBool, toRecord, toText } from './convert';
 import { Interpreter } from './interpreter';
 import { fieldPinId } from './nodes/records';

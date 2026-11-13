@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { GraphEdge, GraphNode, LogicGraph } from '../model/types';
+import type { GraphEdge, GraphNode, LogicGraph } from './graph';
 import { checkValues, compareForSort, itemField } from './convert';
 import { Interpreter } from './interpreter';
 import { splitText, titleCase } from './nodes/text';

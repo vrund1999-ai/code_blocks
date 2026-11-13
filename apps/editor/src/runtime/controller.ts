@@ -1,8 +1,8 @@
 // Connects the pure engine to the browser: runtime state, timers, storage.
 
-import { toBool, toList, toNumber, toRecord, toText } from '../engine/convert';
-import { Interpreter } from '../engine/interpreter';
-import type { GraphError, HostApi } from '../engine/types';
+import { toBool, toList, toNumber, toRecord, toText } from '@code-blocks/engine/convert';
+import { Interpreter } from '@code-blocks/engine/interpreter';
+import type { GraphError, HostApi } from '@code-blocks/engine/types';
 import { appStoragePrefix } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { findInProject } from '../model/tree';

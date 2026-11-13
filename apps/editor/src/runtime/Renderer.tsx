@@ -1,5 +1,5 @@
 import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
-import { toBool, toList, toNumber, toText } from '../engine/convert';
+import { toBool, toList, toNumber, toText } from '@code-blocks/engine/convert';
 import { cardValue, type CardItem } from './cards';
 import { dropdownChoices } from '../model/elements';
 import { elementStyle, hasFixedWidth } from '../model/style';

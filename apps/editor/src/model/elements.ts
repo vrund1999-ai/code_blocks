@@ -1,4 +1,4 @@
-import { isRecord, toList, toText } from '../engine/convert';
+import { isRecord, toList, toText } from '@code-blocks/engine/convert';
 import type { ElementType, PropValue, ValueType } from './types';
 
 /** Describes one editable property of a UI element, used by the Inspector. */

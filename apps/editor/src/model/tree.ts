@@ -1,4 +1,4 @@
-import type { NameLookup } from '../engine/types';
+import type { NameLookup } from '@code-blocks/engine/types';
 import { ELEMENT_DEFS } from './elements';
 import type { ElementType, Project, Screen, UIElement } from './types';
 
