@@ -47,18 +47,23 @@ export interface RunResult {
   vars: Record<string, unknown>;
   /** Messages from *Show a message* blocks. */
   messages: string[];
+  /** The answer of the last *Reply* block that ran, when replies were asked for. */
+  reply?: { value: unknown; status: number };
 }
 
 export interface RunOptions {
   store: KeyValueStore;
   rows: RowStore;
   timeLimitMs?: number;
+  /** Lets *Reply* blocks answer, for runs started by a web address or a form. */
+  replies?: boolean;
 }
 
 export async function runGraph(req: RunRequest, opts: RunOptions): Promise<RunResult> {
   const limit = opts.timeLimitMs ?? RUN_TIME_LIMIT_MS;
   const stoppedMessage = `The server stopped this run because it took longer than ${limit / 1000} seconds.`;
   const abort = new AbortController();
+  let reply: RunResult['reply'];
   const { host, vars, messages } = createServerHost({
     projectId: req.projectId,
     variables: req.variables,
@@ -67,6 +72,7 @@ export async function runGraph(req: RunRequest, opts: RunOptions): Promise<RunRe
     rows: opts.rows,
     signal: abort.signal,
     stoppedMessage,
+    ...(opts.replies ? { reply: (value: unknown, status: number) => void (reply = { value, status }) } : {}),
   });
 
   const steps: RunStep[] = [];
@@ -116,5 +122,5 @@ export async function runGraph(req: RunRequest, opts: RunOptions): Promise<RunRe
   abort.abort();
   if (outcome === 'timeUp') error ??= { nodeId: req.nodeId, message: stoppedMessage };
 
-  return { ok: !error, ...(error ? { error } : {}), steps, dropped, vars, messages };
+  return { ok: !error, ...(error ? { error } : {}), steps, dropped, vars, messages, ...(reply ? { reply } : {}) };
 }
