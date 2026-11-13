@@ -9,7 +9,7 @@ Build apps without writing code. Lay out your screens by dragging elements, make
 ```bash
 npm install
 npm run dev        # open http://localhost:5173
-npm run dev:server # server runtime at http://127.0.0.1:8787/api (keeps table rows)
+npm run dev:server # server runtime at http://127.0.0.1:8787/api (table rows, deployed workflows)
 npm test           # unit tests (engine, editor, server)
 npm run build      # production build of the editor (apps/editor/dist)
 ```
@@ -60,10 +60,12 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
   - **Text** blocks change, search, replace and split text. **Lists & records** blocks find, sort, filter and join list items. For a list of records, they can work on one field, such as sorting people by `age`.
   - **Records** group values under named fields, like a contact card (`name: Ada, age: 36`). Build one with *Make record*, then read it with *Get field*. Records can be kept in a variable or added to a list.
   - **Tables** blocks read and change the rows of your data tables: *Get rows* (all of them, or where a column has a value), *Add row* (from a record), *Update row* and *Delete row* (by row id). Rows come out as records, such as `id: 1, Name: Ada`.
+  - **On the server** blocks run on the server once the project is deployed, even with the editor closed: *When web address is called* (another website or app calls `/api/hooks/<project id>/<name>`), *When form is sent* (the app's *Send form to server* block sends a record, such as what was typed into a form), and *On a schedule* (every few minutes or hours, or every day at a time). *Reply* answers a web address or form.
   - *Fetch from API* loads data from the web. Its JSON answer becomes records and lists, and *Pick field* (such as `current.temp`) takes one value out of it. *If it fails* runs when the server answers with an error or can't be reached.
   - Wires only connect where they make sense. Drag a wire out of a pin and let go on empty space to pick from the blocks that fit it; the one you pick is added already connected.
 - **▦ Data tab:** design your app's **tables**, like the header row of a spreadsheet. Add a table (such as *Contacts*), then add *Text*, *Number* and *Yes / No* columns, rename them, reorder them and remove them. Every row also gets an automatic `id`. Under the columns, add, edit and delete the table's **rows**. Tables are saved with the project; rows are kept by the server (`npm run dev:server`) in a SQLite database.
 - **▶ Run:** the app becomes live, both on the design canvas and in the preview beside the graph. Each block glows as it runs, and each value wire shows the last value that passed through it (point at it to see the whole value). The **Run log** under the preview lists every block that ran, with the values it used; click a line to jump to its block. A block that isn't set up properly is outlined in red, and the toolbar shows *show me*, which takes you to it.
+- **☁ Server:** *Deploy* sends the project to the server, which runs its *On the server* workflows from that copy. The button shows *Live*, or *Changes not deployed* after you edit; deploy again to update the server, or *Stop workflows* to take the project off it. The menu lists the project's web addresses (with a copy button), forms and schedules, and its latest runs with their errors and messages.
 - **Copy and paste:** Ctrl+C / Ctrl+X / Ctrl+V copy, cut and paste the selected element or blocks, and Ctrl+D duplicates them (⌘ on a Mac). Select several blocks with Ctrl+click or a Shift+drag box; their copies keep the wires between them. Ctrl+Z / Ctrl+Y undo and redo.
 - Projects are saved automatically in your browser. Use **Projects** to start from a template (Hello Name, Counter, To-do List) and **Export / Import** to move projects around as `.json` files.
 
@@ -73,7 +75,7 @@ The repo is an npm workspace with two packages:
 
 - **`packages/engine`** (`@code-blocks/engine`): runs logic graphs. It is plain TypeScript with no React, DOM or Node code; its `tsconfig.json` leaves those types out to keep it that way. That lets the same engine run in the editor and, later, on a server. Import its files by path, such as `@code-blocks/engine/registry`.
 - **`apps/editor`** (`@code-blocks/editor`): the React app you build apps in.
-- **`apps/server`** (`@code-blocks/server`): runs graphs on a server with the same engine (Hono on Node). `POST /api/run` runs one event block of a graph sent with the request and returns the blocks that ran, the final variable values, messages and any error. Blocks that change or read the screen stop with a friendly message there. It also keeps the rows of data tables in SQLite (`apps/server/data/code-blocks.db`; set `DB_FILE` to change it). In development the editor forwards `/api` to it.
+- **`apps/server`** (`@code-blocks/server`): runs graphs on a server with the same engine (Hono on Node). `POST /api/run` runs one event block of a graph sent with the request and returns the blocks that ran, the final variable values, messages and any error. Blocks that change or read the screen stop with a friendly message there. It also keeps the rows of data tables, deployed projects and saved values in SQLite (`apps/server/data/code-blocks.db`; set `DB_FILE` to change it), and runs the workflows of deployed projects: web addresses, forms and schedules. In development the editor forwards `/api` to it.
 
 | Path | What's there |
 | --- | --- |
@@ -82,9 +84,10 @@ The repo is an npm workspace with two packages:
 | `apps/editor/src/runtime/` | Browser host for the engine (`controller.ts`), live state, run log, and the element `Renderer` |
 | `apps/editor/src/designer/` | Drag-and-drop design canvas (dnd-kit), element palette, layers panel |
 | `apps/editor/src/logic/` | Node-graph editor (React Flow), live wire values, run log panel |
-| `apps/editor/src/app/` | Shell: toolbar, inspector, side panels, the Data tab (`DataView.tsx`) |
+| `apps/editor/src/app/` | Shell: toolbar, inspector, side panels, the Data tab (`DataView.tsx`), the ☁ Server menu (`ServerMenu.tsx`) |
+| `apps/editor/src/data/` | Server calls: table rows (`rowsApi.ts`), deploying and forms (`serverApi.ts`, `deployStore.ts`) |
 | `apps/editor/src/templates/` | Starter projects |
-| `apps/server/src/` | Server routes (`app.ts`, `rowRoutes.ts`), table rows in SQLite (`rows.ts`), server host for the engine (`host.ts`), runs (`run.ts`) and request checks (`validate.ts`) |
+| `apps/server/src/` | Server routes (`app.ts`, `rowRoutes.ts`, `workflowRoutes.ts`), the SQLite database (`db.ts`) with table rows (`rows.ts`), deployed projects (`deployments.ts`) and saved values (`store.ts`), workflow triggers and schedules (`workflows.ts`), server host for the engine (`host.ts`), runs (`run.ts`) and request checks (`validate.ts`) |
 | `e2e/` | Playwright end-to-end tests of the editor, and their helpers (`e2e/support/`) |
 | `tsconfig.base.json`, `vitest.config.ts`, `playwright.config.ts` | Settings shared by the whole repo |
 | `.github/` | CI workflow and Dependabot config |

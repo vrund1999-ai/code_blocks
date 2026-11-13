@@ -4,12 +4,13 @@ import { eventNodes } from './nodes/events';
 import { flowNodes } from './nodes/flow';
 import { listNodes } from './nodes/lists';
 import { recordNodes } from './nodes/records';
+import { serverNodes } from './nodes/server';
 import { tableNodes } from './nodes/tables';
 import { textNodes } from './nodes/text';
 import { webNodes } from './nodes/web';
 import type { NameLookup, NodeCategory, NodeDef, Pin } from './types';
 
-const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...textNodes, ...listNodes, ...recordNodes, ...webNodes, ...tableNodes];
+const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...textNodes, ...listNodes, ...recordNodes, ...webNodes, ...tableNodes, ...serverNodes];
 
 export const NODE_DEFS: Record<string, NodeDef> = Object.fromEntries(ALL.map((d) => [d.type, d]));
 
@@ -21,6 +22,7 @@ export const CATEGORIES: { id: NodeCategory; label: string; color: string; hint:
   { id: 'text', label: 'Text', color: '#0c8599', hint: 'Join, change and search text' },
   { id: 'lists', label: 'Lists & records', color: '#d6336c', hint: 'Find, sort and filter items' },
   { id: 'tables', label: 'Tables', color: '#ae7a00', hint: 'Read and change the rows of your data tables' },
+  { id: 'server', label: 'On the server', color: '#5f3dc4', hint: 'Web addresses, forms and schedules that run once you deploy' },
 ];
 
 export function nodesInCategory(cat: NodeCategory): NodeDef[] {

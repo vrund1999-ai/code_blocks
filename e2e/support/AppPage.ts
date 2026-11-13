@@ -104,6 +104,24 @@ export class AppPage {
   get screensPanel() {
     return this.page.locator('.panel-section', { has: this.page.locator('h3', { hasText: 'Screens' }) });
   }
+  /** The ☁ Server button in the toolbar. */
+  get serverButton() {
+    return this.page.locator('.toolbar').getByRole('button', { name: /☁ Server/ });
+  }
+  get serverMenu() {
+    return this.page.getByRole('dialog', { name: 'Server' });
+  }
+  /** Opens the ☁ Server menu and waits until it knows whether the project is deployed. */
+  async openServer() {
+    await this.serverButton.click();
+    await expect(this.serverMenu.getByRole('status')).not.toHaveText(/Checking/);
+  }
+  /** Deploys the project from the ☁ Server menu (opening it if needed). */
+  async deploy() {
+    if (!(await this.serverMenu.isVisible())) await this.openServer();
+    await this.serverMenu.getByRole('button', { name: /☁ Deploy/ }).click();
+    await expect(this.serverMenu.getByRole('status')).toHaveText(/up to date/);
+  }
   /** Toasts shown inside the running app. */
   toasts(scope?: Locator) {
     return (scope ?? this.page.locator('body')).locator('.app-view .toast');

@@ -6,6 +6,7 @@
 
 import { DatabaseSync } from 'node:sqlite';
 import type { CellValue } from '@code-blocks/engine/tables';
+import { openDatabase } from './db';
 
 export type { CellValue };
 
@@ -61,15 +62,20 @@ const toRow = (r: StoredRow): Row => ({ id: r.row_id, values: JSON.parse(r.data)
 export class SqliteRowStore implements RowStore {
   private db: DatabaseSync;
 
-  /** `file` is a path, or ':memory:' for a database that lasts as long as the server. */
-  constructor(file: string) {
-    this.db = new DatabaseSync(file);
-    this.db.exec('PRAGMA journal_mode = WAL;');
+  private owned: boolean;
+
+  /**
+   * `db` is a database opened with openDatabase(), or a file path (':memory:'
+   * for a database that lasts as long as the server) to open one just for rows.
+   */
+  constructor(db: string | DatabaseSync) {
+    this.owned = typeof db === 'string';
+    this.db = typeof db === 'string' ? openDatabase(db) : db;
     this.db.exec(SCHEMA);
   }
 
   close() {
-    this.db.close();
+    if (this.owned) this.db.close();
   }
 
   list(projectId: string, tableId: string, opts: { limit?: number; offset?: number } = {}): RowPage {

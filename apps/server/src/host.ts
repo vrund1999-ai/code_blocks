@@ -28,6 +28,8 @@ export interface ServerHostOptions {
   signal: AbortSignal;
   /** The message shown when `signal` stops the run. */
   stoppedMessage: string;
+  /** Takes the answer of a *Reply* block. Left out for runs nothing waits on, such as schedules. */
+  reply?(value: unknown, status: number): void;
 }
 
 export interface ServerHost {
@@ -129,5 +131,12 @@ export function createServerHost(opts: ServerHostOptions): ServerHost {
       },
     },
   };
+  if (opts.reply) {
+    const reply = opts.reply;
+    host.reply = (value, status) => {
+      check();
+      reply(value, status);
+    };
+  }
   return { host, vars, messages };
 }

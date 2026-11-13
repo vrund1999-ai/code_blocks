@@ -1,6 +1,6 @@
-// Checks the body of a run request, which can come from anywhere.
+// Checks the bodies of run and deploy requests, which can come from anywhere.
 
-import type { GraphEdge, GraphNode } from '@code-blocks/engine/graph';
+import type { GraphEdge, GraphNode, LogicGraph } from '@code-blocks/engine/graph';
 import { getNodeDef } from '@code-blocks/engine/registry';
 import { COLUMN_TYPES, type DataTable, type TableColumn } from '@code-blocks/engine/tables';
 import type { ServerVariable } from './host';
@@ -63,9 +63,15 @@ function parseTable(v: unknown, i: number): DataTable | string {
   return { id: v.id, name: v.name, columns };
 }
 
-/** The request, or a message saying what is wrong with it. */
-export function parseRunRequest(body: unknown): RunRequest | string {
-  if (!isObject(body)) return 'Send a JSON object.';
+/** What the server needs of a project to run its blocks. */
+export interface ProjectParts {
+  graph: LogicGraph;
+  variables: ServerVariable[];
+  tables: DataTable[];
+}
+
+/** The graph, variables and tables of a request body, or a message saying what is wrong. */
+export function parseProjectParts(body: Record<string, unknown>): ProjectParts | string {
   const { graph } = body;
   if (!isObject(graph) || !Array.isArray(graph.nodes) || !Array.isArray(graph.edges)) {
     return '"graph" needs "nodes" and "edges" lists.';
@@ -98,9 +104,17 @@ export function parseRunRequest(body: unknown): RunRequest | string {
     if (isString(table)) return table;
     tables.push(table);
   }
+  return { graph: { nodes, edges }, variables, tables };
+}
+
+/** The request, or a message saying what is wrong with it. */
+export function parseRunRequest(body: unknown): RunRequest | string {
+  if (!isObject(body)) return 'Send a JSON object.';
+  const parts = parseProjectParts(body);
+  if (isString(parts)) return parts;
 
   if (!isString(body.nodeId)) return '"nodeId" must name the event block to run.';
-  const start = nodes.find((n) => n.id === body.nodeId);
+  const start = parts.graph.nodes.find((n) => n.id === body.nodeId);
   if (!start) return `There is no block "${body.nodeId}" in the graph.`;
   if (!getNodeDef(start.type)?.event) return `Block "${body.nodeId}" is not an event block, so it can't start a run.`;
 
@@ -108,11 +122,28 @@ export function parseRunRequest(body: unknown): RunRequest | string {
   if (body.projectId !== undefined && !isString(body.projectId)) return '"projectId" must be text.';
 
   return {
-    graph: { nodes, edges },
+    ...parts,
     nodeId: body.nodeId,
     payload: (body.payload as Record<string, unknown>) ?? {},
-    variables,
-    tables,
     projectId: (body.projectId as string) ?? 'default',
+  };
+}
+
+/** A project sent to be deployed: its parts, its name, and the editor's fingerprint of it. */
+export interface DeployRequest extends ProjectParts {
+  name: string;
+  fingerprint: string;
+}
+
+export function parseDeployRequest(body: unknown): DeployRequest | string {
+  if (!isObject(body)) return 'Send a JSON object.';
+  const parts = parseProjectParts(body);
+  if (isString(parts)) return parts;
+  if (body.name !== undefined && !isString(body.name)) return '"name" must be text.';
+  if (body.fingerprint !== undefined && !isString(body.fingerprint)) return '"fingerprint" must be text.';
+  return {
+    ...parts,
+    name: ((body.name as string) ?? '').slice(0, 200),
+    fingerprint: ((body.fingerprint as string) ?? '').slice(0, 100),
   };
 }

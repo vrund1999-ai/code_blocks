@@ -8,6 +8,10 @@ import { SqliteRowStore, type RowStore } from './rows';
 import { runGraph } from './run';
 import { MemoryStore, type KeyValueStore } from './store';
 import { parseRunRequest } from './validate';
+import { openDatabase } from './db';
+import { SqliteDeployments } from './deployments';
+import { hookRoutes, workflowRoutes } from './workflowRoutes';
+import { Workflows } from './workflows';
 
 /** The biggest run request accepted. */
 export const MAX_BODY_BYTES = 1024 * 1024;
@@ -16,6 +20,8 @@ export interface AppOptions {
   store?: KeyValueStore;
   /** Data table rows. Defaults to a database in memory. */
   rows?: RowStore;
+  /** Deployed projects and their triggers. Defaults to one with nothing deployed, without schedules. */
+  workflows?: Workflows;
   timeLimitMs?: number;
 }
 
@@ -24,9 +30,14 @@ const problem = (message: string) => ({ error: { message } });
 export function createApp(opts: AppOptions = {}) {
   const store = opts.store ?? new MemoryStore();
   const rows = opts.rows ?? new SqliteRowStore(':memory:');
+  const workflows =
+    opts.workflows ??
+    new Workflows({ deployments: new SqliteDeployments(openDatabase(':memory:')), store, rows, timeLimitMs: opts.timeLimitMs });
   const app = new Hono().basePath('/api');
 
   app.route('/projects', rowRoutes(rows));
+  app.route('/projects', workflowRoutes(workflows));
+  app.route('/hooks', hookRoutes(workflows));
 
   app.get('/health', (c) => c.json({ ok: true }));
 
