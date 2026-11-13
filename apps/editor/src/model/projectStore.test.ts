@@ -169,4 +169,52 @@ describe('addWiredNode', () => {
     const b = store().addWiredNode('data.join', { x: 0, y: 100 }, { nodeId: set, pinId: 'text', side: 'in' }, 'value', 'data');
     expect(store().project.graph.edges).toMatchObject([{ source: b, sourcePin: 'value', target: set, targetPin: 'text' }]);
   });
+
+  it('adds, renames and deletes tables, with undo', () => {
+    const a = store().addTable();
+    const b = store().addTable();
+    expect(store().project.tables.map((t) => t.name)).toEqual(['My table', 'My table 2']);
+    expect(store().project.tables[0].columns).toMatchObject([{ name: 'Name', type: 'text' }]);
+    store().renameTable(a, 'C');
+    store().renameTable(a, 'Contacts'); // typing merges into one undo step
+    store().deleteTable(b);
+    expect(store().project.tables.map((t) => t.name)).toEqual(['Contacts']);
+    store().undo();
+    expect(store().project.tables.map((t) => t.name)).toEqual(['Contacts', 'My table 2']);
+    store().undo();
+    expect(store().project.tables[0].name).toBe('My table');
+  });
+
+  it('adds, changes, moves and removes columns', () => {
+    const t = store().addTable();
+    const cols = () => store().project.tables[0].columns.map((c) => `${c.name}:${c.type}`);
+    const age = store().addColumn(t, 'number');
+    const vip = store().addColumn(t, 'boolean');
+    store().addColumn(t, 'number');
+    expect(cols()).toEqual(['Name:text', 'Number:number', 'Yes or no:boolean', 'Number 2:number']);
+    store().updateColumn(t, age, { name: 'Age' });
+    store().updateColumn(t, vip, { name: 'VIP', type: 'text' });
+    store().moveColumn(t, vip, -1);
+    expect(cols()).toEqual(['Name:text', 'VIP:text', 'Age:number', 'Number 2:number']);
+    // Moving past either end does nothing and adds no undo step.
+    const steps = store().past.length;
+    store().moveColumn(t, store().project.tables[0].columns[0].id, -1);
+    expect(store().past.length).toBe(steps);
+    store().deleteColumn(t, age);
+    expect(cols()).toEqual(['Name:text', 'VIP:text', 'Number 2:number']);
+    store().undo();
+    expect(cols()).toEqual(['Name:text', 'VIP:text', 'Age:number', 'Number 2:number']);
+  });
+
+  it('pastes only in the tab that matches what was copied', () => {
+    const a = store().addElement('button', root().id);
+    store().select({ kind: 'element', id: a });
+    store().copySelection();
+    store().setTab('data');
+    expect(store().paste()).toEqual([]);
+    store().setTab('logic');
+    expect(store().paste()).toEqual([]);
+    store().setTab('design');
+    expect(store().paste()).toHaveLength(1);
+  });
 });

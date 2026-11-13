@@ -113,6 +113,9 @@ export function Toolbar() {
         <button className={`tab ${tab === 'logic' ? 'active' : ''}`} onClick={() => setTab('logic')}>
           ⚡ Logic
         </button>
+        <button className={`tab ${tab === 'data' ? 'active' : ''}`} onClick={() => setTab('data')}>
+          ▦ Data
+        </button>
       </div>
 
       <div className="spacer" />

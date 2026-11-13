@@ -61,6 +61,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
   - **Records** group values under named fields, like a contact card (`name: Ada, age: 36`). Build one with *Make record*, then read it with *Get field*. Records can be kept in a variable or added to a list.
   - *Fetch from API* loads data from the web. Its JSON answer becomes records and lists, and *Pick field* (such as `current.temp`) takes one value out of it. *If it fails* runs when the server answers with an error or can't be reached.
   - Wires only connect where they make sense. Drag a wire out of a pin and let go on empty space to pick from the blocks that fit it; the one you pick is added already connected.
+- **▦ Data tab:** design your app's **tables**, like the header row of a spreadsheet. Add a table (such as *Contacts*), then add *Text*, *Number* and *Yes / No* columns, rename them, reorder them and remove them. Every row also gets an automatic `id`. Tables are saved with the project; rows will be kept by the server.
 - **▶ Run:** the app becomes live, both on the design canvas and in the preview beside the graph. Each block glows as it runs, and each value wire shows the last value that passed through it (point at it to see the whole value). The **Run log** under the preview lists every block that ran, with the values it used; click a line to jump to its block. A block that isn't set up properly is outlined in red, and the toolbar shows *show me*, which takes you to it.
 - **Copy and paste:** Ctrl+C / Ctrl+X / Ctrl+V copy, cut and paste the selected element or blocks, and Ctrl+D duplicates them (⌘ on a Mac). Select several blocks with Ctrl+click or a Shift+drag box; their copies keep the wires between them. Ctrl+Z / Ctrl+Y undo and redo.
 - Projects are saved automatically in your browser. Use **Projects** to start from a template (Hello Name, Counter, To-do List) and **Export / Import** to move projects around as `.json` files.
@@ -75,12 +76,12 @@ The repo is an npm workspace with two packages:
 
 | Path | What's there |
 | --- | --- |
-| `packages/engine/src/` | Interpreter, graph types (`graph.ts`), value conversions, block registry (`nodes/*.ts`) and the value previews used by live wires and the run log |
+| `packages/engine/src/` | Interpreter, graph types (`graph.ts`), data table types (`tables.ts`), value conversions, block registry (`nodes/*.ts`) and the value previews used by live wires and the run log |
 | `apps/editor/src/model/` | Project JSON types, element definitions, Zustand store (undo/redo, copy and paste), persistence |
 | `apps/editor/src/runtime/` | Browser host for the engine (`controller.ts`), live state, run log, and the element `Renderer` |
 | `apps/editor/src/designer/` | Drag-and-drop design canvas (dnd-kit), element palette, layers panel |
 | `apps/editor/src/logic/` | Node-graph editor (React Flow), live wire values, run log panel |
-| `apps/editor/src/app/` | Shell: toolbar, inspector, side panels |
+| `apps/editor/src/app/` | Shell: toolbar, inspector, side panels, the Data tab (`DataView.tsx`) |
 | `apps/editor/src/templates/` | Starter projects |
 | `apps/server/src/` | Server routes (`app.ts`), server host for the engine (`host.ts`), runs (`run.ts`) and request checks (`validate.ts`) |
 | `e2e/` | Playwright end-to-end tests of the editor, and their helpers (`e2e/support/`) |

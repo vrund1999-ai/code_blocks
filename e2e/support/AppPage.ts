@@ -36,10 +36,19 @@ export class AppPage {
     await expect(this.page.locator('.device').first()).toBeVisible();
   }
 
-  async tab(name: 'Design' | 'Logic') {
+  async tab(name: 'Design' | 'Logic' | 'Data') {
     await this.page.locator('button.tab', { hasText: name }).click();
     if (name === 'Logic') await expect(this.page.locator('.logic-canvas')).toBeVisible();
+    else if (name === 'Data') await expect(this.dataArea).toBeVisible();
     else await expect(this.designCanvas).toBeVisible();
+  }
+
+  // ---- Data tab ----------------------------------------------------------------
+  get tablesPanel() {
+    return this.page.getByRole('region', { name: 'Tables' });
+  }
+  get dataArea() {
+    return this.page.getByRole('region', { name: 'Table designer' });
   }
 
   async run() {

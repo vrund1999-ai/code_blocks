@@ -27,6 +27,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Run log | 2026-11-12 | [#16](https://github.com/vrund1999-ai/code_blocks/pull/16) | See below |
 | Monorepo split | 2026-11-13 | [#17](https://github.com/vrund1999-ai/code_blocks/pull/17) | See below |
 | Server runtime | 2026-11-13 | [#18](https://github.com/vrund1999-ai/code_blocks/pull/18) | See below |
+| Data tables | 2026-11-13 | [#20](https://github.com/vrund1999-ai/code_blocks/pull/20) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -131,6 +132,14 @@ Server runtime included:
 - **Engine:** a host can throw `HostError` to show its own message on the block that called it; other errors are now pinned on the block that hit them too. `coerceTo` (variable type conversion) moved into the engine, shared by both hosts.
 - **Tests:** 20 new unit tests (1 engine, 19 server). Nothing on screen changed.
 
+Data tables included:
+- **▦ Data tab:** a third tab beside Design and Logic. Add tables (such as *Contacts* or *Orders*), name them, and design their columns like the header row of a spreadsheet: add *Text*, *Number* and *Yes / No* columns, rename them, change their kind, move them left or right, and remove them. Every row also gets an automatic **id** number.
+- **Friendly checks:** a column with no name, a name another column already has (ignoring case and spaces), or the name `id` is outlined in red with a message. So are two tables with the same name.
+- **Saved in the project:** tables are part of the project file, so autosave, undo/redo, export and import cover them. Projects saved before tables open with none. Rows will live on the server in SQLite (BE-4, BE-5).
+- **Engine:** the table types (`DataTable`, `TableColumn`) and the name checks live in `packages/engine/src/tables.ts`, so the server can use them for BE-5.
+- **Fix:** pasting only works in the tab that matches what was copied, so blocks can't be pasted while the Data tab is open.
+- **Tests:** 7 new unit tests and 3 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -140,7 +149,7 @@ Server runtime included:
 | --- | --- | --- | --- | --- |
 | BE-1 | Monorepo split | ✅ | 2026-11-13 | [#17](https://github.com/vrund1999-ai/code_blocks/pull/17) |
 | BE-2 | Server runtime | ✅ | 2026-11-13 | [#18](https://github.com/vrund1999-ai/code_blocks/pull/18) |
-| BE-3 | Data tables schema editor | ⬜ | | |
+| BE-3 | Data tables schema editor | ✅ | 2026-11-13 | [#20](https://github.com/vrund1999-ai/code_blocks/pull/20) |
 | BE-4 | Table data viewer/editor | ⬜ | | |
 | BE-5 | Table blocks | ⬜ | | |
 | BE-6 | Server workflow triggers | ⬜ | | |
@@ -239,4 +248,4 @@ Server runtime included:
 
 ---
 
-**Totals:** 16 / 70 done · 0 in progress
+**Totals:** 17 / 70 done · 0 in progress

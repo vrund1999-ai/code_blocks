@@ -26,6 +26,7 @@ export function makeProject(name = 'My App'): Project {
     version: PROJECT_VERSION,
     screens: [makeScreen('Home')],
     variables: [],
+    tables: [],
     graph: { nodes: [], edges: [] },
   };
 }
