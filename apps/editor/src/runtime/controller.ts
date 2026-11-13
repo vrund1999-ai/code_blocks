@@ -2,7 +2,9 @@
 
 import { coerceTo, toBool, toNumber, toText } from '@code-blocks/engine/convert';
 import { Interpreter } from '@code-blocks/engine/interpreter';
-import type { GraphError, HostApi } from '@code-blocks/engine/types';
+import type { StoredRow } from '@code-blocks/engine/tables';
+import { HostError, type GraphError, type HostApi, type TablesApi } from '@code-blocks/engine/types';
+import { addRow, ApiError, deleteRow, listRows, updateRow } from '../data/rowsApi';
 import { appStoragePrefix } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { findInProject } from '../model/tree';
@@ -67,6 +69,57 @@ function onError(err: GraphError) {
   pushToast(err.message, 'error', 5000);
 }
 
+/**
+ * Table rows, through the server. Writes after Stop are refused, and server
+ * problems show as the block's error.
+ */
+function makeTables(alive: () => boolean): TablesApi {
+  const projectId = () => project().id;
+  const call = async <T>(fn: () => Promise<T>): Promise<T> => {
+    if (!alive()) throw new HostError('The app was stopped.');
+    try {
+      return await fn();
+    } catch (err) {
+      throw new HostError((err as Error).message);
+    }
+  };
+  return {
+    table: (id) => project().tables.find((t) => t.id === id),
+    rows: (tableId) =>
+      call(async () => {
+        const all: StoredRow[] = [];
+        for (;;) {
+          const page = await listRows(projectId(), tableId, all.length, RUN_PAGE_SIZE);
+          all.push(...page.rows);
+          if (page.rows.length === 0 || all.length >= page.total) return all;
+        }
+      }),
+    add: (tableId, values) => call(() => addRow(projectId(), tableId, values)),
+    update: (tableId, rowId, values) =>
+      call(async () => {
+        try {
+          return await updateRow(projectId(), tableId, rowId, values);
+        } catch (err) {
+          if (err instanceof ApiError && err.status === 404) return null;
+          throw err;
+        }
+      }),
+    remove: (tableId, rowId) =>
+      call(async () => {
+        try {
+          await deleteRow(projectId(), tableId, rowId);
+          return true;
+        } catch (err) {
+          if (err instanceof ApiError && err.status === 404) return false;
+          throw err;
+        }
+      }),
+  };
+}
+
+/** Rows loaded per request when a block reads a whole table. */
+const RUN_PAGE_SIZE = 500;
+
 function makeHost(gen: number): HostApi {
   const alive = () => gen === generation;
   const prefix = appStoragePrefix(project().id);
@@ -122,6 +175,7 @@ function makeHost(gen: number): HostApi {
       const res = await fetch(url, { method, headers, body, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
       return { status: res.status, statusText: res.statusText, text: await res.text() };
     },
+    tables: makeTables(alive),
   };
 }
 

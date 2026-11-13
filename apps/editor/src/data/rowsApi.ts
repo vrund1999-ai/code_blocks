@@ -25,6 +25,17 @@ export class OfflineError extends Error {
   }
 }
 
+/** The server refused a request. `status` is its HTTP status, such as 404 for a missing row. */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 const rowsUrl = (projectId: string, tableId: string) =>
   `/api/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/rows`;
 
@@ -40,13 +51,13 @@ async function call<T>(url: string, init: RequestInit = {}): Promise<T> {
   // The dev server's proxy answers 5xx with no JSON when the server isn't running.
   if (!body?.error?.message) {
     if (res.status >= 500) throw new OfflineError();
-    throw new Error(`The server answered with error ${res.status}.`);
+    throw new ApiError(`The server answered with error ${res.status}.`, res.status);
   }
-  throw new Error(body.error.message);
+  throw new ApiError(body.error.message, res.status);
 }
 
-export const listRows = (projectId: string, tableId: string, offset = 0) =>
-  call<RowPage>(`${rowsUrl(projectId, tableId)}?limit=${PAGE_SIZE}&offset=${offset}`);
+export const listRows = (projectId: string, tableId: string, offset = 0, limit = PAGE_SIZE) =>
+  call<RowPage>(`${rowsUrl(projectId, tableId)}?limit=${limit}&offset=${offset}`);
 
 export const addRow = (projectId: string, tableId: string, values: Record<string, CellValue> = {}) =>
   call<Row>(rowsUrl(projectId, tableId), { method: 'POST', body: JSON.stringify({ values }) });

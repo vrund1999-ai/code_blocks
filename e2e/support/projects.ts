@@ -1,7 +1,7 @@
 // Builds projects in Node using the app's own model code, so test fixtures
 // always match the real project format.
 import { makeElement, makeProject, makeScreen, newId } from '../../apps/editor/src/model/factory';
-import type { ElementType, GraphEdge, GraphNode, Project, UIElement, Variable } from '../../apps/editor/src/model/types';
+import type { ColumnType, DataTable, ElementType, GraphEdge, GraphNode, Project, UIElement, Variable } from '../../apps/editor/src/model/types';
 import { TEMPLATES } from '../../apps/editor/src/templates';
 
 export function template(id: 'blank' | 'hello' | 'counter' | 'todo'): Project {
@@ -30,6 +30,16 @@ export function build(name = 'Test App') {
       const v: Variable = { id: newId(), name: varName, type, initial };
       project.variables.push(v);
       return v;
+    },
+    /** A data table with columns named and typed as given, e.g. { Name: 'text', Age: 'number' }. */
+    table(tableName: string, columns: Record<string, ColumnType>): DataTable {
+      const t: DataTable = {
+        id: newId(),
+        name: tableName,
+        columns: Object.entries(columns).map(([colName, type]) => ({ id: newId(), name: colName, type })),
+      };
+      project.tables.push(t);
+      return t;
     },
     addScreen(screenName: string) {
       const s = makeScreen(screenName);

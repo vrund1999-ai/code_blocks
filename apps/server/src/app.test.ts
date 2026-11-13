@@ -44,6 +44,7 @@ describe('server routes', () => {
     ['a missing block', { ...hello, nodeId: 'nope' }, 'There is no block "nope" in the graph.'],
     ['a block that is not an event', { ...hello, nodeId: 'msg' }, 'Block "msg" is not an event block, so it can\'t start a run.'],
     ['a bad variable', { ...hello, variables: [{ id: 'v', type: 'date' }] }, /variables\[0\] needs/],
+    ['a bad table', { ...hello, tables: [{ id: 't', name: 'T', columns: [{ id: 'c', name: 'C', type: 'date' }] }] }, /tables\[0\]\.columns\[0\] needs/],
   ])('rejects %s', async (_, body, message) => {
     const res = await post(body);
     expect(res.status).toBe(400);

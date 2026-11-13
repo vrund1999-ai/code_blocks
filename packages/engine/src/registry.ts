@@ -4,11 +4,12 @@ import { eventNodes } from './nodes/events';
 import { flowNodes } from './nodes/flow';
 import { listNodes } from './nodes/lists';
 import { recordNodes } from './nodes/records';
+import { tableNodes } from './nodes/tables';
 import { textNodes } from './nodes/text';
 import { webNodes } from './nodes/web';
 import type { NameLookup, NodeCategory, NodeDef, Pin } from './types';
 
-const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...textNodes, ...listNodes, ...recordNodes, ...webNodes];
+const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...textNodes, ...listNodes, ...recordNodes, ...webNodes, ...tableNodes];
 
 export const NODE_DEFS: Record<string, NodeDef> = Object.fromEntries(ALL.map((d) => [d.type, d]));
 
@@ -19,6 +20,7 @@ export const CATEGORIES: { id: NodeCategory; label: string; color: string; hint:
   { id: 'data', label: 'Values', color: '#2f9e44', hint: 'Numbers, maths and comparisons' },
   { id: 'text', label: 'Text', color: '#0c8599', hint: 'Join, change and search text' },
   { id: 'lists', label: 'Lists & records', color: '#d6336c', hint: 'Find, sort and filter items' },
+  { id: 'tables', label: 'Tables', color: '#ae7a00', hint: 'Read and change the rows of your data tables' },
 ];
 
 export function nodesInCategory(cat: NodeCategory): NodeDef[] {

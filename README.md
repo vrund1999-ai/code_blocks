@@ -59,6 +59,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
   - Coloured dotted wires carry **Values** into blocks, such as numbers, maths and comparisons.
   - **Text** blocks change, search, replace and split text. **Lists & records** blocks find, sort, filter and join list items. For a list of records, they can work on one field, such as sorting people by `age`.
   - **Records** group values under named fields, like a contact card (`name: Ada, age: 36`). Build one with *Make record*, then read it with *Get field*. Records can be kept in a variable or added to a list.
+  - **Tables** blocks read and change the rows of your data tables: *Get rows* (all of them, or where a column has a value), *Add row* (from a record), *Update row* and *Delete row* (by row id). Rows come out as records, such as `id: 1, Name: Ada`.
   - *Fetch from API* loads data from the web. Its JSON answer becomes records and lists, and *Pick field* (such as `current.temp`) takes one value out of it. *If it fails* runs when the server answers with an error or can't be reached.
   - Wires only connect where they make sense. Drag a wire out of a pin and let go on empty space to pick from the blocks that fit it; the one you pick is added already connected.
 - **▦ Data tab:** design your app's **tables**, like the header row of a spreadsheet. Add a table (such as *Contacts*), then add *Text*, *Number* and *Yes / No* columns, rename them, reorder them and remove them. Every row also gets an automatic `id`. Under the columns, add, edit and delete the table's **rows**. Tables are saved with the project; rows are kept by the server (`npm run dev:server`) in a SQLite database.
@@ -76,7 +77,7 @@ The repo is an npm workspace with two packages:
 
 | Path | What's there |
 | --- | --- |
-| `packages/engine/src/` | Interpreter, graph types (`graph.ts`), data table types (`tables.ts`), value conversions, block registry (`nodes/*.ts`) and the value previews used by live wires and the run log |
+| `packages/engine/src/` | Interpreter, graph types (`graph.ts`), data table types and row/record conversion (`tables.ts`), value conversions, block registry (`nodes/*.ts`) and the value previews used by live wires and the run log |
 | `apps/editor/src/model/` | Project JSON types, element definitions, Zustand store (undo/redo, copy and paste), persistence |
 | `apps/editor/src/runtime/` | Browser host for the engine (`controller.ts`), live state, run log, and the element `Renderer` |
 | `apps/editor/src/designer/` | Drag-and-drop design canvas (dnd-kit), element palette, layers panel |

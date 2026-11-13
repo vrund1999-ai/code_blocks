@@ -52,7 +52,7 @@ export function cloneElements(elements: UIElement[], project: Project): UIElemen
 
 /**
  * Copies of blocks with new ids, moved by `offset`, keeping only the wires
- * between them. Settings that point at an element, variable or screen the
+ * between them. Settings that point at an element, variable, screen or table the
  * project doesn't have are cleared, so the block asks for one again.
  */
 export function cloneNodes(
@@ -66,11 +66,12 @@ export function cloneNodes(
     element: (id: unknown) => typeof id === 'string' && findInProject(project, id) !== null,
     variable: (id: unknown) => project.variables.some((v) => v.id === id),
     screen: (id: unknown) => project.screens.some((s) => s.id === id),
+    table: (id: unknown) => project.tables.some((t) => t.id === id),
   };
   const copies = nodes.map((n) => {
     const config = structuredClone(n.config);
     for (const f of getNodeDef(n.type)?.configFields ?? []) {
-      if ((f.type === 'element' || f.type === 'variable' || f.type === 'screen') && f.key in config) {
+      if ((f.type === 'element' || f.type === 'variable' || f.type === 'screen' || f.type === 'table') && f.key in config) {
         if (!exists[f.type](config[f.key])) delete config[f.key];
       }
     }
