@@ -75,6 +75,14 @@ export function nextRunAt(s: Schedule, after: Date): Date {
   return next < tomorrow ? next : tomorrow;
 }
 
+/** Secret names: a letter, then letters, numbers and _ (up to 64). Matched ignoring case. */
+export const SECRET_NAME = /^[A-Za-z][A-Za-z0-9_]{0,63}$/;
+
+export const SECRET_NAME_PROBLEM = 'Give the secret a name made of letters, numbers and _, starting with a letter, like “WEATHER_KEY”.';
+
+/** Secrets shorter than this are refused, so hiding them in what runs show stays sensible. */
+export const MIN_SECRET_LENGTH = 4;
+
 const ONLY_ON_SERVER = ' It runs on the server once you deploy the project (☁ Server in the toolbar), not when you press Run.';
 
 export const serverNodes: NodeDef[] = [
@@ -185,6 +193,31 @@ export const serverNodes: NodeDef[] = [
         throw new GraphError(ctx.node.id, 'The status code must be a whole number from 200 to 599, like 200 for OK.');
       }
       ctx.host.reply(await ctx.input('value'), status);
+    },
+  },
+  {
+    type: 'server.secret',
+    category: 'server',
+    label: 'Secret',
+    description:
+      'Gives the value of a secret, such as an API key, kept on the server (☁ Server → Secrets). Secrets only work in server workflows, so they never reach the app, and they are hidden as ••• in replies, messages and run details.',
+    inputs: [],
+    outputs: [{ id: 'value', label: 'Value', kind: 'data', valueType: 'text' }],
+    configFields: [{ key: 'name', label: 'Secret name', type: 'text', default: 'MY_KEY' }],
+    sentence: (c) => `Secret “${toText(c.name ?? '').trim() || '…'}”`,
+    validate: (c) => (SECRET_NAME.test(toText(c.name ?? '').trim()) ? null : SECRET_NAME_PROBLEM),
+    evaluate(ctx) {
+      if (!ctx.host.secret) {
+        throw new HostError(
+          'Secrets only work in server workflows, so they never reach the app. Use this block after “When web address is called”, “When form is sent” or “On a schedule”.',
+        );
+      }
+      const name = toText(ctx.config.name ?? '').trim();
+      const value = ctx.host.secret(name);
+      if (value === undefined) {
+        throw new GraphError(ctx.node.id, `There’s no secret “${name}” on the server. Add it in ☁ Server → Secrets.`);
+      }
+      return { value };
     },
   },
   {
