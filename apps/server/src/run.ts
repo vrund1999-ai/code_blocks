@@ -5,6 +5,7 @@ import type { DataTable } from '@code-blocks/engine/tables';
 import { Interpreter } from '@code-blocks/engine/interpreter';
 import { createServerHost, type ServerVariable } from './host';
 import type { RowStore } from './rows';
+import { redact, type SecretStore } from './secrets';
 import type { KeyValueStore } from './store';
 
 /** Longest a run may take, waits and web requests included. */
@@ -59,6 +60,8 @@ export interface RunResult {
 export interface RunOptions {
   store: KeyValueStore;
   rows: RowStore;
+  /** The project's secrets. Their values are hidden as ••• in the result. */
+  secrets?: SecretStore;
   timeLimitMs?: number;
   /** Lets *Reply* blocks answer, for runs started by a web address or a form. */
   replies?: boolean;
@@ -69,12 +72,13 @@ export async function runGraph(req: RunRequest, opts: RunOptions): Promise<RunRe
   const stoppedMessage = `The server stopped this run because it took longer than ${limit / 1000} seconds.`;
   const abort = new AbortController();
   let reply: RunResult['reply'];
-  const { host, vars, messages } = createServerHost({
+  const { host, vars, messages, secretsRead } = createServerHost({
     projectId: req.projectId,
     variables: req.variables,
     store: opts.store,
     tables: req.tables,
     rows: opts.rows,
+    secrets: opts.secrets,
     signal: abort.signal,
     stoppedMessage,
     ...(opts.replies ? { reply: (value: unknown, status: number) => void (reply = { value, status }) } : {}),
@@ -127,5 +131,7 @@ export async function runGraph(req: RunRequest, opts: RunOptions): Promise<RunRe
   abort.abort();
   if (outcome === 'timeUp') error ??= { nodeId: req.nodeId, message: stoppedMessage };
 
-  return { ok: !error, ...(error ? { error } : {}), steps, dropped, vars, messages, ...(reply ? { reply } : {}) };
+  // Nothing the run sends back shows a secret's value.
+  const result: RunResult = { ok: !error, ...(error ? { error } : {}), steps, dropped, vars, messages, ...(reply ? { reply } : {}) };
+  return redact(result, secretsRead);
 }

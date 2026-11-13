@@ -10,6 +10,8 @@ import { MemoryStore, type KeyValueStore } from './store';
 import { parseRunRequest } from './validate';
 import { openDatabase } from './db';
 import { SqliteDeployments } from './deployments';
+import { secretRoutes } from './secretRoutes';
+import { SqliteSecrets, type SecretStore } from './secrets';
 import { hookRoutes, workflowRoutes } from './workflowRoutes';
 import { Workflows } from './workflows';
 
@@ -20,6 +22,8 @@ export interface AppOptions {
   store?: KeyValueStore;
   /** Data table rows. Defaults to a database in memory. */
   rows?: RowStore;
+  /** Secrets such as API keys. Defaults to a database in memory. */
+  secrets?: SecretStore;
   /** Deployed projects and their triggers. Defaults to one with nothing deployed, without schedules. */
   workflows?: Workflows;
   timeLimitMs?: number;
@@ -30,13 +34,15 @@ const problem = (message: string) => ({ error: { message } });
 export function createApp(opts: AppOptions = {}) {
   const store = opts.store ?? new MemoryStore();
   const rows = opts.rows ?? new SqliteRowStore(':memory:');
+  const secrets = opts.secrets ?? new SqliteSecrets(openDatabase(':memory:'));
   const workflows =
     opts.workflows ??
-    new Workflows({ deployments: new SqliteDeployments(openDatabase(':memory:')), store, rows, timeLimitMs: opts.timeLimitMs });
+    new Workflows({ deployments: new SqliteDeployments(openDatabase(':memory:')), store, rows, secrets, timeLimitMs: opts.timeLimitMs });
   const app = new Hono().basePath('/api');
 
   app.route('/projects', rowRoutes(rows));
   app.route('/projects', workflowRoutes(workflows));
+  app.route('/projects', secretRoutes(secrets));
   app.route('/hooks', hookRoutes(workflows));
 
   app.get('/health', (c) => c.json({ ok: true }));
@@ -56,7 +62,7 @@ export function createApp(opts: AppOptions = {}) {
       }
       const req = parseRunRequest(body);
       if (typeof req === 'string') return c.json(problem(req), 400);
-      return c.json(await runGraph(req, { store, rows, timeLimitMs: opts.timeLimitMs, replies: req.replies }));
+      return c.json(await runGraph(req, { store, rows, secrets, timeLimitMs: opts.timeLimitMs, replies: req.replies }));
     },
   );
 

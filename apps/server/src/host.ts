@@ -6,6 +6,7 @@ import { coerceTo } from '@code-blocks/engine/convert';
 import type { DataTable, StoredRow } from '@code-blocks/engine/tables';
 import { HostError, type HostApi } from '@code-blocks/engine/types';
 import { MAX_PAGE, type RowStore } from './rows';
+import type { SecretStore } from './secrets';
 import type { KeyValueStore } from './store';
 
 /** A *Fetch from API* request that takes longer than this counts as failed. */
@@ -24,6 +25,8 @@ export interface ServerHostOptions {
   /** The project's data tables (their columns) and where their rows are kept. */
   tables: DataTable[];
   rows: RowStore;
+  /** The project's secrets, for *Secret* blocks. Without it, there are none. */
+  secrets?: SecretStore;
   /** Aborted when the run has to stop. Every host call after that stops the run. */
   signal: AbortSignal;
   /** The message shown when `signal` stops the run. */
@@ -36,6 +39,8 @@ export interface ServerHost {
   host: HostApi;
   vars: Record<string, unknown>;
   messages: string[];
+  /** The values of the secrets the run read, to hide them in what it sends back. */
+  secretsRead: Set<string>;
 }
 
 export const CHANGES_SCREEN = 'This block changes what’s on screen, so it only works in the app, not on the server.';
@@ -48,6 +53,7 @@ export function createServerHost(opts: ServerHostOptions): ServerHost {
   const vars: Record<string, unknown> = {};
   for (const v of opts.variables) vars[v.id] = structuredClone(v.initial);
   const messages: string[] = [];
+  const secretsRead = new Set<string>();
 
   const check = () => {
     if (signal.aborted) throw new HostError(opts.stoppedMessage);
@@ -96,6 +102,12 @@ export function createServerHost(opts: ServerHostOptions): ServerHost {
         }, ms);
         signal.addEventListener('abort', stop, { once: true });
       }),
+    secret: (name) => {
+      check();
+      const value = opts.secrets?.get(projectId, name);
+      if (value !== undefined) secretsRead.add(value);
+      return value;
+    },
     httpRequest: async ({ method, url, headers, body }) => {
       check();
       const res = await fetch(url, {
@@ -138,5 +150,5 @@ export function createServerHost(opts: ServerHostOptions): ServerHost {
       reply(value, status);
     };
   }
-  return { host, vars, messages };
+  return { host, vars, messages, secretsRead };
 }
