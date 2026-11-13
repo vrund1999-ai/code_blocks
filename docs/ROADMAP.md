@@ -8,7 +8,7 @@ Priority: **P1** comes next, **P2** is important but can wait, and **P3** is nic
 All of the first P1 wave (v1 follow-ups, data tables and server workflows) is done. This is the order for the second wave:
 
 1. ✅ **QE-10:** show React Flow's attribution again. A small fix, and React Flow asks that only Pro subscribers hide it.
-2. **BE-13:** try server workflows without deploying, to finish the server workflow work from BE-6.
+2. ✅ **BE-13:** try server workflows without deploying, to finish the server workflow work from BE-6.
 3. **BE-8**, then **BE-10:** a secrets store, and *Fetch from API* through the server, so API keys never reach the browser.
 4. **QE-4:** validate the project file format. The server will soon store whole projects (PL-2), so it has to check them first.
 5. **PL-1**, **PL-2**, then **PL-3:** sign-in, projects saved on the server, and apps published to a shareable address.
@@ -35,7 +35,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | BE-10 | Send *Fetch from API* requests through the server | P1 | Reaches APIs that block browser apps (CORS) and lets requests use secrets from BE-8. Needs the server runtime |
 | BE-11 | Host the server runtime: a production build, deployment, and limits on where runs may send web requests | P1 | The server listens on 127.0.0.1 by default. Before it is reachable from the internet, block requests to private networks and add per-project rate limits. Deploying and web addresses need sign-in and limits too (PL-1) |
 | BE-12 | Clean up rows of deleted tables and projects | P3 | Deleting a table or project in the editor leaves its rows on the server, so undo can bring a table back with its rows. Remove them after a while, or when a project is deleted for good |
-| BE-13 | Try server workflows without deploying | P1 | A *Try it* button on *When web address is called* / *When form is sent* that runs the editor's current copy once with sample data, so changes can be checked before they go live |
+| BE-13 | Try server workflows without deploying | P1 | Shipped: a *Try it* section in the settings of *When web address is called*, *When form is sent* and *On a schedule* (*Run now*). It runs the editor's current copy once on the server with sample data, through `POST /api/run` with `replies: true`, and shows the reply, messages and errors; the blocks that ran go to the Run log. Tries use the real tables and saved values |
 
 ## 2. Platform
 | ID | Item | Priority | Notes |

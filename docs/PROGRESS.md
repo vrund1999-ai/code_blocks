@@ -31,6 +31,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Table rows | 2026-11-13 | [#21](https://github.com/vrund1999-ai/code_blocks/pull/21) | See below |
 | Table blocks | 2026-11-13 | [#22](https://github.com/vrund1999-ai/code_blocks/pull/22) | See below |
 | Server workflows | 2026-11-13 | [#23](https://github.com/vrund1999-ai/code_blocks/pull/23) | See below |
+| Try server workflows | 2026-11-13 | [#26](https://github.com/vrund1999-ai/code_blocks/pull/26) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -166,6 +167,13 @@ Server workflows included:
 - **Saved values on the server** (*Save to device* / *Load from device* in server workflows) are now kept in SQLite, so a schedule can remember things between runs.
 - **Tests:** 25 new unit tests and 3 new end-to-end tests.
 
+Try server workflows included:
+- **A *Try it* section** in the settings of *When web address is called*, *When form is sent* and *On a schedule* (*Run now*). It runs the workflow as it is in the editor, once, on the server, without deploying it, and doesn't change the deployed copy.
+- **Sample data:** address values and form values as `name: value` lines, and the data sent as text or JSON. The data box is hidden for GET addresses, and *Any* is tried as a GET, or as a POST when data is typed. Samples are kept while the editor is open.
+- **The result:** the reply and its status code, messages, and errors with *show me*. The blocks that ran, with their values, go to the Run log (unless the app is running).
+- **Server:** `POST /api/run` takes `replies: true` so *Reply* blocks answer.
+- **Tests:** 8 new unit tests and 2 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -185,7 +193,7 @@ Server workflows included:
 | BE-10 | Fetch through a server proxy | ⬜ | | |
 | BE-11 | Host the server runtime | ⬜ | | |
 | BE-12 | Clean up rows of deleted tables and projects | ⬜ | | |
-| BE-13 | Try server workflows without deploying | ⬜ | | |
+| BE-13 | Try server workflows without deploying | ✅ | 2026-11-13 | [#26](https://github.com/vrund1999-ai/code_blocks/pull/26) |
 
 ### 2. Platform
 | ID | Item | Status | Completed | PR |
@@ -277,4 +285,4 @@ Server workflows included:
 
 ---
 
-**Totals:** 21 / 73 done · 0 in progress
+**Totals:** 22 / 73 done · 0 in progress

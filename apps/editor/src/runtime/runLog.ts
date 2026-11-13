@@ -92,3 +92,21 @@ export function clearRunLog() {
   changed.clear();
   useRunLog.setState({ entries: [], dropped: 0 });
 }
+
+/**
+ * Replaces the log with the steps of a run that happened elsewhere, such as
+ * a server workflow tried from the inspector.
+ */
+export function showRunSteps(
+  steps: { nodeId: string; payload?: Record<string, unknown>; inputs: Record<string, unknown> }[],
+  droppedSteps: number,
+  error?: { nodeId: string; message: string },
+) {
+  clearRunLog();
+  for (const s of steps) {
+    logStep(s.nodeId, s.payload);
+    for (const [pin, value] of Object.entries(s.inputs)) logInput(s.nodeId, pin, value);
+  }
+  if (error) logError(error.nodeId, error.message);
+  dropped = droppedSteps;
+}
