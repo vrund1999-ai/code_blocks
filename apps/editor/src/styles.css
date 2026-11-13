@@ -1510,3 +1510,60 @@ textarea.field-input {
   color: var(--muted);
   font-style: italic;
 }
+.schema-grid tbody td {
+  border-bottom: 1px solid var(--border);
+}
+.schema-grid tbody tr:last-child td {
+  border-bottom: none;
+}
+.row-id {
+  font-family: ui-monospace, monospace;
+  color: var(--muted);
+}
+.cell-input {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 6px;
+  background: transparent;
+  font: inherit;
+}
+.cell-input:hover {
+  border-color: var(--border);
+}
+.cell-input:focus {
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
+  background: #fff;
+}
+.row-actions {
+  width: 1%;
+  white-space: nowrap;
+}
+.row-confirm {
+  display: inline-flex;
+  gap: 4px;
+}
+.rows-note {
+  color: var(--muted);
+}
+.rows-footer,
+.rows-offline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.rows-footer .hint,
+.rows-offline .hint {
+  margin: 0;
+}
+.rows-offline {
+  max-width: 760px;
+  padding: 10px 12px;
+  border: 1px solid #ffa8a8;
+  border-radius: 8px;
+  background: #fff5f5;
+  color: var(--danger);
+}
