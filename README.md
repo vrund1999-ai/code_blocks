@@ -10,22 +10,22 @@ Build apps without writing code. Lay out your screens by dragging elements, make
 npm install
 npm run dev        # open http://localhost:5173
 npm test           # unit tests (engine + project store)
-npm run build      # type-check + production build
+npm run build      # production build of the editor (apps/editor/dist)
 ```
 
-Use Node 24 (see `.nvmrc`).
+Use Node 24 (see `.nvmrc`). The repo is an npm workspace: run every command from the root, and `npm install` links the packages together.
 
 ## Testing
 
 | Command | What it does |
 | --- | --- |
-| `npm test` | Unit tests (Vitest) for the engine and project store, in `src/**/*.test.ts` |
+| `npm test` | Unit tests (Vitest) for the engine and the editor, next to the code (`packages/*/src/**/*.test.ts`, `apps/*/src/**/*.test.ts`) |
 | `npm run test:coverage` | Unit tests with a coverage report in `coverage/` |
 | `npm run e2e:install` | One-time: download the Chromium build Playwright uses (`e2e:install:all` adds Firefox and WebKit) |
 | `npm run test:e2e` | Browser end-to-end tests (Playwright, Chromium) in `e2e/` |
 | `npm run test:e2e:ui` | The same tests in Playwright's interactive UI mode |
 | `npm run test:e2e:all` | End-to-end tests in Chromium, Firefox and WebKit |
-| `npm run check` | Type-check (app + tests), unit tests and production build |
+| `npm run check` | Type-check (engine, editor and tests), unit tests and production build |
 
 The end-to-end tests start a dev server on port 4173 by themselves (or reuse one that is already running). After a failure, `npx playwright show-report` opens the report with screenshots and traces.
 
@@ -66,20 +66,26 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
 
 ## Code layout
 
+The repo is an npm workspace with two packages:
+
+- **`packages/engine`** (`@code-blocks/engine`): runs logic graphs. It is plain TypeScript with no React, DOM or Node code; its `tsconfig.json` leaves those types out to keep it that way. That lets the same engine run in the editor and, later, on a server. Import its files by path, such as `@code-blocks/engine/registry`.
+- **`apps/editor`** (`@code-blocks/editor`): the React app you build apps in.
+
 | Path | What's there |
 | --- | --- |
-| `src/model/` | Project JSON types, element definitions, Zustand store (undo/redo, copy and paste), persistence |
-| `src/engine/` | **Pure TypeScript** interpreter and block registry (`nodes/*.ts`), with no React or DOM |
-| `src/runtime/` | Browser host for the engine (`controller.ts`), live state, and the element `Renderer` |
-| `src/designer/` | Drag-and-drop design canvas (dnd-kit), element palette, layers panel |
-| `src/logic/` | Node-graph editor (React Flow) |
-| `src/app/` | Shell: toolbar, inspector, side panels |
-| `src/templates/` | Starter projects |
-| `e2e/` | Playwright end-to-end tests and their helpers (`e2e/support/`) |
+| `packages/engine/src/` | Interpreter, graph types (`graph.ts`), value conversions, block registry (`nodes/*.ts`) and the value previews used by live wires and the run log |
+| `apps/editor/src/model/` | Project JSON types, element definitions, Zustand store (undo/redo, copy and paste), persistence |
+| `apps/editor/src/runtime/` | Browser host for the engine (`controller.ts`), live state, run log, and the element `Renderer` |
+| `apps/editor/src/designer/` | Drag-and-drop design canvas (dnd-kit), element palette, layers panel |
+| `apps/editor/src/logic/` | Node-graph editor (React Flow), live wire values, run log panel |
+| `apps/editor/src/app/` | Shell: toolbar, inspector, side panels |
+| `apps/editor/src/templates/` | Starter projects |
+| `e2e/` | Playwright end-to-end tests of the editor, and their helpers (`e2e/support/`) |
+| `tsconfig.base.json`, `vitest.config.ts`, `playwright.config.ts` | Settings shared by the whole repo |
 | `.github/` | CI workflow and Dependabot config |
 
 ### Adding a block
-Add a `NodeDef` to one of `src/engine/nodes/*.ts`. It declares pins, settings, a plain-English `sentence`, an optional `validate`, and `execute` (for actions and flow) or `evaluate` (for values). The palette, the block UI, connection checking and the inspector all pick it up automatically. If a block's inputs depend on its settings (like the fields of *Make record*), declare them with `dynamicInputs(config)`. Blocks reach the outside world only through `HostApi` (for example `httpRequest` for web requests), which `src/runtime/controller.ts` implements for the browser.
+Add a `NodeDef` to one of `packages/engine/src/nodes/*.ts`. It declares pins, settings, a plain-English `sentence`, an optional `validate`, and `execute` (for actions and flow) or `evaluate` (for values). The palette, the block UI, connection checking and the inspector all pick it up automatically. If a block's inputs depend on its settings (like the fields of *Make record*), declare them with `dynamicInputs(config)`. Blocks reach the outside world only through `HostApi` (for example `httpRequest` for web requests), which `apps/editor/src/runtime/controller.ts` implements for the browser.
 
 ## Roadmap
 All the planned next steps are listed in [docs/ROADMAP.md](docs/ROADMAP.md), and their completion is tracked in [docs/PROGRESS.md](docs/PROGRESS.md).

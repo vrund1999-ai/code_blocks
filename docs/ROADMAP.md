@@ -7,11 +7,11 @@ Priority: **P1** comes next, **P2** is important but can wait, and **P3** is nic
 ---
 
 ## 1. Backend (phase 2)
-The engine (`src/engine/`) is already free of React and DOM code. It reaches the outside world only through `HostApi`, so the same interpreter can run on a server.
+The engine (`packages/engine`) is free of React, DOM and Node code, and its type-check enforces that. It reaches the outside world only through `HostApi`, so the same interpreter can run on a server.
 
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
-| BE-1 | Split into a monorepo: `packages/engine`, `apps/editor`, `apps/server` | P1 | Prerequisite for the server runtime |
+| BE-1 | Split into a monorepo: `packages/engine`, `apps/editor`, `apps/server` | P1 | Shipped: npm workspaces with `packages/engine` and `apps/editor`; the engine owns the graph types and is type-checked without DOM or Node types. `apps/server` is added by BE-2 |
 | BE-2 | Server runtime (Node) that runs graphs using the shared engine | P1 | Server-side `HostApi` implementation |
 | BE-3 | Visual **data tables**: a schema editor (columns, types) | P1 | Like a simple spreadsheet |
 | BE-4 | Table data viewer/editor inside the builder | P2 | Browse, add and edit rows by hand |

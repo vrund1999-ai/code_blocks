@@ -2,7 +2,8 @@
 
 ## Testing
 - Before opening a PR, run `npm run check` and `npm run test:e2e`. Both must pass; CI runs the same checks.
-- Any user-facing change needs a new or updated Playwright spec in `e2e/`. Engine and store logic needs Vitest tests next to the code (`src/**/*.test.ts`).
+- Any user-facing change needs a new or updated Playwright spec in `e2e/`. Engine and store logic needs Vitest tests next to the code (`packages/engine/src/**/*.test.ts`, `apps/editor/src/**/*.test.ts`).
+- The engine (`packages/engine`) must stay free of React, DOM and Node code so it can run on a server; `npm run typecheck` checks it without those types.
 - In end-to-end tests:
   - Use the helpers in `e2e/support/` (`AppPage`, `seed`, `build`).
   - Never use fixed sleeps (`waitForTimeout`). Use auto-retrying `expect`, and `page.clock` for timers and waits.
