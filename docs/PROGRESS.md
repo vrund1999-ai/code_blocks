@@ -32,6 +32,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Table blocks | 2026-11-13 | [#22](https://github.com/vrund1999-ai/code_blocks/pull/22) | See below |
 | Server workflows | 2026-11-13 | [#23](https://github.com/vrund1999-ai/code_blocks/pull/23) | See below |
 | Try server workflows | 2026-11-13 | [#26](https://github.com/vrund1999-ai/code_blocks/pull/26) | See below |
+| Secrets | 2026-11-13 | [#27](https://github.com/vrund1999-ai/code_blocks/pull/27) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -174,6 +175,13 @@ Try server workflows included:
 - **Server:** `POST /api/run` takes `replies: true` so *Reply* blocks answer.
 - **Tests:** 8 new unit tests and 2 new end-to-end tests.
 
+Secrets included:
+- **☁ Server → Secrets:** add a secret (a name like `WEATHER_KEY` and a hidden value), replace its value, or delete it (asks once more). Only names and dates are listed, since the server never sends a value back.
+- **The *Secret* block** (*On the server*) gives a secret's value in server workflows, for example in a *Fetch from API* address or header. In the app it stops with a message, so secrets never reach the browser. A missing secret says where to add it.
+- **Hidden in results:** the values of secrets a run read show as ••• in replies, messages, errors, variables and the steps sent to the Run log.
+- **Server:** secrets are kept per project in SQLite (names match ignoring case; values from 4 to 10,000 characters) through `GET /api/projects/:projectId/secrets` and `PUT` / `DELETE …/secrets/:name`.
+- **Tests:** 13 new unit tests and 2 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -188,7 +196,7 @@ Try server workflows included:
 | BE-5 | Table blocks | ✅ | 2026-11-13 | [#22](https://github.com/vrund1999-ai/code_blocks/pull/22) |
 | BE-6 | Server workflow triggers | ✅ | 2026-11-13 | [#23](https://github.com/vrund1999-ai/code_blocks/pull/23) |
 | BE-7 | Fetch from API block | ✅ | 2026-11-11 | [#6](https://github.com/vrund1999-ai/code_blocks/pull/6) |
-| BE-8 | Secrets store | ⬜ | | |
+| BE-8 | Secrets store | ✅ | 2026-11-13 | [#27](https://github.com/vrund1999-ai/code_blocks/pull/27) |
 | BE-9 | Send email block | ⬜ | | |
 | BE-10 | Fetch through a server proxy | ⬜ | | |
 | BE-11 | Host the server runtime | ⬜ | | |
@@ -285,4 +293,4 @@ Try server workflows included:
 
 ---
 
-**Totals:** 22 / 73 done · 0 in progress
+**Totals:** 23 / 73 done · 0 in progress
