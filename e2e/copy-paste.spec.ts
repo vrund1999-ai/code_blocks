@@ -39,7 +39,8 @@ test.describe('Design tab', () => {
       .toEqual(['Title', 'Greeting', 'Title 2', 'Title 3', 'Name Box', 'Say Hello']);
   });
 
-  test('typing in a settings field still copies and pastes text', async ({ app, page }) => {
+  test('typing in a settings field still copies and pastes text', async ({ app, page, browserName }) => {
+    test.fixme(browserName === 'webkit', 'Pasting into a text box depends on the system clipboard in WebKit; see QE-11');
     await app.select('Title');
     const name = app.inspectorField('Name').locator('input');
     await name.selectText();
