@@ -12,7 +12,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
 | BE-1 | Split into a monorepo: `packages/engine`, `apps/editor`, `apps/server` | P1 | Shipped: npm workspaces with `packages/engine` and `apps/editor`; the engine owns the graph types and is type-checked without DOM or Node types. `apps/server` is added by BE-2 |
-| BE-2 | Server runtime (Node) that runs graphs using the shared engine | P1 | Server-side `HostApi` implementation |
+| BE-2 | Server runtime (Node) that runs graphs using the shared engine | P1 | Shipped: `apps/server`, a Hono server with a server `HostApi` and a `POST /api/run` endpoint that runs one event block of a graph sent with the request. Blocks that touch the screen stop with a friendly message. Saved values are kept in memory until BE-3 picks a database; graphs are sent with each request until BE-6 adds server triggers |
 | BE-3 | Visual **data tables**: a schema editor (columns, types) | P1 | Like a simple spreadsheet |
 | BE-4 | Table data viewer/editor inside the builder | P2 | Browse, add and edit rows by hand |
 | BE-5 | Table blocks: *Query table*, *Add row*, *Update row*, *Delete row* | P1 | Work on both client and server |
@@ -21,6 +21,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | BE-8 | Server-side secrets store for API keys | P2 | Secrets never reach the client |
 | BE-9 | *Send email* block | P3 | Needs the server runtime |
 | BE-10 | Send *Fetch from API* requests through the server | P2 | Reaches APIs that block browser apps (CORS) and lets requests use secrets from BE-8. Needs the server runtime |
+| BE-11 | Host the server runtime: a production build, deployment, and limits on where runs may send web requests | P2 | The server listens on 127.0.0.1 by default. Before it is reachable from the internet, block requests to private networks and add per-project rate limits |
 
 ## 2. Platform
 | ID | Item | Priority | Notes |

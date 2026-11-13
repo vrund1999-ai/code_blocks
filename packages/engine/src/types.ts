@@ -118,6 +118,18 @@ export class GraphError extends Error {
   }
 }
 
+/**
+ * Thrown by a host when a block can't do its job there, such as a block that
+ * changes the screen running on the server. The message is shown as it is, on
+ * the block that called the host.
+ */
+export class HostError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'HostError';
+  }
+}
+
 // Shared pin helpers
 export const execIn: Pin = { id: 'in', label: '', kind: 'exec' };
 export const execOut: Pin = { id: 'next', label: '', kind: 'exec' };

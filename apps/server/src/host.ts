@@ -1,0 +1,104 @@
+// The engine's HostApi on the server. There is no screen here, so blocks that
+// change or read the screen stop with a friendly message. Messages from
+// *Show a message* are collected and returned with the run.
+
+import { coerceTo } from '@code-blocks/engine/convert';
+import { HostError, type HostApi } from '@code-blocks/engine/types';
+import type { KeyValueStore } from './store';
+
+/** A *Fetch from API* request that takes longer than this counts as failed. */
+export const FETCH_TIMEOUT_MS = 30_000;
+
+export interface ServerVariable {
+  id: string;
+  type: string;
+  initial: unknown;
+}
+
+export interface ServerHostOptions {
+  projectId: string;
+  variables: ServerVariable[];
+  store: KeyValueStore;
+  /** Aborted when the run has to stop. Every host call after that stops the run. */
+  signal: AbortSignal;
+  /** The message shown when `signal` stops the run. */
+  stoppedMessage: string;
+}
+
+export interface ServerHost {
+  host: HostApi;
+  vars: Record<string, unknown>;
+  messages: string[];
+}
+
+export const CHANGES_SCREEN = 'This block changes what’s on screen, so it only works in the app, not on the server.';
+export const READS_SCREEN = 'This block reads what’s on screen, so it only works in the app, not on the server.';
+export const NAVIGATES = 'Go to screen only works in the app, not on the server.';
+
+export function createServerHost(opts: ServerHostOptions): ServerHost {
+  const { projectId, store, signal } = opts;
+  const types = new Map(opts.variables.map((v) => [v.id, v.type]));
+  const vars: Record<string, unknown> = {};
+  for (const v of opts.variables) vars[v.id] = structuredClone(v.initial);
+  const messages: string[] = [];
+
+  const check = () => {
+    if (signal.aborted) throw new HostError(opts.stoppedMessage);
+  };
+
+  const host: HostApi = {
+    getVar: (id) => {
+      check();
+      return vars[id];
+    },
+    setVar: (id, value) => {
+      check();
+      vars[id] = coerceTo(types.get(id), value);
+    },
+    getElementValue: () => {
+      throw new HostError(READS_SCREEN);
+    },
+    setElementProp: () => {
+      throw new HostError(CHANGES_SCREEN);
+    },
+    toast: (message) => {
+      check();
+      messages.push(message);
+    },
+    navigate: () => {
+      throw new HostError(NAVIGATES);
+    },
+    storageGet: (key) => {
+      check();
+      return store.get(projectId, key);
+    },
+    storageSet: (key, value) => {
+      check();
+      store.set(projectId, key, value);
+    },
+    sleep: (ms) =>
+      new Promise<void>((resolve, reject) => {
+        check();
+        const stop = () => {
+          clearTimeout(timer);
+          reject(new HostError(opts.stoppedMessage));
+        };
+        const timer = setTimeout(() => {
+          signal.removeEventListener('abort', stop);
+          resolve();
+        }, ms);
+        signal.addEventListener('abort', stop, { once: true });
+      }),
+    httpRequest: async ({ method, url, headers, body }) => {
+      check();
+      const res = await fetch(url, {
+        method,
+        headers,
+        body,
+        signal: AbortSignal.any([signal, AbortSignal.timeout(FETCH_TIMEOUT_MS)]),
+      });
+      return { status: res.status, statusText: res.statusText, text: await res.text() };
+    },
+  };
+  return { host, vars, messages };
+}
