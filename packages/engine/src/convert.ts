@@ -48,6 +48,24 @@ export function toRecord(v: unknown): Rec {
   return isRecord(v) ? v : {};
 }
 
+/** Converts a value to a variable's type, as setting a variable does. */
+export function coerceTo(type: string | undefined, value: unknown): unknown {
+  switch (type) {
+    case 'number':
+      return toNumber(value);
+    case 'boolean':
+      return toBool(value);
+    case 'list':
+      return toList(value);
+    case 'record':
+      return toRecord(value);
+    case 'text':
+      return toText(value);
+    default:
+      return value;
+  }
+}
+
 /**
  * Finds a field by name. An exact match wins; otherwise case and
  * surrounding spaces are ignored, so "Name" finds "name".
