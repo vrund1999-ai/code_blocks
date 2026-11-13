@@ -9,9 +9,11 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @code-blocks/editor --",
+    "dev:server": "npm run dev -w @code-blocks/server",
     "build": "npm run build -w @code-blocks/editor",
     "preview": "npm run preview -w @code-blocks/editor --",
-    "typecheck": "tsc -p packages/engine && tsc -p apps/editor && tsc -p e2e",
+    "start:server": "npm run start -w @code-blocks/server",
+    "typecheck": "tsc -p packages/engine && tsc -p apps/editor && tsc -p apps/server && tsc -p e2e",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test --project=chromium",

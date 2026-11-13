@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { GraphEdge, GraphNode, LogicGraph } from './graph';
 import { Interpreter } from './interpreter';
-import { GraphError, type HostApi } from './types';
+import { GraphError, HostError, type HostApi } from './types';
 
 function makeHost(vars: Record<string, unknown> = {}) {
   const props: Record<string, Record<string, unknown>> = {};
@@ -201,6 +201,36 @@ describe('Interpreter', () => {
     await expect(new Interpreter(graph, host).runEvent('e')).rejects.toMatchObject({
       nodeId: 'set',
       message: expect.stringMatching(/no element picked/),
+    });
+  });
+
+  it('pins host errors on the block that called the host', async () => {
+    const { host } = makeHost();
+    host.toast = () => {
+      throw new HostError('No messages here.');
+    };
+    host.getElementValue = () => {
+      throw new Error('broken');
+    };
+    const graph: LogicGraph = {
+      nodes: [
+        n('e', 'event.screenLoad', { screen: 's' }),
+        n('msg', 'action.toast'),
+        n('read', 'data.getInputValue', { element: 'name' }),
+        n('set', 'action.setVariable', { variable: 'x' }),
+      ],
+      edges: [ex('e', 'next', 'msg'), ex('msg', 'next', 'set'), da('read', 'value', 'set', 'value')],
+    };
+    // A host's own message is shown as it is, on the block that called it.
+    await expect(new Interpreter(graph, host).runEvent('e')).rejects.toMatchObject({
+      nodeId: 'msg',
+      message: 'No messages here.',
+    });
+    // Other errors are pinned on the value block that hit them, even when read by a later block.
+    graph.edges = [ex('e', 'next', 'set'), da('read', 'value', 'set', 'value')];
+    await expect(new Interpreter(graph, host).runEvent('e')).rejects.toMatchObject({
+      nodeId: 'read',
+      message: 'Something went wrong: broken',
     });
   });
 

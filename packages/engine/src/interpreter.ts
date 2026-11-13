@@ -1,6 +1,6 @@
 import type { GraphEdge, GraphNode, LogicGraph } from './graph';
 import { inputPins, NODE_DEFS } from './registry';
-import { GraphError, type HostApi, type NodeContext, type NodeDef } from './types';
+import { GraphError, HostError, type HostApi, type NodeContext, type NodeDef } from './types';
 
 export interface InterpreterOptions {
   /** Max exec steps for a single run before we assume an endless loop. */
@@ -28,6 +28,16 @@ interface RunState {
 }
 
 const key = (nodeId: string, pin: string) => `${nodeId}\u0000${pin}`;
+
+/**
+ * Pins an error on the block that hit it. Errors from blocks further along
+ * (already GraphErrors) keep their own block.
+ */
+function blockError(nodeId: string, err: unknown): GraphError {
+  if (err instanceof GraphError) return err;
+  if (err instanceof HostError) return new GraphError(nodeId, err.message);
+  return new GraphError(nodeId, `Something went wrong: ${(err as Error)?.message ?? String(err)}`);
+}
 
 export class Interpreter {
   private nodes = new Map<string, GraphNode>();
@@ -85,10 +95,7 @@ export class Interpreter {
     try {
       await this.execNode(node, run);
     } catch (err) {
-      const gErr =
-        err instanceof GraphError
-          ? err
-          : new GraphError(node.id, `Something went wrong: ${(err as Error)?.message ?? String(err)}`);
+      const gErr = blockError(node.id, err);
       if (this.opts.onError) this.opts.onError(gErr);
       else throw gErr;
     }
@@ -133,7 +140,11 @@ export class Interpreter {
       run.execOutputs.set(node.id, { ...run.payload });
     } else if (def.execute) {
       const ctx = this.makeContext(node, def, config, run, new Map(), new Set(), true);
-      next = await def.execute(ctx);
+      try {
+        next = await def.execute(ctx);
+      } catch (err) {
+        throw blockError(node.id, err);
+      }
       if (next === undefined) next = 'next';
     } else {
       // A pure data node wired into an exec chain: nothing to do.
@@ -217,6 +228,8 @@ export class Interpreter {
         outputs = await srcDef.evaluate(
           this.makeContext(src, srcDef, srcConfig, run, cache, evaluating),
         );
+      } catch (err) {
+        throw blockError(src.id, err);
       } finally {
         evaluating.delete(src.id);
       }

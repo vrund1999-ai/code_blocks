@@ -1,12 +1,11 @@
 // Connects the pure engine to the browser: runtime state, timers, storage.
 
-import { toBool, toList, toNumber, toRecord, toText } from '@code-blocks/engine/convert';
+import { coerceTo, toBool, toNumber, toText } from '@code-blocks/engine/convert';
 import { Interpreter } from '@code-blocks/engine/interpreter';
 import type { GraphError, HostApi } from '@code-blocks/engine/types';
 import { appStoragePrefix } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { findInProject } from '../model/tree';
-import type { Variable } from '../model/types';
 import { clearRunLog, logError, logInput, logStep } from './runLog';
 import { initialRuntime, pushToast, setElementState, useRuntimeStore } from './runtimeStore';
 
@@ -18,23 +17,6 @@ let timers: ReturnType<typeof setInterval>[] = [];
 let host: HostApi | null = null;
 
 const project = () => useProjectStore.getState().project;
-
-function coerce(type: Variable['type'] | undefined, value: unknown): unknown {
-  switch (type) {
-    case 'number':
-      return toNumber(value);
-    case 'boolean':
-      return toBool(value);
-    case 'list':
-      return toList(value);
-    case 'record':
-      return toRecord(value);
-    case 'text':
-      return toText(value);
-    default:
-      return value;
-  }
-}
 
 function flash(nodeId: string) {
   const rt = useRuntimeStore.getState();
@@ -93,7 +75,7 @@ function makeHost(gen: number): HostApi {
     setVar: (id, value) => {
       if (!alive()) return;
       const v = project().variables.find((x) => x.id === id);
-      useRuntimeStore.setState((s) => ({ vars: { ...s.vars, [id]: coerce(v?.type, value) } }));
+      useRuntimeStore.setState((s) => ({ vars: { ...s.vars, [id]: coerceTo(v?.type, value) } }));
     },
     getElementValue: (id) => {
       const el = findInProject(project(), id)?.el;
