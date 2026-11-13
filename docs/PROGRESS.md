@@ -22,6 +22,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Copy and paste | 2026-11-11 | [#10](https://github.com/vrund1999-ai/code_blocks/pull/10) | See below |
 | Layers panel | 2026-11-11 | [#12](https://github.com/vrund1999-ai/code_blocks/pull/12) | See below |
 | Dropdown | 2026-11-11 | [#13](https://github.com/vrund1999-ai/code_blocks/pull/13) | See below |
+| Styling | 2026-11-12 | [#14](https://github.com/vrund1999-ai/code_blocks/pull/14) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -94,6 +95,13 @@ Dropdown included:
 - **Settings panel:** text areas grow with their lines, up to 6.
 - **Tests:** 3 new unit tests and 3 new end-to-end tests.
 
+Styling included:
+- **Settings panel:** every element has a **Style** section with *Width*, *Height*, *Space around* (margin), *Rounded corners*, *Shadow* (none to strong) and *Font*. Sizes are in pixels; an empty box keeps the usual size.
+- **Fonts:** a font set on a Box applies to everything inside it. The screen itself only offers a font, which the whole screen uses.
+- **Layout:** an element with a width set keeps that width in a side-by-side Box, in the designer and when running. An Image's width is now this shared setting.
+- **Older projects** load unchanged: elements without the new settings keep their usual look.
+- **Tests:** 7 new unit tests and 3 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -150,8 +158,9 @@ Dropdown included:
 | EL-5 | Link, divider, spacer | ⬜ | | |
 | EL-6 | Date picker | ⬜ | | |
 | EL-7 | Icon | ⬜ | | |
-| EL-8 | More styling options | ⬜ | | |
+| EL-8 | More styling options | ✅ | 2026-11-12 | [#14](https://github.com/vrund1999-ai/code_blocks/pull/14) |
 | EL-9 | Themes | ⬜ | | |
+| EL-10 | Fill / % sizes and style blocks | ⬜ | | |
 
 ### 5. Logic blocks
 | ID | Item | Status | Completed | PR |
@@ -200,4 +209,4 @@ Dropdown included:
 
 ---
 
-**Totals:** 11 / 68 done · 0 in progress
+**Totals:** 12 / 69 done · 0 in progress
