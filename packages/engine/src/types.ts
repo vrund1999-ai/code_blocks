@@ -3,8 +3,9 @@
 // leaves out the DOM and Node types to make sure of that.
 
 import type { ElementType, GraphNode, ValueType } from './graph';
+import type { CellValue, DataTable, StoredRow } from './tables';
 
-export type NodeCategory = 'events' | 'actions' | 'flow' | 'data' | 'text' | 'lists';
+export type NodeCategory = 'events' | 'actions' | 'flow' | 'data' | 'text' | 'lists' | 'tables';
 
 export interface Pin {
   id: string;
@@ -19,7 +20,7 @@ export interface ConfigField {
   key: string;
   label: string;
   /** `fields` edits a list of named fields ({ id, name }[]), e.g. on "Make record". */
-  type: 'text' | 'number' | 'boolean' | 'select' | 'element' | 'variable' | 'screen' | 'fields';
+  type: 'text' | 'number' | 'boolean' | 'select' | 'element' | 'variable' | 'screen' | 'table' | 'fields';
   elementTypes?: ElementType[];
   variableTypes?: ValueType[];
   options?: { value: string; label: string }[];
@@ -41,6 +42,22 @@ export interface HttpResponse {
   text: string;
 }
 
+/**
+ * A project's data tables. Rows are kept by column id; the table blocks turn
+ * them into records keyed by column name.
+ */
+export interface TablesApi {
+  /** The table's columns, or undefined if the project has no such table. */
+  table(tableId: string): DataTable | undefined;
+  /** Every row, in id order. */
+  rows(tableId: string): Promise<StoredRow[]>;
+  add(tableId: string, values: Record<string, CellValue>): Promise<StoredRow>;
+  /** Changes the given cells. Null when there is no such row. */
+  update(tableId: string, rowId: number, values: Record<string, CellValue>): Promise<StoredRow | null>;
+  /** False when there was no such row. */
+  remove(tableId: string, rowId: number): Promise<boolean>;
+}
+
 /** Everything the engine needs from the outside world. */
 export interface HostApi {
   getVar(variableId: string): unknown;
@@ -55,12 +72,16 @@ export interface HostApi {
   sleep(ms: number): Promise<void>;
   /** Sends a web request. Rejects when the server can't be reached at all. */
   httpRequest(req: HttpRequest): Promise<HttpResponse>;
+  /** Data tables. Hosts without them leave this out, and table blocks say so. */
+  tables?: TablesApi;
 }
 
 export interface NameLookup {
   element(id: unknown): string | undefined;
   variable(id: unknown): string | undefined;
   screen(id: unknown): string | undefined;
+  /** A data table's name. Optional so lookups made before tables still work. */
+  table?(id: unknown): string | undefined;
   /** Is this element inside a List's cards? */
   inList(id: unknown): boolean;
 }
