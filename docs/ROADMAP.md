@@ -61,7 +61,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | UX-9 | Guided onboarding tutorial for first-time users | P2 | |
 | UX-10 | Freely resizable preview (beyond phone/tablet/desktop) | P3 | |
 | UX-11 | Touch / tablet support for the editor | P3 | |
-| UX-12 | Projects menu: close on click-outside instead of mouse-leave | P3 | Today it closes by itself when deleting a project makes it shorter (found by the end-to-end tests) |
+| UX-12 | Projects menu: close on click-outside instead of mouse-leave | P3 | Today it closes by itself when deleting a project makes it shorter (found by the end-to-end tests). This also makes `persistence.spec.ts` › *lists, switches between and deletes projects* flaky in CI: the menu can close just after the test checks it is open (seen on #27, where all three tries failed and a re-run passed) |
 | UX-13 | Handle item-linked settings when an element is moved out of a List | P3 | Today the setting stays linked to an item field and shows nothing; offer to unlink it, or warn |
 | UX-14 | Drag rows in the layers panel to move elements | P3 | Follow-up to UX-2; today elements are moved by dragging on the canvas |
 
