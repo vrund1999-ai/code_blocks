@@ -3,6 +3,8 @@
 
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
+import { rowRoutes } from './rowRoutes';
+import { SqliteRowStore, type RowStore } from './rows';
 import { runGraph } from './run';
 import { MemoryStore, type KeyValueStore } from './store';
 import { parseRunRequest } from './validate';
@@ -12,6 +14,8 @@ export const MAX_BODY_BYTES = 1024 * 1024;
 
 export interface AppOptions {
   store?: KeyValueStore;
+  /** Data table rows. Defaults to a database in memory. */
+  rows?: RowStore;
   timeLimitMs?: number;
 }
 
@@ -19,7 +23,10 @@ const problem = (message: string) => ({ error: { message } });
 
 export function createApp(opts: AppOptions = {}) {
   const store = opts.store ?? new MemoryStore();
+  const rows = opts.rows ?? new SqliteRowStore(':memory:');
   const app = new Hono().basePath('/api');
+
+  app.route('/projects', rowRoutes(rows));
 
   app.get('/health', (c) => c.json({ ok: true }));
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { columnProblem, tableProblem, type DataTable } from './tables';
+import { cellValue, columnProblem, tableProblem, type DataTable } from './tables';
 
 const table: DataTable = {
   id: 't',
@@ -30,5 +30,19 @@ describe('tableProblem', () => {
     expect(tableProblem([table, other], other)).toBe('Another table is already called “contacts”.');
     expect(tableProblem([table, { ...other, name: ' ' }], { ...other, name: ' ' })).toBe('Give this table a name.');
     expect(tableProblem([table, { ...other, name: 'Orders' }], { ...other, name: 'Orders' })).toBeNull();
+  });
+});
+
+describe('cellValue', () => {
+  it('shows stored values as the column’s kind', () => {
+    expect(cellValue('text', 36)).toBe('36');
+    expect(cellValue('text', null)).toBe('');
+    expect(cellValue('number', '36')).toBe(36);
+    expect(cellValue('number', 'abc')).toBe(0);
+    expect(cellValue('number', '')).toBeNull();
+    expect(cellValue('number', undefined)).toBeNull();
+    expect(cellValue('boolean', 'no')).toBe(false);
+    expect(cellValue('boolean', 'yes')).toBe(true);
+    expect(cellValue('boolean', null)).toBe(false);
   });
 });
