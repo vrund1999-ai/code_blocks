@@ -8,7 +8,17 @@ import { useRuntimeStore } from '../runtime/runtimeStore';
 import { useDesignDnd, type DragData } from './DesignDnd';
 import { useLayerHover } from './LayersPanel';
 
-function DesignNode({ el, isRoot, children }: { el: UIElement; isRoot: boolean; children: ReactNode }) {
+function DesignNode({
+  el,
+  isRoot,
+  fixedWidth,
+  children,
+}: {
+  el: UIElement;
+  isRoot: boolean;
+  fixedWidth: boolean;
+  children: ReactNode;
+}) {
   const { draggingId } = useDesignDnd();
   const selected = useProjectStore((s) => s.selection?.kind === 'element' && s.selection.id === el.id);
   const select = useProjectStore((s) => s.select);
@@ -31,6 +41,7 @@ function DesignNode({ el, isRoot, children }: { el: UIElement; isRoot: boolean; 
         'el-wrap',
         `el-wrap-${el.type}`,
         isRoot && 'el-wrap-root',
+        fixedWidth && 'fixed-width',
         selected && 'selected',
         hovered && 'layer-hover',
         draggingId === el.id && 'dragging',
@@ -94,8 +105,8 @@ export function DesignCanvas() {
 
   const hooks = useMemo<DesignHooks>(
     () => ({
-      wrap: (el, isRoot, content) => (
-        <DesignNode key={el.id} el={el} isRoot={isRoot}>
+      wrap: (el, isRoot, content, fixedWidth) => (
+        <DesignNode key={el.id} el={el} isRoot={isRoot} fixedWidth={fixedWidth}>
           {content}
         </DesignNode>
       ),

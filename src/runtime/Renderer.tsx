@@ -2,6 +2,7 @@ import { createContext, useContext, type CSSProperties, type ReactNode } from 'r
 import { toBool, toList, toNumber, toText } from '../engine/convert';
 import { cardValue, type CardItem } from './cards';
 import { dropdownChoices } from '../model/elements';
+import { elementStyle, hasFixedWidth } from '../model/style';
 import { useProjectStore } from '../model/projectStore';
 import type { UIElement } from '../model/types';
 import { fireChange, fireClick, fireListDelete } from './controller';
@@ -15,7 +16,8 @@ import { setElementState, useRuntimeStore } from './runtimeStore';
 export type RenderMode = 'design' | 'static' | 'run';
 
 export interface DesignHooks {
-  wrap(el: UIElement, isRoot: boolean, content: ReactNode): ReactNode;
+  /** `fixedWidth`: the element has a width set, so its wrapper shouldn't fill a row. */
+  wrap(el: UIElement, isRoot: boolean, content: ReactNode, fixedWidth: boolean): ReactNode;
   dropIndex(containerId: string): number | null;
 }
 
@@ -61,6 +63,8 @@ export function ElementView({
   if (!visible && mode !== 'design') return null;
 
   const run = mode === 'run';
+  // Size, spacing and look settings shared by every element.
+  const box = elementStyle(p, isRoot);
   let content: ReactNode;
 
   switch (el.type) {
@@ -72,6 +76,7 @@ export function ElementView({
         gap: toNumber(p.gap),
         padding: toNumber(p.padding),
         background: toText(p.background) || undefined,
+        ...box,
       };
       const drop = design?.dropIndex(el.id) ?? null;
       const kids = childViews(el, mode, design, row, drop);
@@ -93,7 +98,7 @@ export function ElementView({
       content = (
         <div
           className="el el-text"
-          style={{ ...TEXT_SIZES[String(p.size)], fontWeight: p.bold ? 700 : 400, color: toText(p.color) || undefined }}
+          style={{ ...TEXT_SIZES[String(p.size)], fontWeight: p.bold ? 700 : 400, color: toText(p.color) || undefined, ...box }}
         >
           {toText(p.text) || (mode === 'design' ? <span className="placeholder">(empty text)</span> : ' ')}
         </div>
@@ -103,6 +108,7 @@ export function ElementView({
       content = (
         <button
           className={`el el-button ${p.variant === 'secondary' ? 'secondary' : 'primary'}`}
+          style={box}
           onClick={run ? () => fireClick(el.id, card ? { item: card.item, index: card.index } : undefined) : undefined}
           tabIndex={run ? 0 : -1}
           type="button"
@@ -115,6 +121,7 @@ export function ElementView({
       content = (
         <input
           className="el el-input"
+          style={box}
           placeholder={toText(p.placeholder)}
           value={toText(p.value)}
           readOnly={!run}
@@ -145,7 +152,7 @@ export function ElementView({
       break;
     case 'checkbox':
       content = (
-        <label className="el el-checkbox">
+        <label className="el el-checkbox" style={box}>
           <input
             type="checkbox"
             checked={toBool(p.checked)}
@@ -171,6 +178,7 @@ export function ElementView({
       content = (
         <select
           className="el el-dropdown"
+          style={box}
           aria-label={el.name}
           value={value}
           disabled={!run}
@@ -198,11 +206,10 @@ export function ElementView({
     }
     case 'image': {
       const src = toText(p.src);
-      const width = toNumber(p.width) || undefined;
       content = src ? (
-        <img className="el el-image" src={src} alt={toText(p.alt)} style={{ width }} draggable={false} />
+        <img className="el el-image" src={src} alt={toText(p.alt)} style={box} draggable={false} />
       ) : (
-        <div className="el el-image placeholder-box" style={{ width }}>
+        <div className="el el-image placeholder-box" style={box}>
           🖼 Add an image address
         </div>
       );
@@ -230,7 +237,7 @@ export function ElementView({
       if (mode === 'design' && (el.children.length > 0 || drop !== null)) {
         // The designer shows the card once; it repeats for every item when the app runs.
         content = (
-          <div className="el el-list">
+          <div className="el el-list" style={box}>
             <CardContext.Provider value={{ item: items[0], index: 1, sample: true }}>
               <div className="list-row card-row">
                 <div className={`${cardClass} template`}>{childViews(el, mode, design, row, drop)}</div>
@@ -242,7 +249,7 @@ export function ElementView({
         );
       } else if (el.children.length > 0) {
         content = (
-          <div className="el el-list">
+          <div className="el el-list" style={box}>
             {items.length === 0 ? (
               <div className="list-empty">{toText(p.emptyText)}</div>
             ) : (
@@ -259,7 +266,7 @@ export function ElementView({
         );
       } else {
         content = (
-          <div className="el el-list">
+          <div className="el el-list" style={box}>
             {items.length === 0 ? (
               <div className="list-empty">{toText(p.emptyText)}</div>
             ) : (
@@ -279,7 +286,7 @@ export function ElementView({
   }
 
   if (!visible) content = <div className="hidden-in-design">{content}</div>;
-  return <>{design ? design.wrap(el, isRoot, content) : content}</>;
+  return <>{design ? design.wrap(el, isRoot, content, !isRoot && hasFixedWidth(p)) : content}</>;
 }
 
 /** A box's (or List card's) children, with the drop indicator where a drag would land. */

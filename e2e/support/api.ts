@@ -38,6 +38,6 @@ export async function fakeApi(page: Page, path: string, answer: FakeAnswer | 'un
 
 /** Failed requests log a console error in the browser; drop those the test expects. */
 export function allowFailedRequestErrors(consoleErrors: string[]) {
-  const rest = consoleErrors.filter((e) => !/Failed to load resource|net::ERR_|Failed to fetch/i.test(e));
+  const rest = consoleErrors.filter((e) => !/Failed to load resource|net::ERR_|Failed to fetch|Cross-Origin Request Blocked|NetworkError when attempting to fetch/i.test(e));
   consoleErrors.splice(0, consoleErrors.length, ...rest);
 }

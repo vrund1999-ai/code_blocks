@@ -12,6 +12,13 @@ export interface PropField {
   /** Only makes sense linked to a variable (such as a List's items). */
   bindOnly?: boolean;
   help?: string;
+  /** A number that may be left empty (for "automatic"). */
+  optional?: boolean;
+  placeholder?: string;
+  /** Shown in the Style section of the Settings panel. */
+  group?: 'style';
+  /** Not offered for the screen itself. */
+  notOnRoot?: boolean;
 }
 
 export interface ElementDef {
@@ -29,7 +36,45 @@ const visibleField: PropField = {
   label: 'Visible',
   type: 'boolean',
   bindable: 'boolean',
+  notOnRoot: true,
 };
+
+/** Size, spacing and look settings that every element has. Empty means automatic. */
+export const STYLE_FIELDS: PropField[] = [
+  { key: 'width', label: 'Width', type: 'number', optional: true, placeholder: 'Auto', group: 'style', notOnRoot: true },
+  { key: 'height', label: 'Height', type: 'number', optional: true, placeholder: 'Auto', group: 'style', notOnRoot: true },
+  { key: 'margin', label: 'Space around', type: 'number', optional: true, placeholder: '0', group: 'style', notOnRoot: true },
+  { key: 'radius', label: 'Rounded corners', type: 'number', optional: true, placeholder: 'Usual', group: 'style', notOnRoot: true },
+  {
+    key: 'shadow',
+    label: 'Shadow',
+    type: 'select',
+    group: 'style',
+    notOnRoot: true,
+    options: [
+      { value: 'none', label: 'None' },
+      { value: 'soft', label: 'Soft' },
+      { value: 'medium', label: 'Medium' },
+      { value: 'strong', label: 'Strong' },
+    ],
+  },
+  {
+    key: 'font',
+    label: 'Font',
+    type: 'select',
+    group: 'style',
+    options: [
+      { value: '', label: 'Same as around it' },
+      { value: 'sans', label: 'Clean (sans-serif)' },
+      { value: 'serif', label: 'Classic (serif)' },
+      { value: 'mono', label: 'Typewriter (monospace)' },
+      { value: 'rounded', label: 'Rounded' },
+      { value: 'handwriting', label: 'Handwriting' },
+    ],
+  },
+];
+
+const STYLE_DEFAULTS = { width: '', height: '', margin: '', radius: '', shadow: 'none', font: '' };
 
 export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
   container: {
@@ -144,7 +189,6 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
     fields: [
       { key: 'src', label: 'Image address (URL)', type: 'text', bindable: 'text' },
       { key: 'alt', label: 'Description', type: 'text' },
-      { key: 'width', label: 'Width', type: 'number' },
       visibleField,
     ],
   },
@@ -214,6 +258,13 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
     ],
   },
 };
+
+// Every element gets the style settings, before "Visible".
+for (const def of Object.values(ELEMENT_DEFS)) {
+  def.defaults = { ...STYLE_DEFAULTS, ...def.defaults };
+  const at = def.fields.indexOf(visibleField);
+  def.fields.splice(at < 0 ? def.fields.length : at, 0, ...STYLE_FIELDS);
+}
 
 export const ELEMENT_ORDER: ElementType[] = [
   'container',

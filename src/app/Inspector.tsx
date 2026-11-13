@@ -112,7 +112,20 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
         editor = <input type="checkbox" checked={Boolean(value)} onChange={(e) => set({ kind: 'static', value: e.target.checked })} />;
         break;
       case 'number':
-        editor = (
+        editor = field.optional ? (
+          // Can be left empty, meaning automatic. No negative sizes.
+          <input
+            type="number"
+            min={0}
+            className="field-input"
+            aria-label={field.label}
+            placeholder={field.placeholder}
+            value={value === '' || value === undefined || value === null ? '' : String(value)}
+            onChange={(e) =>
+              set({ kind: 'static', value: e.target.value === '' ? '' : Math.max(0, Number(e.target.value) || 0) })
+            }
+          />
+        ) : (
           <input
             type="number"
             className="field-input"
@@ -178,6 +191,8 @@ function ElementInspector({ el, isRoot }: { el: UIElement; isRoot: boolean }) {
   const { renameElement, deleteElement, addNode, setTab, duplicateSelection } = useProjectStore.getState();
   const def = ELEMENT_DEFS[el.type];
   const event = EVENT_FOR[el.type];
+  const fields = def.fields.filter((f) => !(isRoot && f.notOnRoot));
+  const styleFields = fields.filter((f) => f.group === 'style');
   const rf = useReactFlow();
 
   const addLogic = () => {
@@ -205,11 +220,31 @@ function ElementInspector({ el, isRoot }: { el: UIElement; isRoot: boolean }) {
           <div className="hint">Used to pick this element in logic blocks.</div>
         </div>
       )}
-      {def.fields
-        .filter((f) => !(isRoot && f.key === 'visible'))
+      {fields
+        .filter((f) => !f.group)
         .map((f) => (
           <PropEditor key={f.key} el={el} field={f} />
         ))}
+      {styleFields.length > 0 && (
+        <section className="style-section" aria-label="Style">
+          <h4>Style</h4>
+          <div className="style-grid">
+            {styleFields
+              .filter((f) => f.type === 'number')
+              .map((f) => (
+                <PropEditor key={f.key} el={el} field={f} />
+              ))}
+          </div>
+          {styleFields
+            .filter((f) => f.type !== 'number')
+            .map((f) => (
+              <PropEditor key={f.key} el={el} field={f} />
+            ))}
+          <div className="hint">
+            {isRoot ? 'The font is used by everything on this screen.' : 'Sizes are in pixels. Leave a box empty for the usual size.'}
+          </div>
+        </section>
+      )}
       <div className="inspector-actions">
         {event && (
           <button className="btn primary" onClick={addLogic}>

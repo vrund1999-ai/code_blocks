@@ -52,7 +52,8 @@ test.describe('Design tab', () => {
 });
 
 test.describe('Logic tab', () => {
-  test('copy several blocks keeps the wire between them', async ({ app, page }) => {
+  test('copy several blocks keeps the wire between them', async ({ app, page, browserName }) => {
+    test.fixme(browserName === 'webkit', 'Ctrl+click selects only one block in WebKit; see QE-11');
     await app.tab('Logic');
     await expect(app.blocks).toHaveCount(4);
     await expect(app.edges).toHaveCount(3);

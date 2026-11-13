@@ -60,8 +60,9 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 | EL-5 | Link, divider and spacer elements | P2 | |
 | EL-6 | Date picker | P3 | |
 | EL-7 | Icon element | P3 | |
-| EL-8 | More styling: width/height, margins, corner radius, shadow, fonts | P1 | |
+| EL-8 | More styling: width/height, margins, corner radius, shadow, fonts | P1 | Shipped: a Style section on every element (width, height, space around, rounded corners, shadow, font); sizes in pixels, empty means automatic; the screen's font applies to the whole screen |
 | EL-9 | App-wide themes (colours, fonts) | P2 | |
+| EL-10 | Sizes as a share of the space (%, fill) and blocks that change an element's style while running | P3 | Follow-up to EL-8, which only takes pixel sizes set in the designer |
 
 ## 5. Logic blocks
 | ID | Item | Priority | Notes |
@@ -106,4 +107,4 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 | QE-8 | Visual regression screenshots for the editor and templates | P3 | Playwright `toHaveScreenshot` |
 | QE-9 | Raise unit test coverage (about 24% today) | P2 | Runtime controller, persistence, model tree |
 | QE-10 | Review React Flow's `hideAttribution` setting | P2 | React Flow asks that only Pro subscribers hide the attribution |
-| QE-11 | Make the end-to-end tests reliable in Firefox and WebKit | P3 | Drag tests are marked `test.fixme` there: pointer drags hang in Firefox automation, and some drops don't register in WebKit. Local headless Firefox on Windows also hit graphics-process crashes and timeouts under parallel load. CI runs Chromium only. |
+| QE-11 | Make the end-to-end tests reliable in Firefox and WebKit | P3 | Drag tests are marked `test.fixme` there: pointer drags hang in Firefox automation, and some drops don't register in WebKit. Local headless Firefox on Windows also hit graphics-process crashes and timeouts under parallel load. In WebKit, Ctrl+click selects only one block in the Logic tab, so that copy test is marked `test.fixme` there too. CI runs Chromium only. |
