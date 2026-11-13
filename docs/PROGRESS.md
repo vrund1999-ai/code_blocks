@@ -100,7 +100,7 @@ Styling included:
 - **Fonts:** a font set on a Box applies to everything inside it. The screen itself only offers a font, which the whole screen uses.
 - **Layout:** an element with a width set keeps that width in a side-by-side Box, in the designer and when running. An Image's width is now this shared setting.
 - **Older projects** load unchanged: elements without the new settings keep their usual look.
-- **Tests:** 7 new unit tests and 3 new end-to-end tests.
+- **Tests:** 6 new unit tests and 3 new end-to-end tests.
 
 ---
 
