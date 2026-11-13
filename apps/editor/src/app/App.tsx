@@ -13,6 +13,7 @@ import { stopApp } from '../runtime/controller';
 import { AppView } from '../runtime/Renderer';
 import { pushToast, useRuntimeStore } from '../runtime/runtimeStore';
 import { TEMPLATES } from '../templates';
+import { DataView } from './DataView';
 import { Inspector } from './Inspector';
 import { ScreensPanel, VariablesPanel } from './SidePanels';
 import { Toolbar } from './Toolbar';
@@ -176,6 +177,8 @@ export function App() {
               <Inspector />
             </main>
           </DesignDnd>
+        ) : tab === 'data' ? (
+          <DataView />
         ) : (
           <main className="workspace">
             <aside className="sidebar">

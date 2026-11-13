@@ -5,6 +5,8 @@ export const PROJECT_VERSION = 1;
 // The logic graph's types belong to the engine, which also runs without the editor.
 import type { ElementType, LogicGraph, ValueType } from '@code-blocks/engine/graph';
 export type { ElementType, GraphEdge, GraphNode, LogicGraph, ValueType } from '@code-blocks/engine/graph';
+import type { DataTable } from '@code-blocks/engine/tables';
+export type { ColumnType, DataTable, TableColumn } from '@code-blocks/engine/tables';
 
 export type PropValue =
   | { kind: 'static'; value: unknown }
@@ -43,5 +45,7 @@ export interface Project {
   version: number;
   screens: Screen[];
   variables: Variable[];
+  /** Data tables: their columns. The rows live on the server. */
+  tables: DataTable[];
   graph: LogicGraph;
 }

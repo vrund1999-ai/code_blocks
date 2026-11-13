@@ -5,9 +5,9 @@ import { cloneElements, cloneNodes, PASTE_OFFSET, type Clip } from './clipboard'
 import { ELEMENT_DEFS } from './elements';
 import { defaultInitial, makeElement, makeProject, makeScreen, newId, nextElementName, nextName } from './factory';
 import { canPlaceInside, collectIds, findElement, findInProject, findParent } from './tree';
-import type { ElementType, GraphEdge, Project, PropValue, UIElement, Variable } from './types';
+import type { ColumnType, ElementType, GraphEdge, Project, PropValue, TableColumn, UIElement, Variable } from './types';
 
-export type Tab = 'design' | 'logic';
+export type Tab = 'design' | 'logic' | 'data';
 /** `ids` lists every selected block when there are several; `id` is the main one. */
 export type Selection = { kind: 'element'; id: string } | { kind: 'node'; id: string; ids?: string[] } | null;
 
@@ -47,6 +47,16 @@ interface Actions {
   addVariable(type: Variable['type']): string;
   updateVariable(id: string, patch: Partial<Omit<Variable, 'id'>>): void;
   deleteVariable(id: string): void;
+
+  /** Adds a table with one text column, "Name". */
+  addTable(): string;
+  renameTable(id: string, name: string): void;
+  deleteTable(id: string): void;
+  addColumn(tableId: string, type: ColumnType): string;
+  updateColumn(tableId: string, columnId: string, patch: Partial<Omit<TableColumn, 'id'>>): void;
+  /** Moves a column one place left (-1) or right (1). */
+  moveColumn(tableId: string, columnId: string, by: -1 | 1): void;
+  deleteColumn(tableId: string, columnId: string): void;
 
   addNode(type: string, position: { x: number; y: number }, config?: Record<string, unknown>): string;
   updateNodeConfig(id: string, patch: Record<string, unknown>): void;
@@ -292,6 +302,50 @@ export const useProjectStore = create<ProjectStore>()(
           }
         }),
 
+      // ---- Data tables ----------------------------------------------------------
+      addTable: () => {
+        const id = newId();
+        const name = nextName(get().project.tables.map((t) => t.name), 'My table');
+        mutate((p) => void p.tables.push({ id, name, columns: [{ id: newId(), name: 'Name', type: 'text' }] }));
+        return id;
+      },
+      renameTable: (id, name) =>
+        mutate((p) => {
+          const t = p.tables.find((x) => x.id === id);
+          if (t) t.name = name;
+        }, `table:${id}:name`),
+      deleteTable: (id) => mutate((p) => void (p.tables = p.tables.filter((t) => t.id !== id))),
+      addColumn: (tableId, type) => {
+        const table = get().project.tables.find((t) => t.id === tableId);
+        if (!table) return '';
+        const id = newId();
+        const base = { text: 'Text', number: 'Number', boolean: 'Yes or no' }[type];
+        const name = nextName(table.columns.map((c) => c.name), base);
+        mutate((p) => void p.tables.find((t) => t.id === tableId)!.columns.push({ id, name, type }));
+        return id;
+      },
+      updateColumn: (tableId, columnId, patch) =>
+        mutate((p) => {
+          const col = p.tables.find((t) => t.id === tableId)?.columns.find((c) => c.id === columnId);
+          if (col) Object.assign(col, patch);
+        }, `column:${columnId}:${Object.keys(patch).join(',')}`),
+      moveColumn: (tableId, columnId, by) => {
+        const cols = get().project.tables.find((t) => t.id === tableId)?.columns ?? [];
+        const i = cols.findIndex((c) => c.id === columnId);
+        // Nothing to do at either end, so no empty undo step.
+        if (i < 0 || i + by < 0 || i + by >= cols.length) return;
+        mutate((p) => {
+          const list = p.tables.find((t) => t.id === tableId)!.columns;
+          const [col] = list.splice(i, 1);
+          list.splice(i + by, 0, col);
+        });
+      },
+      deleteColumn: (tableId, columnId) =>
+        mutate((p) => {
+          const t = p.tables.find((x) => x.id === tableId);
+          if (t) t.columns = t.columns.filter((c) => c.id !== columnId);
+        }),
+
       // ---- Logic graph ----------------------------------------------------------
       addNode: (type, position, config = {}) => {
         const def = getNodeDef(type);
@@ -372,7 +426,7 @@ export const useProjectStore = create<ProjectStore>()(
       },
       paste: () => {
         const clip = get().clipboard;
-        if (!clip || (clip.kind === 'elements') !== (get().tab === 'design')) return [];
+        if (!clip || get().tab !== (clip.kind === 'elements' ? 'design' : 'logic')) return [];
         if (clip.kind === 'nodes') set((s) => void (s.clipboard = { ...clip, pastes: clip.pastes + 1 }));
         return pasteClip(clip.kind === 'nodes' ? clip.pastes + 1 : 1);
       },

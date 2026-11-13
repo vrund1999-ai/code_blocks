@@ -56,8 +56,8 @@ export const appStoragePrefix = (projectId: string) => `cb.app.${projectId}.`;
 
 /** Upgrade older saved projects to the current format. */
 export function migrate(p: Project): Project {
-  // Only one version exists so far; this is where future upgrades go.
-  return { ...p, version: PROJECT_VERSION };
+  // Projects saved before data tables (BE-3) have no `tables`.
+  return { ...p, tables: Array.isArray(p.tables) ? p.tables : [], version: PROJECT_VERSION };
 }
 
 /** Validate an imported JSON file well enough to not crash the editor. */
@@ -69,6 +69,7 @@ export function parseImported(text: string): Project {
     !Array.isArray(data.screens) ||
     data.screens.length === 0 ||
     !Array.isArray(data.variables) ||
+    (data.tables !== undefined && !Array.isArray(data.tables)) ||
     !data.graph ||
     !Array.isArray(data.graph.nodes) ||
     !Array.isArray(data.graph.edges)
