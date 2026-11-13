@@ -33,6 +33,12 @@ export interface HttpRequest {
   url: string;
   headers: Record<string, string>;
   body?: string;
+  /**
+   * Send it from the Code Blocks server instead of the app, for APIs that
+   * don't let apps in a browser read their answers (CORS). Hosts that
+   * already run on the server ignore it.
+   */
+  viaServer?: boolean;
 }
 
 /** The server's answer. `text` is the raw body; the engine turns JSON into values. */
@@ -70,7 +76,10 @@ export interface HostApi {
   storageGet(key: string): unknown;
   storageSet(key: string, value: unknown): void;
   sleep(ms: number): Promise<void>;
-  /** Sends a web request. Rejects when the server can't be reached at all. */
+  /**
+   * Sends a web request. Rejects when the server can't be reached at all; a
+   * HostError's message is shown as the reason.
+   */
   httpRequest(req: HttpRequest): Promise<HttpResponse>;
   /** Data tables. Hosts without them leave this out, and table blocks say so. */
   tables?: TablesApi;
