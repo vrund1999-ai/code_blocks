@@ -1,3 +1,4 @@
+import { isRecord, toList, toText } from '../engine/convert';
 import type { ElementType, PropValue, ValueType } from './types';
 
 /** Describes one editable property of a UI element, used by the Inspector. */
@@ -8,6 +9,8 @@ export interface PropField {
   options?: { value: string; label: string }[];
   /** If set, the user may bind this prop to a variable of a compatible type. */
   bindable?: ValueType;
+  /** Only makes sense linked to a variable (such as a List's items). */
+  bindOnly?: boolean;
   help?: string;
 }
 
@@ -158,6 +161,27 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
       visibleField,
     ],
   },
+  dropdown: {
+    type: 'dropdown',
+    label: 'Dropdown',
+    icon: '▾',
+    description: 'Lets people pick one choice from a list.',
+    canHaveChildren: false,
+    defaults: { options: 'Small\nMedium\nLarge', value: '', placeholder: 'Choose…', optionField: '', visible: true },
+    fields: [
+      {
+        key: 'options',
+        label: 'Choices',
+        type: 'textarea',
+        bindable: 'list',
+        help: 'One choice per line, or 🔗 link a list variable.',
+      },
+      { key: 'optionField', label: 'Field to show (for records)', type: 'text', help: 'For a list of records, such as “name”.' },
+      { key: 'placeholder', label: 'Hint text', type: 'text', help: 'Shown until a choice is picked.' },
+      { key: 'value', label: 'Starting choice', type: 'text', help: 'Leave empty to start with nothing picked.' },
+      visibleField,
+    ],
+  },
   list: {
     type: 'list',
     label: 'List',
@@ -171,6 +195,7 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
         label: 'Items',
         type: 'text',
         bindable: 'list',
+        bindOnly: true,
         help: 'Bind this to a list variable to show its items.',
       },
       { key: 'emptyText', label: 'Text when empty', type: 'text' },
@@ -196,6 +221,7 @@ export const ELEMENT_ORDER: ElementType[] = [
   'button',
   'input',
   'checkbox',
+  'dropdown',
   'image',
   'list',
 ];
@@ -204,6 +230,27 @@ export function defaultProps(type: ElementType): Record<string, PropValue> {
   const out: Record<string, PropValue> = {};
   for (const [k, v] of Object.entries(ELEMENT_DEFS[type].defaults)) {
     out[k] = { kind: 'static', value: structuredClone(v) };
+  }
+  return out;
+}
+
+/**
+ * A dropdown's choices: one per line of typed text, or the items of a linked
+ * list. For records, `field` picks which field is shown. Empty lines and
+ * repeats are left out.
+ */
+export function dropdownChoices(options: unknown, field = ''): string[] {
+  const raw = Array.isArray(options) ? toList(options) : toText(options).split('\n');
+  const key = field.trim().toLowerCase();
+  const out: string[] = [];
+  for (const item of raw) {
+    let text = item;
+    if (isRecord(item)) {
+      const hit = key ? Object.keys(item).find((k) => k.toLowerCase() === key) : undefined;
+      text = hit ? item[hit] : (Object.values(item)[0] ?? '');
+    }
+    const choice = toText(text).trim();
+    if (choice && !out.includes(choice)) out.push(choice);
   }
   return out;
 }

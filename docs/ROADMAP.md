@@ -53,7 +53,7 @@ The engine (`src/engine/`) is already free of React and DOM code. It reaches the
 ## 4. UI elements and styling
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
-| EL-1 | Dropdown (select) element | P1 | |
+| EL-1 | Dropdown (select) element | P1 | Shipped: typed choices or a linked list variable (with a field for records); works with the text box blocks and *When value changes* |
 | EL-2 | List with item templates (cards with several fields) | P1 | Shipped: elements inside a List form a card that repeats per item, settings can show item fields, and card buttons pass their item to *When button clicked*. Text boxes, checkboxes and nested lists can't be repeated in cards yet |
 | EL-3 | Number input / slider | P2 | |
 | EL-4 | Grid / columns layout | P2 | |

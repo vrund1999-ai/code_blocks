@@ -1,6 +1,7 @@
 import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
 import { toBool, toList, toNumber, toText } from '../engine/convert';
 import { cardValue, type CardItem } from './cards';
+import { dropdownChoices } from '../model/elements';
 import { useProjectStore } from '../model/projectStore';
 import type { UIElement } from '../model/types';
 import { fireChange, fireClick, fireListDelete } from './controller';
@@ -162,6 +163,39 @@ export function ElementView({
         </label>
       );
       break;
+    case 'dropdown': {
+      const choices = dropdownChoices(p.options, toText(p.optionField));
+      const value = toText(p.value);
+      // A choice set by logic that isn't in the list still shows, so what you see is what blocks read.
+      if (value && !choices.includes(value)) choices.unshift(value);
+      content = (
+        <select
+          className="el el-dropdown"
+          aria-label={el.name}
+          value={value}
+          disabled={!run}
+          tabIndex={run ? 0 : -1}
+          onChange={
+            run
+              ? (e) => {
+                  setElementState(el.id, { value: e.target.value });
+                  fireChange(el.id, e.target.value);
+                }
+              : undefined
+          }
+        >
+          <option value="" disabled>
+            {toText(p.placeholder) || 'Choose…'}
+          </option>
+          {choices.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      );
+      break;
+    }
     case 'image': {
       const src = toText(p.src);
       const width = toNumber(p.width) || undefined;

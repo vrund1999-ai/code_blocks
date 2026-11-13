@@ -21,6 +21,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Wire suggestions | 2026-11-11 | [#9](https://github.com/vrund1999-ai/code_blocks/pull/9) | See below |
 | Copy and paste | 2026-11-11 | [#10](https://github.com/vrund1999-ai/code_blocks/pull/10) | See below |
 | Layers panel | 2026-11-11 | [#12](https://github.com/vrund1999-ai/code_blocks/pull/12) | See below |
+| Dropdown | 2026-11-11 | [#13](https://github.com/vrund1999-ai/code_blocks/pull/13) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -86,6 +87,13 @@ Layers panel included:
 - **Keyboard:** ↑ and ↓ move through the rows. → opens a row or goes into it, and ← closes it or goes up to the row around it.
 - **Tests:** 3 new unit tests and 5 new end-to-end tests.
 
+Dropdown included:
+- **Element:** a **Dropdown** in the Elements palette lets people pick one choice. Type the choices one per line, or 🔗 link a list variable; for a list of records, *Field to show* picks which field. It also has hint text and a starting choice.
+- **Logic:** *When value changes*, *Get text box value* and *Set text box value* work with dropdowns, and the Settings panel offers *When a choice is picked…*.
+- **Rules:** like text boxes, dropdowns can't go in a List's cards. A choice set by logic that isn't in the list still shows, so what you see is what blocks read.
+- **Settings panel:** text areas grow with their lines, up to 6.
+- **Tests:** 3 new unit tests and 3 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -135,7 +143,7 @@ Layers panel included:
 ### 4. UI elements and styling
 | ID | Item | Status | Completed | PR |
 | --- | --- | --- | --- | --- |
-| EL-1 | Dropdown | ⬜ | | |
+| EL-1 | Dropdown | ✅ | 2026-11-11 | [#13](https://github.com/vrund1999-ai/code_blocks/pull/13) |
 | EL-2 | List item templates (cards) | ✅ | 2026-11-10 | [#5](https://github.com/vrund1999-ai/code_blocks/pull/5) |
 | EL-3 | Number input / slider | ⬜ | | |
 | EL-4 | Grid / columns layout | ⬜ | | |
@@ -192,4 +200,4 @@ Layers panel included:
 
 ---
 
-**Totals:** 10 / 68 done · 0 in progress
+**Totals:** 11 / 68 done · 0 in progress
