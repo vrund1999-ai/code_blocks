@@ -127,3 +127,40 @@ test('an unreachable API with no “If it fails” shows an error on the block',
   await expect(app.block('action.fetch').locator('.block')).toHaveClass(/has-error/);
   allowFailedRequestErrors(consoleErrors);
 });
+
+test('“Send from: the server” reaches APIs that block apps in a browser', async ({ appNoBoot: app, seed, consoleErrors }) => {
+  // The Code Blocks server's own health check doesn't allow other sites (CORS),
+  // so the app can't read it, but the server can.
+  const { b } = loadButtonProject({ url: 'http://127.0.0.1:8787/api/health', field: 'ok' });
+  await seed(b.project);
+  await app.goto();
+
+  await app.run();
+  await app.designCanvas.getByRole('button', { name: 'Load' }).click();
+  await expect(app.toasts().first()).toContainText('for those, set “Send from” to “The server”.');
+  await app.stop();
+  allowFailedRequestErrors(consoleErrors);
+
+  await app.tab('Logic');
+  const block = app.block('action.fetch');
+  await block.getByLabel('Send from').selectOption('server');
+  await expect(block.locator('.block-sentence')).toHaveText('Load data from 127.0.0.1:8787 through the server');
+  await app.run();
+  await app.logicPreview.getByRole('button', { name: 'Load' }).click();
+  await expect(app.logicPreview.locator('.el-text')).toHaveText('true');
+  await expect(app.errorPill).toBeHidden();
+});
+
+test('the server says when it can’t reach an address', async ({ appNoBoot: app, seed, consoleErrors }) => {
+  const { b } = loadButtonProject({ url: 'http://127.0.0.1:1/nothing', via: 'server' });
+  await seed(b.project);
+  await app.goto();
+
+  await app.run();
+  await app.designCanvas.getByRole('button', { name: 'Load' }).click();
+  await expect(app.errorPill).toBeVisible();
+  await expect(app.toasts().first()).toContainText(
+    'The server couldn’t reach 127.0.0.1:1. Check the web address and your internet connection.',
+  );
+  allowFailedRequestErrors(consoleErrors);
+});

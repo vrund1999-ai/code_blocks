@@ -5,7 +5,7 @@ import { Interpreter } from '@code-blocks/engine/interpreter';
 import type { StoredRow } from '@code-blocks/engine/tables';
 import { HostError, type GraphError, type HostApi, type TablesApi } from '@code-blocks/engine/types';
 import { addRow, ApiError, deleteRow, listRows, updateRow } from '../data/rowsApi';
-import { sendForm } from '../data/serverApi';
+import { fetchViaServer, sendForm } from '../data/serverApi';
 import { appStoragePrefix } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { findInProject } from '../model/tree';
@@ -172,7 +172,14 @@ function makeHost(gen: number): HostApi {
       if (alive()) localStorage.setItem(prefix + key, JSON.stringify(value ?? null));
     },
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
-    httpRequest: async ({ method, url, headers, body }) => {
+    httpRequest: async ({ method, url, headers, body, viaServer }) => {
+      if (viaServer) {
+        try {
+          return await fetchViaServer({ method, url, headers, body });
+        } catch (err) {
+          throw new HostError((err as Error).message);
+        }
+      }
       const res = await fetch(url, { method, headers, body, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
       return { status: res.status, statusText: res.statusText, text: await res.text() };
     },

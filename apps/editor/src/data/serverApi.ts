@@ -1,6 +1,7 @@
 // Deploying a project and talking to its server workflows
 // (apps/server/src/workflowRoutes.ts).
 
+import type { HttpRequest, HttpResponse } from '@code-blocks/engine/types';
 import type { Project } from '../model/types';
 import { call } from './api';
 
@@ -98,3 +99,10 @@ export const saveSecret = (projectId: string, name: string, value: string) =>
 
 export const deleteSecret = (projectId: string, name: string) =>
   call<{ ok: true }>(secretUrl(projectId, name), { method: 'DELETE' }, SERVER_OFFLINE);
+
+export const FETCH_OFFLINE =
+  'Can’t reach the Code Blocks server, so requests sent from the server can’t be made. Start it with “npm run dev:server”.';
+
+/** Sends a *Fetch from API* request from the server (apps/server/src/fetchRoutes.ts). */
+export const fetchViaServer = ({ method, url, headers, body }: HttpRequest) =>
+  call<HttpResponse>('/api/fetch', { method: 'POST', body: JSON.stringify({ method, url, headers, body }) }, FETCH_OFFLINE);
