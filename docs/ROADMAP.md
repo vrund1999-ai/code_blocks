@@ -4,6 +4,18 @@ This file lists all the planned next steps and enhancements. Each item has an ID
 
 Priority: **P1** comes next, **P2** is important but can wait, and **P3** is nice to have.
 
+## Next up
+All of the first P1 wave (v1 follow-ups, data tables and server workflows) is done. This is the order for the second wave:
+
+1. **QE-10:** show React Flow's attribution again. A small fix, and React Flow asks that only Pro subscribers hide it.
+2. **BE-13:** try server workflows without deploying, to finish the server workflow work from BE-6.
+3. **BE-8**, then **BE-10:** a secrets store, and *Fetch from API* through the server, so API keys never reach the browser.
+4. **QE-4:** validate the project file format. The server will soon store whole projects (PL-2), so it has to check them first.
+5. **PL-1**, **PL-2**, then **PL-3:** sign-in, projects saved on the server, and apps published to a shareable address.
+6. **BE-11:** host the server, once sign-in (PL-1) and request limits are in place.
+
+Editor, element and block items (UX, EL, LB) stay P2. They can be picked up between these, when a smaller change is wanted.
+
 ---
 
 ## 1. Backend (phase 2)
@@ -18,19 +30,19 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | BE-5 | Table blocks: *Query table*, *Add row*, *Update row*, *Delete row* | P1 | Shipped as *Get rows* (with an optional *where column is* filter), *Add row*, *Update row* and *Delete row* in a new *Tables* group. Rows are records keyed by column name plus `id`. They run in the app (through the server's row routes) and on the server (`TablesApi` in `HostApi`) |
 | BE-6 | Server workflow triggers: *On HTTP request*, *On form submit*, *On schedule* | P1 | Shipped as an *On the server* group: *When web address is called* (`/api/hooks/:projectId/:path`), *When form is sent* (sent from the app by *Send form to server*), *On a schedule* (every N minutes / hours, or daily at a time) and *Reply*. They run from a copy of the project sent with *☁ Server → Deploy*, kept in SQLite, so edits go live only when deployed again. The deploy and web address routes have no sign-in yet (PL-1, BE-11) |
 | BE-7 | *Fetch from API* block (GET/POST, JSON result, pick a field) | P1 | Shipped: Get/Post/Put/Patch/Delete, a dotted *Pick field* path, JSON bodies from records, a *Headers* record, and an *If it fails* branch. It runs in the browser, so only APIs that allow browser apps (CORS) work, and headers such as API keys are visible to anyone using the app (see BE-8, BE-10) |
-| BE-8 | Server-side secrets store for API keys | P2 | Secrets never reach the client |
+| BE-8 | Server-side secrets store for API keys | P1 | Secrets never reach the client |
 | BE-9 | *Send email* block | P3 | Needs the server runtime |
-| BE-10 | Send *Fetch from API* requests through the server | P2 | Reaches APIs that block browser apps (CORS) and lets requests use secrets from BE-8. Needs the server runtime |
-| BE-11 | Host the server runtime: a production build, deployment, and limits on where runs may send web requests | P2 | The server listens on 127.0.0.1 by default. Before it is reachable from the internet, block requests to private networks and add per-project rate limits. Deploying and web addresses need sign-in and limits too (PL-1) |
+| BE-10 | Send *Fetch from API* requests through the server | P1 | Reaches APIs that block browser apps (CORS) and lets requests use secrets from BE-8. Needs the server runtime |
+| BE-11 | Host the server runtime: a production build, deployment, and limits on where runs may send web requests | P1 | The server listens on 127.0.0.1 by default. Before it is reachable from the internet, block requests to private networks and add per-project rate limits. Deploying and web addresses need sign-in and limits too (PL-1) |
 | BE-12 | Clean up rows of deleted tables and projects | P3 | Deleting a table or project in the editor leaves its rows on the server, so undo can bring a table back with its rows. Remove them after a while, or when a project is deleted for good |
-| BE-13 | Try server workflows without deploying | P2 | A *Try it* button on *When web address is called* / *When form is sent* that runs the editor's current copy once with sample data, so changes can be checked before they go live |
+| BE-13 | Try server workflows without deploying | P1 | A *Try it* button on *When web address is called* / *When form is sent* that runs the editor's current copy once with sample data, so changes can be checked before they go live |
 
 ## 2. Platform
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
-| PL-1 | User accounts and sign-in | P2 | |
-| PL-2 | Cloud project storage (replaces localStorage) | P2 | Keep local export/import |
-| PL-3 | Publish an app to a shareable URL | P2 | Run-only view of a project |
+| PL-1 | User accounts and sign-in | P1 | |
+| PL-2 | Cloud project storage (replaces localStorage) | P1 | Keep local export/import |
+| PL-3 | Publish an app to a shareable URL | P1 | Run-only view of a project |
 | PL-4 | Share projects and collaborate | P3 | |
 | PL-5 | Project version history and restore | P3 | |
 | PL-6 | Project gallery with thumbnails | P3 | |
@@ -104,11 +116,11 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | QE-1 | Add the browser end-to-end tests (Playwright) to the repo | P1 | `e2e/`, covering every v1 feature |
 | QE-2 | GitHub Actions CI: test, type-check, build | P1 | |
 | QE-3 | Code-split the bundle (it is currently over 500 kB) | P2 | Lazy-load React Flow / the Logic tab |
-| QE-4 | Validate the project file format (e.g. zod) and test migrations | P2 | |
+| QE-4 | Validate the project file format (e.g. zod) and test migrations | P1 | |
 | QE-5 | Accessibility pass (keyboard, screen readers, contrast) | P2 | Includes icon-only buttons (✕) that have a `title` but no `aria-label`, such as *Delete screen* |
 | QE-6 | Performance with large graphs and screens | P3 | |
 | QE-7 | Export an app as standalone HTML or generated code | P3 | |
 | QE-8 | Visual regression screenshots for the editor and templates | P3 | Playwright `toHaveScreenshot` |
 | QE-9 | Raise unit test coverage (about 24% today) | P2 | Runtime controller, persistence, model tree |
-| QE-10 | Review React Flow's `hideAttribution` setting | P2 | React Flow asks that only Pro subscribers hide the attribution |
+| QE-10 | Review React Flow's `hideAttribution` setting | P1 | React Flow asks that only Pro subscribers hide the attribution |
 | QE-11 | Make the end-to-end tests reliable in Firefox and WebKit | P3 | Drag tests are marked `test.fixme` there: pointer drags hang in Firefox automation, and some drops don't register in WebKit. Local headless Firefox on Windows also hit graphics-process crashes and timeouts under parallel load. In WebKit, Ctrl+click selects only one block in the Logic tab, so that copy test is marked `test.fixme` there too, as is pasting into a settings text box, which depends on the system clipboard there and fails on some runs. CI runs Chromium only. |
