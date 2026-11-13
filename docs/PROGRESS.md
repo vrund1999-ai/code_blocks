@@ -29,6 +29,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Server runtime | 2026-11-13 | [#18](https://github.com/vrund1999-ai/code_blocks/pull/18) | See below |
 | Data tables | 2026-11-13 | [#20](https://github.com/vrund1999-ai/code_blocks/pull/20) | See below |
 | Table rows | 2026-11-13 | [#21](https://github.com/vrund1999-ai/code_blocks/pull/21) | See below |
+| Table blocks | 2026-11-13 | [#22](https://github.com/vrund1999-ai/code_blocks/pull/22) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -148,6 +149,14 @@ Table rows included:
 - **When the server isn't running,** the Data tab says so, with how to start it and *Try again*. Columns can still be designed. A change the server refuses is put back, with its message.
 - **Tests:** 15 new unit tests and 3 new end-to-end tests. The end-to-end tests now start the server too, with its database in memory.
 
+Table blocks included:
+- **A new *Tables* group of blocks:** *Get rows* (every row, or the rows where a column has a value; gives the rows, how many and the first one), *Add row* (from a record, such as one from *Make record*; gives the new row and its id), *Update row* and *Delete row* (by row id; they say whether the row was found).
+- **Rows are records** keyed by column name, plus `id`, so the list and record blocks work on them, and List cards can show a column with *a field of this card's item*. Fields are matched to columns ignoring case, and values are converted to each column's kind.
+- **In the app and on the server:** the editor's host reaches the rows through the server's row routes; the server host reads them from SQLite directly. `POST /api/run` takes the project's `tables`.
+- **Friendly errors:** a table that was deleted, a column that doesn't exist (*“Email” isn't a column of “Contacts”.*), no table picked, or the server not reachable, shown on the block.
+- **Deleting a table** clears it from the blocks that used it (undo brings both back), and pasting blocks into another project clears a table it doesn't have.
+- **Tests:** 10 new unit tests and 3 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -159,7 +168,7 @@ Table rows included:
 | BE-2 | Server runtime | ✅ | 2026-11-13 | [#18](https://github.com/vrund1999-ai/code_blocks/pull/18) |
 | BE-3 | Data tables schema editor | ✅ | 2026-11-13 | [#20](https://github.com/vrund1999-ai/code_blocks/pull/20) |
 | BE-4 | Table data viewer/editor | ✅ | 2026-11-13 | [#21](https://github.com/vrund1999-ai/code_blocks/pull/21) |
-| BE-5 | Table blocks | ⬜ | | |
+| BE-5 | Table blocks | ✅ | 2026-11-13 | [#22](https://github.com/vrund1999-ai/code_blocks/pull/22) |
 | BE-6 | Server workflow triggers | ⬜ | | |
 | BE-7 | Fetch from API block | ✅ | 2026-11-11 | [#6](https://github.com/vrund1999-ai/code_blocks/pull/6) |
 | BE-8 | Secrets store | ⬜ | | |
@@ -257,4 +266,4 @@ Table rows included:
 
 ---
 
-**Totals:** 18 / 71 done · 0 in progress
+**Totals:** 19 / 71 done · 0 in progress
