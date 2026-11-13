@@ -16,13 +16,14 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | BE-3 | Visual **data tables**: a schema editor (columns, types) | P1 | Shipped: a *Data* tab where tables and their *Text*, *Number* and *Yes / No* columns are designed. Columns are saved in the project (`tables`); every row gets an automatic `id`. Rows are stored by the server in **SQLite** (Node's built-in `node:sqlite`), starting with BE-4 / BE-5 |
 | BE-4 | Table data viewer/editor inside the builder | P2 | Shipped: rows under the columns in the Data tab, with add, edit and delete. The server keeps them in SQLite (`node:sqlite`, `apps/server/data/code-blocks.db`), by column id, through `/api/projects/:projectId/tables/:tableId/rows` |
 | BE-5 | Table blocks: *Query table*, *Add row*, *Update row*, *Delete row* | P1 | Shipped as *Get rows* (with an optional *where column is* filter), *Add row*, *Update row* and *Delete row* in a new *Tables* group. Rows are records keyed by column name plus `id`. They run in the app (through the server's row routes) and on the server (`TablesApi` in `HostApi`) |
-| BE-6 | Server workflow triggers: *On HTTP request*, *On form submit*, *On schedule* | P1 | Graphs flagged to run server-side |
+| BE-6 | Server workflow triggers: *On HTTP request*, *On form submit*, *On schedule* | P1 | Shipped as an *On the server* group: *When web address is called* (`/api/hooks/:projectId/:path`), *When form is sent* (sent from the app by *Send form to server*), *On a schedule* (every N minutes / hours, or daily at a time) and *Reply*. They run from a copy of the project sent with *☁ Server → Deploy*, kept in SQLite, so edits go live only when deployed again. The deploy and web address routes have no sign-in yet (PL-1, BE-11) |
 | BE-7 | *Fetch from API* block (GET/POST, JSON result, pick a field) | P1 | Shipped: Get/Post/Put/Patch/Delete, a dotted *Pick field* path, JSON bodies from records, a *Headers* record, and an *If it fails* branch. It runs in the browser, so only APIs that allow browser apps (CORS) work, and headers such as API keys are visible to anyone using the app (see BE-8, BE-10) |
 | BE-8 | Server-side secrets store for API keys | P2 | Secrets never reach the client |
 | BE-9 | *Send email* block | P3 | Needs the server runtime |
 | BE-10 | Send *Fetch from API* requests through the server | P2 | Reaches APIs that block browser apps (CORS) and lets requests use secrets from BE-8. Needs the server runtime |
-| BE-11 | Host the server runtime: a production build, deployment, and limits on where runs may send web requests | P2 | The server listens on 127.0.0.1 by default. Before it is reachable from the internet, block requests to private networks and add per-project rate limits |
+| BE-11 | Host the server runtime: a production build, deployment, and limits on where runs may send web requests | P2 | The server listens on 127.0.0.1 by default. Before it is reachable from the internet, block requests to private networks and add per-project rate limits. Deploying and web addresses need sign-in and limits too (PL-1) |
 | BE-12 | Clean up rows of deleted tables and projects | P3 | Deleting a table or project in the editor leaves its rows on the server, so undo can bring a table back with its rows. Remove them after a while, or when a project is deleted for good |
+| BE-13 | Try server workflows without deploying | P2 | A *Try it* button on *When web address is called* / *When form is sent* that runs the editor's current copy once with sample data, so changes can be checked before they go live |
 
 ## 2. Platform
 | ID | Item | Priority | Notes |
@@ -88,6 +89,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | RT-3 | Step-through debugger with breakpoints | P3 | |
 | RT-4 | Cancel pending *Wait* blocks immediately on Stop | P2 | Today a pending wait finishes, but its effects are ignored |
 | RT-5 | Navigation history and a *Go back* block | P2 | |
+| RT-6 | Run details for server workflow runs | P3 | The ☁ Server menu lists runs with their errors and messages; also show which blocks ran with their values, like the Run log |
 
 ## 7. AI assistance
 | ID | Item | Priority | Notes |

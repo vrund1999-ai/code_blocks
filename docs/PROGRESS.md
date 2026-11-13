@@ -30,6 +30,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Data tables | 2026-11-13 | [#20](https://github.com/vrund1999-ai/code_blocks/pull/20) | See below |
 | Table rows | 2026-11-13 | [#21](https://github.com/vrund1999-ai/code_blocks/pull/21) | See below |
 | Table blocks | 2026-11-13 | [#22](https://github.com/vrund1999-ai/code_blocks/pull/22) | See below |
+| Server workflows | 2026-11-13 | [#23](https://github.com/vrund1999-ai/code_blocks/pull/23) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -157,6 +158,14 @@ Table blocks included:
 - **Deleting a table** clears it from the blocks that used it (undo brings both back), and pasting blocks into another project clears a table it doesn't have.
 - **Tests:** 10 new unit tests and 3 new end-to-end tests.
 
+Server workflows included:
+- **A new *On the server* group of blocks:** *When web address is called* (a name such as `orders`, and a method or *Any*; gives the data sent, the address values and the method), *When form is sent* (a form name; gives the values), *On a schedule* (every few minutes, every few hours, or every day at a time, by the server's clock), *Reply* (an answer and a status code), and *Send form to server* for the app (sends a record and gives back the reply).
+- **Deploying:** the toolbar's *☁ Server* menu sends the project to the server, which keeps the copy in SQLite and runs its workflows from it, even after the editor is closed or the server restarts. The button says *Live* or *Changes not deployed*, and *Stop workflows* takes the project off the server. Server blocks with a settings problem are left out, with *show me*.
+- **The menu lists** the web addresses (with a copy button), forms and schedules of the deployed copy, and the latest 20 runs with their errors and messages.
+- **Server routes:** `GET/PUT/DELETE /api/projects/:projectId/deployment`, `GET …/runs`, `POST …/forms/:form`, and any method on `/api/hooks/:projectId/:path`. JSON and form posts become values; *Reply* sends text as text and other values as JSON.
+- **Saved values on the server** (*Save to device* / *Load from device* in server workflows) are now kept in SQLite, so a schedule can remember things between runs.
+- **Tests:** 25 new unit tests and 3 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -169,13 +178,14 @@ Table blocks included:
 | BE-3 | Data tables schema editor | ✅ | 2026-11-13 | [#20](https://github.com/vrund1999-ai/code_blocks/pull/20) |
 | BE-4 | Table data viewer/editor | ✅ | 2026-11-13 | [#21](https://github.com/vrund1999-ai/code_blocks/pull/21) |
 | BE-5 | Table blocks | ✅ | 2026-11-13 | [#22](https://github.com/vrund1999-ai/code_blocks/pull/22) |
-| BE-6 | Server workflow triggers | ⬜ | | |
+| BE-6 | Server workflow triggers | ✅ | 2026-11-13 | [#23](https://github.com/vrund1999-ai/code_blocks/pull/23) |
 | BE-7 | Fetch from API block | ✅ | 2026-11-11 | [#6](https://github.com/vrund1999-ai/code_blocks/pull/6) |
 | BE-8 | Secrets store | ⬜ | | |
 | BE-9 | Send email block | ⬜ | | |
 | BE-10 | Fetch through a server proxy | ⬜ | | |
 | BE-11 | Host the server runtime | ⬜ | | |
 | BE-12 | Clean up rows of deleted tables and projects | ⬜ | | |
+| BE-13 | Try server workflows without deploying | ⬜ | | |
 
 ### 2. Platform
 | ID | Item | Status | Completed | PR |
@@ -241,6 +251,7 @@ Table blocks included:
 | RT-3 | Step-through debugger | ⬜ | | |
 | RT-4 | Cancel waits on Stop | ⬜ | | |
 | RT-5 | Navigation history / Go back | ⬜ | | |
+| RT-6 | Run details for server workflow runs | ⬜ | | |
 
 ### 7. AI assistance
 | ID | Item | Status | Completed | PR |
@@ -266,4 +277,4 @@ Table blocks included:
 
 ---
 
-**Totals:** 19 / 71 done · 0 in progress
+**Totals:** 20 / 73 done · 0 in progress
