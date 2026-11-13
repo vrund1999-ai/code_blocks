@@ -68,6 +68,17 @@ export function ConfigFieldInput({
           ))}
         </select>
       );
+    case 'table':
+      return (
+        <select className={cls} value={String(value ?? '')} onChange={(e) => onChange(e.target.value || undefined)}>
+          <option value="">{project.tables.length ? 'Pick…' : '(add a table in the Data tab first)'}</option>
+          {project.tables.map((t) => (
+            <option key={t.id} value={t.id}>
+              ▦ {t.name}
+            </option>
+          ))}
+        </select>
+      );
     case 'select':
       return (
         <select className={cls} value={String(value ?? field.default ?? '')} onChange={(e) => onChange(e.target.value)}>

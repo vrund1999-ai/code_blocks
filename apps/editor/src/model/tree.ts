@@ -104,6 +104,7 @@ export function makeNameLookup(project: Project): NameLookup {
     element: (id) => (typeof id === 'string' ? findInProject(project, id)?.el.name : undefined),
     variable: (id) => project.variables.find((v) => v.id === id)?.name,
     screen: (id) => project.screens.find((s) => s.id === id)?.name,
+    table: (id) => project.tables.find((t) => t.id === id)?.name,
     inList: (id) => typeof id === 'string' && enclosingListInProject(project, id) !== null,
   };
 }

@@ -217,4 +217,21 @@ describe('addWiredNode', () => {
     store().setTab('design');
     expect(store().paste()).toHaveLength(1);
   });
+
+  it('clears table blocks that used a deleted table, and pasted blocks whose table is missing', () => {
+    const t = store().addTable();
+    store().setTab('logic');
+    const q = store().addNode('table.query', { x: 0, y: 0 }, { table: t });
+    store().deleteTable(t);
+    expect(store().project.graph.nodes[0].config.table).toBeUndefined();
+    store().undo();
+    expect(store().project.graph.nodes[0].config.table).toBe(t);
+
+    store().select({ kind: 'node', id: q });
+    store().copySelection();
+    store().loadProject(makeProject('Other'));
+    store().setTab('logic');
+    store().paste();
+    expect(store().project.graph.nodes[0]).toMatchObject({ type: 'table.query', config: {} });
+  });
 });

@@ -314,7 +314,12 @@ export const useProjectStore = create<ProjectStore>()(
           const t = p.tables.find((x) => x.id === id);
           if (t) t.name = name;
         }, `table:${id}:name`),
-      deleteTable: (id) => mutate((p) => void (p.tables = p.tables.filter((t) => t.id !== id))),
+      deleteTable: (id) =>
+        mutate((p) => {
+          p.tables = p.tables.filter((t) => t.id !== id);
+          // Table blocks that used it ask for a table again (undo brings both back).
+          for (const n of p.graph.nodes) if (n.config.table === id) delete n.config.table;
+        }),
       addColumn: (tableId, type) => {
         const table = get().project.tables.find((t) => t.id === tableId);
         if (!table) return '';
