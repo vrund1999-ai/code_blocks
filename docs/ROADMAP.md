@@ -13,9 +13,9 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | --- | --- | --- | --- |
 | BE-1 | Split into a monorepo: `packages/engine`, `apps/editor`, `apps/server` | P1 | Shipped: npm workspaces with `packages/engine` and `apps/editor`; the engine owns the graph types and is type-checked without DOM or Node types. `apps/server` is added by BE-2 |
 | BE-2 | Server runtime (Node) that runs graphs using the shared engine | P1 | Shipped: `apps/server`, a Hono server with a server `HostApi` and a `POST /api/run` endpoint that runs one event block of a graph sent with the request. Blocks that touch the screen stop with a friendly message. Saved values are kept in memory until BE-3 picks a database; graphs are sent with each request until BE-6 adds server triggers |
-| BE-3 | Visual **data tables**: a schema editor (columns, types) | P1 | Like a simple spreadsheet |
-| BE-4 | Table data viewer/editor inside the builder | P2 | Browse, add and edit rows by hand |
-| BE-5 | Table blocks: *Query table*, *Add row*, *Update row*, *Delete row* | P1 | Work on both client and server |
+| BE-3 | Visual **data tables**: a schema editor (columns, types) | P1 | Shipped: a *Data* tab where tables and their *Text*, *Number* and *Yes / No* columns are designed. Columns are saved in the project (`tables`); every row gets an automatic `id`. Rows are stored by the server in **SQLite** (Node's built-in `node:sqlite`), starting with BE-4 / BE-5 |
+| BE-4 | Table data viewer/editor inside the builder | P2 | Browse, add and edit rows by hand, in the Data tab under the columns. Rows are kept by the server in SQLite |
+| BE-5 | Table blocks: *Query table*, *Add row*, *Update row*, *Delete row* | P1 | Work on both client and server. Rows are records keyed by column name, plus `id`. Needs the server's SQLite row store; also decide what happens to rows when a column is renamed, re-typed or removed |
 | BE-6 | Server workflow triggers: *On HTTP request*, *On form submit*, *On schedule* | P1 | Graphs flagged to run server-side |
 | BE-7 | *Fetch from API* block (GET/POST, JSON result, pick a field) | P1 | Shipped: Get/Post/Put/Patch/Delete, a dotted *Pick field* path, JSON bodies from records, a *Headers* record, and an *If it fails* branch. It runs in the browser, so only APIs that allow browser apps (CORS) work, and headers such as API keys are visible to anyone using the app (see BE-8, BE-10) |
 | BE-8 | Server-side secrets store for API keys | P2 | Secrets never reach the client |
