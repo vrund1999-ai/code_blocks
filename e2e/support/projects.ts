@@ -1,8 +1,8 @@
 // Builds projects in Node using the app's own model code, so test fixtures
 // always match the real project format.
-import { makeElement, makeProject, makeScreen, newId } from '../../src/model/factory';
-import type { ElementType, GraphEdge, GraphNode, Project, UIElement, Variable } from '../../src/model/types';
-import { TEMPLATES } from '../../src/templates';
+import { makeElement, makeProject, makeScreen, newId } from '../../apps/editor/src/model/factory';
+import type { ElementType, GraphEdge, GraphNode, Project, UIElement, Variable } from '../../apps/editor/src/model/types';
+import { TEMPLATES } from '../../apps/editor/src/templates';
 
 export function template(id: 'blank' | 'hello' | 'counter' | 'todo'): Project {
   const t = TEMPLATES.find((x) => x.id === id);

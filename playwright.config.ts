@@ -24,8 +24,8 @@ export default defineConfig({
   webServer: {
     // CI tests the production bundle; locally the dev server is faster to start.
     command: CI
-      ? `npm run build && npx vite preview --port ${PORT} --strictPort`
-      : `npx vite --port ${PORT} --strictPort`,
+      ? `npm run build && npm run preview -- --port ${PORT} --strictPort`
+      : `npm run dev -- --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !CI,
     timeout: 120_000,

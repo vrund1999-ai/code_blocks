@@ -25,6 +25,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Styling | 2026-11-12 | [#14](https://github.com/vrund1999-ai/code_blocks/pull/14) | See below |
 | Live values on wires | 2026-11-12 | [#15](https://github.com/vrund1999-ai/code_blocks/pull/15) | See below |
 | Run log | 2026-11-12 | [#16](https://github.com/vrund1999-ai/code_blocks/pull/16) | See below |
+| Monorepo split | 2026-11-13 | [#17](https://github.com/vrund1999-ai/code_blocks/pull/17) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -116,6 +117,11 @@ Run log included:
 - **Engine:** the interpreter reports event data (`onNodeRun`) and the inputs a running block reads (`onInput`).
 - **Tests:** 7 new unit tests and 2 new end-to-end tests.
 
+Monorepo split included:
+- **Layout:** the repo is an npm workspace. The engine is its own package, `packages/engine` (`@code-blocks/engine`), and the editor moved to `apps/editor`. File history is kept (`git mv`). `apps/server` comes with BE-2.
+- **Engine boundary:** the graph types (`GraphNode`, `GraphEdge`, `LogicGraph`, `ValueType`, `ElementType`) moved into the engine, which no longer imports anything from the editor. Its type-check leaves out the DOM and Node types, so browser- or server-only code there fails `npm run typecheck`.
+- **Unchanged:** every command still runs from the root, and the app works the same.
+
 ---
 
 ## Roadmap status
@@ -123,7 +129,7 @@ Run log included:
 ### 1. Backend (phase 2)
 | ID | Item | Status | Completed | PR |
 | --- | --- | --- | --- | --- |
-| BE-1 | Monorepo split | ⬜ | | |
+| BE-1 | Monorepo split | ✅ | 2026-11-13 | [#17](https://github.com/vrund1999-ai/code_blocks/pull/17) |
 | BE-2 | Server runtime | ⬜ | | |
 | BE-3 | Data tables schema editor | ⬜ | | |
 | BE-4 | Table data viewer/editor | ⬜ | | |
@@ -223,4 +229,4 @@ Run log included:
 
 ---
 
-**Totals:** 14 / 69 done · 0 in progress
+**Totals:** 15 / 69 done · 0 in progress

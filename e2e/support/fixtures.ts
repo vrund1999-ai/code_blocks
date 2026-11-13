@@ -1,5 +1,5 @@
 import { test as base, expect } from '@playwright/test';
-import type { Project } from '../../src/model/types';
+import type { Project } from '../../apps/editor/src/model/types';
 import { AppPage } from './AppPage';
 
 interface Fixtures {
@@ -33,7 +33,7 @@ export const test = base.extend<Fixtures>({
 
   seed: async ({ page }, use) => {
     await use(async (project, appStorage = {}) => {
-      // Same keys as saveProject() in src/model/persistence.ts.
+      // Same keys as saveProject() in apps/editor/src/model/persistence.ts.
       await page.addInitScript(
         ({ project, appStorage }) => {
           if (sessionStorage.getItem('cb.e2e.seeded')) return;
