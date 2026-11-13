@@ -9,7 +9,8 @@ Build apps without writing code. Lay out your screens by dragging elements, make
 ```bash
 npm install
 npm run dev        # open http://localhost:5173
-npm test           # unit tests (engine + project store)
+npm run dev:server # server runtime at http://127.0.0.1:8787/api (optional)
+npm test           # unit tests (engine, editor, server)
 npm run build      # production build of the editor (apps/editor/dist)
 ```
 
@@ -19,7 +20,7 @@ Use Node 24 (see `.nvmrc`). The repo is an npm workspace: run every command from
 
 | Command | What it does |
 | --- | --- |
-| `npm test` | Unit tests (Vitest) for the engine and the editor, next to the code (`packages/*/src/**/*.test.ts`, `apps/*/src/**/*.test.ts`) |
+| `npm test` | Unit tests (Vitest) for the engine, the editor and the server, next to the code (`packages/*/src/**/*.test.ts`, `apps/*/src/**/*.test.ts`) |
 | `npm run test:coverage` | Unit tests with a coverage report in `coverage/` |
 | `npm run e2e:install` | One-time: download the Chromium build Playwright uses (`e2e:install:all` adds Firefox and WebKit) |
 | `npm run test:e2e` | Browser end-to-end tests (Playwright, Chromium) in `e2e/` |
@@ -70,6 +71,7 @@ The repo is an npm workspace with two packages:
 
 - **`packages/engine`** (`@code-blocks/engine`): runs logic graphs. It is plain TypeScript with no React, DOM or Node code; its `tsconfig.json` leaves those types out to keep it that way. That lets the same engine run in the editor and, later, on a server. Import its files by path, such as `@code-blocks/engine/registry`.
 - **`apps/editor`** (`@code-blocks/editor`): the React app you build apps in.
+- **`apps/server`** (`@code-blocks/server`): runs graphs on a server with the same engine (Hono on Node). `POST /api/run` runs one event block of a graph sent with the request and returns the blocks that ran, the final variable values, messages and any error. Blocks that change or read the screen stop with a friendly message there. In development the editor forwards `/api` to it.
 
 | Path | What's there |
 | --- | --- |
@@ -80,12 +82,13 @@ The repo is an npm workspace with two packages:
 | `apps/editor/src/logic/` | Node-graph editor (React Flow), live wire values, run log panel |
 | `apps/editor/src/app/` | Shell: toolbar, inspector, side panels |
 | `apps/editor/src/templates/` | Starter projects |
+| `apps/server/src/` | Server routes (`app.ts`), server host for the engine (`host.ts`), runs (`run.ts`) and request checks (`validate.ts`) |
 | `e2e/` | Playwright end-to-end tests of the editor, and their helpers (`e2e/support/`) |
 | `tsconfig.base.json`, `vitest.config.ts`, `playwright.config.ts` | Settings shared by the whole repo |
 | `.github/` | CI workflow and Dependabot config |
 
 ### Adding a block
-Add a `NodeDef` to one of `packages/engine/src/nodes/*.ts`. It declares pins, settings, a plain-English `sentence`, an optional `validate`, and `execute` (for actions and flow) or `evaluate` (for values). The palette, the block UI, connection checking and the inspector all pick it up automatically. If a block's inputs depend on its settings (like the fields of *Make record*), declare them with `dynamicInputs(config)`. Blocks reach the outside world only through `HostApi` (for example `httpRequest` for web requests), which `apps/editor/src/runtime/controller.ts` implements for the browser.
+Add a `NodeDef` to one of `packages/engine/src/nodes/*.ts`. It declares pins, settings, a plain-English `sentence`, an optional `validate`, and `execute` (for actions and flow) or `evaluate` (for values). The palette, the block UI, connection checking and the inspector all pick it up automatically. If a block's inputs depend on its settings (like the fields of *Make record*), declare them with `dynamicInputs(config)`. Blocks reach the outside world only through `HostApi` (for example `httpRequest` for web requests), which `apps/editor/src/runtime/controller.ts` implements for the browser and `apps/server/src/host.ts` for the server.
 
 ## Roadmap
 All the planned next steps are listed in [docs/ROADMAP.md](docs/ROADMAP.md), and their completion is tracked in [docs/PROGRESS.md](docs/PROGRESS.md).

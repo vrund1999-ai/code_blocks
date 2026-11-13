@@ -26,6 +26,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Live values on wires | 2026-11-12 | [#15](https://github.com/vrund1999-ai/code_blocks/pull/15) | See below |
 | Run log | 2026-11-12 | [#16](https://github.com/vrund1999-ai/code_blocks/pull/16) | See below |
 | Monorepo split | 2026-11-13 | [#17](https://github.com/vrund1999-ai/code_blocks/pull/17) | See below |
+| Server runtime | 2026-11-13 | [#18](https://github.com/vrund1999-ai/code_blocks/pull/18) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -122,6 +123,14 @@ Monorepo split included:
 - **Engine boundary:** the graph types (`GraphNode`, `GraphEdge`, `LogicGraph`, `ValueType`, `ElementType`) moved into the engine, which no longer imports anything from the editor. Its type-check leaves out the DOM and Node types, so browser- or server-only code there fails `npm run typecheck`.
 - **Unchanged:** every command still runs from the root, and the app works the same.
 
+Server runtime included:
+- **`apps/server`** (`@code-blocks/server`): a small [Hono](https://hono.dev) server on Node that runs graphs with the same engine as the editor. Start it with `npm run dev:server`; it listens on `http://127.0.0.1:8787/api`, and the editor's dev server forwards `/api` to it.
+- **`POST /api/run`:** runs one event block of a graph sent with the request (plus its variables and what the event carries) and returns the blocks that ran with their inputs, the variables at the end, any messages, and the error if a block stopped the run. `GET /api/health` answers `{ ok: true }`.
+- **Server host:** variables, *Show message* (collected), *Wait*, *Save/Load from device* (kept per project, in memory until BE-3 picks a database) and *Fetch from API* work on the server. Blocks that change or read the screen, and *Go to screen*, stop with a friendly message on that block.
+- **Limits:** a run may take 10 seconds, requests may be 1 MB, and the log keeps the newest 500 steps.
+- **Engine:** a host can throw `HostError` to show its own message on the block that called it; other errors are now pinned on the block that hit them too. `coerceTo` (variable type conversion) moved into the engine, shared by both hosts.
+- **Tests:** 20 new unit tests (1 engine, 19 server). Nothing on screen changed.
+
 ---
 
 ## Roadmap status
@@ -130,7 +139,7 @@ Monorepo split included:
 | ID | Item | Status | Completed | PR |
 | --- | --- | --- | --- | --- |
 | BE-1 | Monorepo split | ✅ | 2026-11-13 | [#17](https://github.com/vrund1999-ai/code_blocks/pull/17) |
-| BE-2 | Server runtime | ⬜ | | |
+| BE-2 | Server runtime | ✅ | 2026-11-13 | [#18](https://github.com/vrund1999-ai/code_blocks/pull/18) |
 | BE-3 | Data tables schema editor | ⬜ | | |
 | BE-4 | Table data viewer/editor | ⬜ | | |
 | BE-5 | Table blocks | ⬜ | | |
@@ -139,6 +148,7 @@ Monorepo split included:
 | BE-8 | Secrets store | ⬜ | | |
 | BE-9 | Send email block | ⬜ | | |
 | BE-10 | Fetch through a server proxy | ⬜ | | |
+| BE-11 | Host the server runtime | ⬜ | | |
 
 ### 2. Platform
 | ID | Item | Status | Completed | PR |
@@ -229,4 +239,4 @@ Monorepo split included:
 
 ---
 
-**Totals:** 15 / 69 done · 0 in progress
+**Totals:** 16 / 70 done · 0 in progress
