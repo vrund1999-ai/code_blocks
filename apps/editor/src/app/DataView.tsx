@@ -2,9 +2,11 @@
 // header row of a simple spreadsheet.
 
 import { useState } from 'react';
-import { COLUMN_TYPES, columnProblem, tableProblem } from '@code-blocks/engine/tables';
+import { cellValue, COLUMN_TYPES, columnProblem, tableProblem, type CellValue } from '@code-blocks/engine/tables';
+import { useTableRows, type TableRows } from '../data/useTableRows';
+import type { Row } from '../data/rowsApi';
 import { useProjectStore } from '../model/projectStore';
-import type { ColumnType, DataTable } from '../model/types';
+import type { ColumnType, DataTable, TableColumn } from '../model/types';
 
 export const COLUMN_LABELS: Record<ColumnType, string> = {
   text: 'Text',
@@ -47,8 +49,154 @@ function TablesPanel({ active, onOpen }: { active: string | null; onOpen(id: str
   );
 }
 
+/** One cell of a row. Text and numbers save when you leave the cell or press Enter. */
+function Cell({ row, column, label, onSave }: { row: Row; column: TableColumn; label: string; onSave(v: CellValue): void }) {
+  const value = cellValue(column.type, row.values[column.id]);
+  const shown = value === null ? '' : String(value);
+  const [draft, setDraft] = useState<string | null>(null);
+
+  if (column.type === 'boolean') {
+    return (
+      <td>
+        <input type="checkbox" aria-label={label} checked={value === true} onChange={(e) => onSave(e.target.checked)} />
+      </td>
+    );
+  }
+  const commit = () => {
+    if (draft === null) return;
+    setDraft(null);
+    if (draft === shown) return;
+    if (column.type === 'number') onSave(draft.trim() === '' ? null : Number(draft));
+    else onSave(draft);
+  };
+  return (
+    <td>
+      <input
+        className="cell-input"
+        type={column.type === 'number' ? 'number' : 'text'}
+        aria-label={label}
+        value={draft ?? shown}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+          if (e.key === 'Escape') setDraft(null);
+        }}
+      />
+    </td>
+  );
+}
+
+/** Deleting a row can't be undone, so it asks first, right in the row. */
+function DeleteRow({ id, onDelete }: { id: number; onDelete(): void }) {
+  const [asking, setAsking] = useState(false);
+  if (!asking) {
+    return (
+      <button type="button" className="icon-btn" aria-label={`Delete row ${id}`} title="Delete row" onClick={() => setAsking(true)}>
+        ✕
+      </button>
+    );
+  }
+  return (
+    <span className="row-confirm">
+      <button type="button" className="btn danger small" onClick={onDelete}>
+        Delete row {id}
+      </button>
+      <button type="button" className="btn small" onClick={() => setAsking(false)}>
+        Keep
+      </button>
+    </span>
+  );
+}
+
+function RowsBody({ table, data }: { table: DataTable; data: TableRows }) {
+  const span = table.columns.length + 2;
+  if (data.status === 'ready' && data.rows.length > 0) {
+    return (
+      <tbody>
+        {data.rows.map((row) => (
+          <tr key={row.id}>
+            <td className="row-id">{row.id}</td>
+            {table.columns.map((col, i) => (
+              <Cell
+                key={col.id}
+                row={row}
+                column={col}
+                label={`Row ${row.id} ${col.name.trim() || `column ${i + 1}`}`}
+                onSave={(v) => void data.update(row.id, col.id, v)}
+              />
+            ))}
+            <td className="row-actions">
+              <DeleteRow id={row.id} onDelete={() => void data.remove(row.id)} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    );
+  }
+  return (
+    <tbody>
+      <tr className="schema-example" title="An example row, to show what each column holds">
+        <td>1</td>
+        {table.columns.map((col) => (
+          <td key={col.id}>{EXAMPLES[col.type]}</td>
+        ))}
+        <td />
+      </tr>
+      {data.status === 'loading' && (
+        <tr>
+          <td colSpan={span} className="rows-note">
+            Loading rows…
+          </td>
+        </tr>
+      )}
+    </tbody>
+  );
+}
+
+function RowsFooter({ data }: { data: TableRows }) {
+  if (data.status === 'offline' || data.status === 'failed') {
+    return (
+      <div className="rows-offline" role="alert">
+        <span>{data.message}</span>
+        {data.status === 'offline' && (
+          <span className="hint">
+            Rows are kept by the server. Start it with <code>npm run dev:server</code>, then try again.
+          </span>
+        )}
+        <button type="button" className="btn small" onClick={data.reload}>
+          Try again
+        </button>
+      </div>
+    );
+  }
+  if (data.status !== 'ready') return null;
+  return (
+    <div className="rows-footer">
+      <button type="button" className="btn primary small" onClick={() => void data.add()}>
+        + Add row
+      </button>
+      <span className="hint" aria-live="polite">
+        {data.total === 0
+          ? 'No rows yet. The example above shows what a row could hold.'
+          : data.rows.length < data.total
+            ? `Showing ${data.rows.length} of ${data.total} rows.`
+            : `${data.total} ${data.total === 1 ? 'row' : 'rows'}.`}{' '}
+        Rows save as you edit them, and undo doesn’t change them.
+      </span>
+      {data.rows.length < data.total && (
+        <button type="button" className="btn small" onClick={data.loadMore}>
+          Show more
+        </button>
+      )}
+    </div>
+  );
+}
+
 function TableEditor({ table }: { table: DataTable }) {
   const tables = useProjectStore((s) => s.project.tables);
+  const projectId = useProjectStore((s) => s.project.id);
+  const data = useTableRows(projectId, table.id);
   const { renameTable, deleteTable, addColumn, updateColumn, moveColumn, deleteColumn } = useProjectStore.getState();
   const nameProblem = tableProblem(tables, table);
   const last = table.columns.length - 1;
@@ -148,18 +296,13 @@ function TableEditor({ table }: { table: DataTable }) {
                   </th>
                 );
               })}
+              <th className="row-actions" aria-label="Row actions" />
             </tr>
           </thead>
-          <tbody>
-            <tr className="schema-example" title="An example row, to show what each column holds">
-              <td>1</td>
-              {table.columns.map((col) => (
-                <td key={col.id}>{EXAMPLES[col.type]}</td>
-              ))}
-            </tr>
-          </tbody>
+          <RowsBody table={table} data={data} />
         </table>
       </div>
+      <RowsFooter data={data} />
       {table.columns.length === 0 && <p className="hint">This table has no columns yet. Add one below.</p>}
 
       <div className="add-row" role="group" aria-label="Add a column">

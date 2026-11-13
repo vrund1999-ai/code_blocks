@@ -28,6 +28,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Monorepo split | 2026-11-13 | [#17](https://github.com/vrund1999-ai/code_blocks/pull/17) | See below |
 | Server runtime | 2026-11-13 | [#18](https://github.com/vrund1999-ai/code_blocks/pull/18) | See below |
 | Data tables | 2026-11-13 | [#20](https://github.com/vrund1999-ai/code_blocks/pull/20) | See below |
+| Table rows | 2026-11-13 | [#21](https://github.com/vrund1999-ai/code_blocks/pull/21) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -140,6 +141,13 @@ Data tables included:
 - **Fix:** pasting only works in the tab that matches what was copied, so blocks can't be pasted while the Data tab is open.
 - **Tests:** 7 new unit tests and 3 new end-to-end tests.
 
+Table rows included:
+- **Rows in the Data tab:** under each table's columns, a grid of its rows. **+ Add row** adds one with the next id; click a cell to edit it (text and numbers save on Enter or when you leave the cell, Escape gives up the edit; yes/no saves on click). Deleting a row asks first, right in the row. Large tables load 100 rows at a time, with *Show more*.
+- **Kept by the server, in SQLite:** rows live in `apps/server/data/code-blocks.db` (`DB_FILE` changes it; `:memory:` keeps nothing). Each row stores its values by column id, so renaming a column keeps them; after a column changes kind, its values are shown in the new kind. Row ids are never reused.
+- **Server routes:** `GET/POST /api/projects/:projectId/tables/:tableId/rows` and `PATCH/DELETE …/rows/:rowId`, with checks on ids, values (text up to 10,000 characters, numbers, yes/no, empty) and size (64 KB).
+- **When the server isn't running,** the Data tab says so, with how to start it and *Try again*. Columns can still be designed. A change the server refuses is put back, with its message.
+- **Tests:** 15 new unit tests and 3 new end-to-end tests. The end-to-end tests now start the server too, with its database in memory.
+
 ---
 
 ## Roadmap status
@@ -150,7 +158,7 @@ Data tables included:
 | BE-1 | Monorepo split | ✅ | 2026-11-13 | [#17](https://github.com/vrund1999-ai/code_blocks/pull/17) |
 | BE-2 | Server runtime | ✅ | 2026-11-13 | [#18](https://github.com/vrund1999-ai/code_blocks/pull/18) |
 | BE-3 | Data tables schema editor | ✅ | 2026-11-13 | [#20](https://github.com/vrund1999-ai/code_blocks/pull/20) |
-| BE-4 | Table data viewer/editor | ⬜ | | |
+| BE-4 | Table data viewer/editor | ✅ | 2026-11-13 | [#21](https://github.com/vrund1999-ai/code_blocks/pull/21) |
 | BE-5 | Table blocks | ⬜ | | |
 | BE-6 | Server workflow triggers | ⬜ | | |
 | BE-7 | Fetch from API block | ✅ | 2026-11-11 | [#6](https://github.com/vrund1999-ai/code_blocks/pull/6) |
@@ -158,6 +166,7 @@ Data tables included:
 | BE-9 | Send email block | ⬜ | | |
 | BE-10 | Fetch through a server proxy | ⬜ | | |
 | BE-11 | Host the server runtime | ⬜ | | |
+| BE-12 | Clean up rows of deleted tables and projects | ⬜ | | |
 
 ### 2. Platform
 | ID | Item | Status | Completed | PR |
@@ -248,4 +257,4 @@ Data tables included:
 
 ---
 
-**Totals:** 17 / 70 done · 0 in progress
+**Totals:** 18 / 71 done · 0 in progress
