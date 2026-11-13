@@ -5,6 +5,7 @@ import { Interpreter } from '@code-blocks/engine/interpreter';
 import type { StoredRow } from '@code-blocks/engine/tables';
 import { HostError, type GraphError, type HostApi, type TablesApi } from '@code-blocks/engine/types';
 import { addRow, ApiError, deleteRow, listRows, updateRow } from '../data/rowsApi';
+import { sendForm } from '../data/serverApi';
 import { appStoragePrefix } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { findInProject } from '../model/tree';
@@ -176,6 +177,20 @@ function makeHost(gen: number): HostApi {
       return { status: res.status, statusText: res.statusText, text: await res.text() };
     },
     tables: makeTables(alive),
+    sendForm: async (form, values) => {
+      const stopped = () => new HostError('The app was stopped.');
+      if (!alive()) throw stopped();
+      let result;
+      try {
+        result = await sendForm(project().id, form, values);
+      } catch (err) {
+        throw new HostError((err as Error).message);
+      }
+      if (!alive()) throw stopped();
+      for (const m of result.messages) pushToast(m);
+      if (!result.ok) throw new HostError(`The server workflow for form “${form}” stopped: ${result.error?.message ?? 'something went wrong.'}`);
+      return result.reply;
+    },
   };
 }
 

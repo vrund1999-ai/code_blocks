@@ -85,11 +85,12 @@ const project = {
 describe('deploying', () => {
   it('keeps a copy of the project and says what it answers to', async () => {
     const { send } = setup();
-    expect((await send('GET', deployUrl)).status).toBe(404);
+    expect(await (await send('GET', deployUrl)).json()).toEqual({ deployed: false });
 
     const res = await send('PUT', deployUrl, project);
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({
+      deployed: true,
       name: 'Shop',
       fingerprint: 'abc',
       addresses: [
@@ -103,7 +104,7 @@ describe('deploying', () => {
     expect(await (await send('GET', deployUrl)).json()).toMatchObject({ fingerprint: 'abc' });
 
     expect((await send('DELETE', deployUrl)).status).toBe(200);
-    expect((await send('GET', deployUrl)).status).toBe(404);
+    expect(await (await send('GET', deployUrl)).json()).toEqual({ deployed: false });
     expect((await send('DELETE', deployUrl)).status).toBe(404);
   });
 

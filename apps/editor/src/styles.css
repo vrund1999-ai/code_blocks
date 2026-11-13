@@ -234,6 +234,74 @@ textarea {
   padding: 0;
 }
 
+/* ---------- server menu ---------- */
+.server-menu {
+  left: auto;
+  right: 0;
+  width: 420px;
+  padding: 10px;
+}
+.server-status {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+.server-actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.server-badge {
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 4px;
+}
+.server-badge.live {
+  color: #2b8a3e;
+}
+.server-badge.outdated {
+  color: #b35c00;
+}
+.server-list,
+.server-runs {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px;
+  font-size: 13px;
+}
+.server-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+.server-method {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 46px;
+}
+.server-url {
+  flex: 1;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.server-runs-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.server-runs li {
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+.server-runs li.failed {
+  color: #c92a2a;
+}
+.server-run-error {
+  font-size: 12px;
+  margin-left: 18px;
+}
+
 /* ---------- workspace ---------- */
 .workspace {
   flex: 1;

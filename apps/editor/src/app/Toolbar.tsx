@@ -12,6 +12,7 @@ import { useProjectStore } from '../model/projectStore';
 import { startApp, stopApp } from '../runtime/controller';
 import { pushToast, useRuntimeStore } from '../runtime/runtimeStore';
 import { TEMPLATES } from '../templates';
+import { ServerMenu } from './ServerMenu';
 import type { Project } from '../model/types';
 
 function openProject(p: Project) {
@@ -152,6 +153,7 @@ export function Toolbar() {
           }
         }}
       />
+      <ServerMenu />
       {running ? (
         <button className="btn stop" onClick={stopApp}>
           ■ Stop

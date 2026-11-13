@@ -1,5 +1,5 @@
 // Routes for deploying projects and starting their server workflows:
-//   GET    /api/projects/:projectId/deployment   what the deployed copy answers to
+//   GET    /api/projects/:projectId/deployment   { deployed: false }, or what the deployed copy answers to
 //   PUT    /api/projects/:projectId/deployment   deploy { name, fingerprint, graph, variables, tables }
 //   DELETE /api/projects/:projectId/deployment   stop the project's workflows
 //   GET    /api/projects/:projectId/runs         the latest workflow runs
@@ -44,9 +44,10 @@ export function workflowRoutes(workflows: Workflows) {
     await next();
   });
 
+  // Answers { deployed: false } rather than 404, since asking is not a mistake.
   app.get('/:projectId/deployment', (c) => {
     const summary = workflows.summary(c.req.param('projectId'));
-    return summary ? c.json(summary) : c.json(problem(NOT_DEPLOYED), 404);
+    return c.json(summary ? { deployed: true, ...summary } : { deployed: false });
   });
 
   app.put('/:projectId/deployment', limit, async (c) => {
@@ -54,7 +55,7 @@ export function workflowRoutes(workflows: Workflows) {
     if (!read.ok) return c.json(problem('The request body must be JSON.'), 400);
     const req = parseDeployRequest(read.body);
     if (typeof req === 'string') return c.json(problem(req), 400);
-    return c.json(workflows.deploy(c.req.param('projectId'), req));
+    return c.json({ deployed: true, ...workflows.deploy(c.req.param('projectId'), req) });
   });
 
   app.delete('/:projectId/deployment', (c) =>

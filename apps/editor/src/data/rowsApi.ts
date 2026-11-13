@@ -2,6 +2,9 @@
 // development the editor's dev server forwards /api to the server.
 
 import type { CellValue } from '@code-blocks/engine/tables';
+import { call } from './api';
+
+export { ApiError, OfflineError } from './api';
 
 export interface Row {
   id: number;
@@ -17,44 +20,8 @@ export interface RowPage {
 /** How many rows are loaded at a time. */
 export const PAGE_SIZE = 100;
 
-/** The server can't be reached at all (rather than refusing a request). */
-export class OfflineError extends Error {
-  constructor() {
-    super('Can’t reach the Code Blocks server, so rows can’t be loaded or saved.');
-    this.name = 'OfflineError';
-  }
-}
-
-/** The server refused a request. `status` is its HTTP status, such as 404 for a missing row. */
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    readonly status: number,
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
-
 const rowsUrl = (projectId: string, tableId: string) =>
   `/api/projects/${encodeURIComponent(projectId)}/tables/${encodeURIComponent(tableId)}/rows`;
-
-async function call<T>(url: string, init: RequestInit = {}): Promise<T> {
-  let res: Response;
-  try {
-    res = await fetch(url, { ...init, headers: { 'Content-Type': 'application/json' } });
-  } catch {
-    throw new OfflineError();
-  }
-  const body = (await res.json().catch(() => null)) as (T & { error?: { message?: string } }) | null;
-  if (res.ok && body) return body;
-  // The dev server's proxy answers 5xx with no JSON when the server isn't running.
-  if (!body?.error?.message) {
-    if (res.status >= 500) throw new OfflineError();
-    throw new ApiError(`The server answered with error ${res.status}.`, res.status);
-  }
-  throw new ApiError(body.error.message, res.status);
-}
 
 export const listRows = (projectId: string, tableId: string, offset = 0, limit = PAGE_SIZE) =>
   call<RowPage>(`${rowsUrl(projectId, tableId)}?limit=${limit}&offset=${offset}`);
