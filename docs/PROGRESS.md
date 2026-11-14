@@ -39,6 +39,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Projects on your account | 2026-11-13 | [#31](https://github.com/vrund1999-ai/code_blocks/pull/31) | See below |
 | Publish apps | 2026-11-14 | [#32](https://github.com/vrund1999-ai/code_blocks/pull/32) | See below |
 | Ready to host | 2026-11-14 | [#33](https://github.com/vrund1999-ai/code_blocks/pull/33) | See below |
+| Smaller downloads | 2026-11-14 | [#35](https://github.com/vrund1999-ai/code_blocks/pull/35) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -233,6 +234,13 @@ Ready to host included:
 - **Toolbar:** the account button (its email first) and the run problem pill give up room instead of the account button being pushed off the right edge, which happened since the toolbar stays on one line (PL-3) when a long email met a run problem.
 - **Tests:** 38 new unit tests and 4 new end-to-end tests, 3 of them against a third test server set up like a hosted one.
 
+Smaller downloads included:
+- **Published apps load without the editor:** visitors download 349 kB (108 kB gzipped) instead of 727 kB (222 kB).
+- **The Logic tab is loaded on its own:** the editor opens with 463 kB (142 kB gzipped). React Flow and the rest of the Logic tab (200 kB) follow in the background, or right away when the Logic tab is opened first.
+- **A smaller project check:** the project file check uses `zod/mini`, with the same messages.
+- **Zooming to a block** (the error pill's "show me", the Inspector's "add logic") goes through a small request (`logic/focus.ts`) that the graph handles once it's shown, instead of needing React Flow everywhere.
+- **Tests:** the hosted test server checks that a published app loads no editor files, and that the built editor's Logic tab opens. A new test checks that the error pill's "show me" zooms to the block, from the Design tab and with the Logic tab already open.
+
 ---
 
 ## Roadmap status
@@ -335,7 +343,7 @@ Ready to host included:
 | --- | --- | --- | --- | --- |
 | QE-1 | E2E tests in repo | ✅ | 2026-11-10 | [#2](https://github.com/vrund1999-ai/code_blocks/pull/2) |
 | QE-2 | CI workflow | ✅ | 2026-11-10 | [#2](https://github.com/vrund1999-ai/code_blocks/pull/2) |
-| QE-3 | Code-split bundle | ⬜ | | |
+| QE-3 | Code-split bundle | ✅ | 2026-11-14 | [#35](https://github.com/vrund1999-ai/code_blocks/pull/35) |
 | QE-4 | Project format validation | ✅ | 2026-11-13 | [#29](https://github.com/vrund1999-ai/code_blocks/pull/29) |
 | QE-5 | Accessibility pass | ⬜ | | |
 | QE-6 | Large-graph performance | ⬜ | | |
@@ -348,4 +356,4 @@ Ready to host included:
 
 ---
 
-**Totals:** 30 / 77 done · 0 in progress
+**Totals:** 31 / 77 done · 0 in progress

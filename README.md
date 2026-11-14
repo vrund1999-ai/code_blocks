@@ -101,7 +101,7 @@ The repo is an npm workspace with two packages:
 | `apps/editor/src/model/` | Project JSON types, element definitions, Zustand store (undo/redo, copy and paste), persistence |
 | `apps/editor/src/runtime/` | Browser host for the engine (`controller.ts`), live state, run log, and the element `Renderer` |
 | `apps/editor/src/designer/` | Drag-and-drop design canvas (dnd-kit), element palette, layers panel |
-| `apps/editor/src/logic/` | Node-graph editor (React Flow), live wire values, run log panel |
+| `apps/editor/src/logic/` | Node-graph editor (React Flow), live wire values, run log panel. The Logic tab (`app/LogicWorkspace.tsx`) is loaded on its own, and published apps don't load the editor (`main.tsx`) |
 | `apps/editor/src/app/` | Shell: toolbar, inspector, side panels, the Data tab (`DataView.tsx`), the ☁ Server menu (`ServerMenu.tsx`, with `SecretsSection.tsx`), the 👤 account menu (`AccountMenu.tsx`), the 🔗 Publish menu (`PublishMenu.tsx`) and the page visitors of a published app see (`PublishedApp.tsx`), *Try it* for server blocks (`TryPanel.tsx`) |
 | `apps/editor/src/data/` | Server calls: who is signed in (`authStore.ts`), where the open project is saved (`projectSync.ts`, `projectsApi.ts`), publishing (`publishApi.ts`, `publishStore.ts`), table rows (`rowsApi.ts`), deploying and forms (`serverApi.ts`, `deployStore.ts`), trying server workflows (`tryApi.ts`) |
 | `apps/editor/src/templates/` | Starter projects |
