@@ -63,6 +63,13 @@ textarea {
   flex-shrink: 1;
   min-width: 90px;
 }
+.toolbar > .error-pill {
+  flex-shrink: 1;
+  min-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .toolbar > .save-status {
   flex-shrink: 1;
   min-width: 0;

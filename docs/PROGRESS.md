@@ -230,7 +230,7 @@ Ready to host included:
 - **Rate limits:** 10 failed sign-ins per email and address every 15 minutes, 5 new accounts per address an hour, 60 requests through the server and 60 test runs per account a minute, and 120 calls to a project's web addresses and forms a minute. Over a limit, the server answers 429 with how long to wait.
 - **Secrets are encrypted** in the database (AES-256-GCM), with `SECRETS_KEY` or a key file next to the database. Secrets saved before are encrypted when the server starts.
 - **Behind a proxy:** `TRUST_PROXY=1` reads the visitor's address and https from `X-Forwarded-*`, so limits count per visitor and session cookies are marked secure.
-- **Toolbar:** the account button gives up room (its email first) instead of being pushed off the right edge, which happened since the toolbar stays on one line (PL-3) when a long email met a run problem.
+- **Toolbar:** the account button (its email first) and the run problem pill give up room instead of the account button being pushed off the right edge, which happened since the toolbar stays on one line (PL-3) when a long email met a run problem.
 - **Tests:** 38 new unit tests and 4 new end-to-end tests, 3 of them against a third test server set up like a hosted one.
 
 ---
