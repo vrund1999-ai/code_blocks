@@ -6,5 +6,8 @@
   "description": "Runs logic graphs. Plain TypeScript with no React or browser APIs, so it can run in the editor and on a server.",
   "exports": {
     "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
   }
 }
