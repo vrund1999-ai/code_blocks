@@ -5,6 +5,7 @@ import { Interpreter } from '@code-blocks/engine/interpreter';
 import type { StoredRow } from '@code-blocks/engine/tables';
 import { HostError, type GraphError, type HostApi, type TablesApi } from '@code-blocks/engine/types';
 import { addRow, ApiError, deleteRow, listRows, updateRow } from '../data/rowsApi';
+import { listPublishedRows } from '../data/publishApi';
 import { fetchViaServer, sendForm } from '../data/serverApi';
 import { appStoragePrefix } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
@@ -18,6 +19,16 @@ const FETCH_TIMEOUT_MS = 30_000;
 let generation = 0;
 let timers: ReturnType<typeof setInterval>[] = [];
 let host: HostApi | null = null;
+/** Set while running a published app for its visitors (app/PublishedApp.tsx): the slug of its link. */
+let publishedSlug: string | null = null;
+
+/** Runs apps as published ones: rows are read through the app's link, and can't be changed. */
+export function runAsPublished(slug: string | null) {
+  publishedSlug = slug;
+}
+
+export const READ_ONLY_TABLES = 'This app can only read its tables. Only its owner can add, change or delete rows.';
+export const NO_SERVER_REQUESTS = 'Published apps can’t send requests from the server yet. Its owner can set “Send from” to “The app”.';
 
 const project = () => useProjectStore.getState().project;
 
@@ -84,6 +95,27 @@ function makeTables(alive: () => boolean): TablesApi {
       throw new HostError((err as Error).message);
     }
   };
+  const readOnly = async (): Promise<never> => {
+    throw new HostError(READ_ONLY_TABLES);
+  };
+  const slug = publishedSlug;
+  if (slug) {
+    return {
+      table: (id) => project().tables.find((t) => t.id === id),
+      rows: (tableId) =>
+        call(async () => {
+          const all: StoredRow[] = [];
+          for (;;) {
+            const page = await listPublishedRows(slug, tableId, all.length, RUN_PAGE_SIZE);
+            all.push(...page.rows);
+            if (page.rows.length === 0 || all.length >= page.total) return all;
+          }
+        }),
+      add: readOnly,
+      update: readOnly,
+      remove: readOnly,
+    };
+  }
   return {
     table: (id) => project().tables.find((t) => t.id === id),
     rows: (tableId) =>
@@ -174,6 +206,7 @@ function makeHost(gen: number): HostApi {
     sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
     httpRequest: async ({ method, url, headers, body, viaServer }) => {
       if (viaServer) {
+        if (publishedSlug) throw new HostError(NO_SERVER_REQUESTS);
         try {
           return await fetchViaServer({ method, url, headers, body });
         } catch (err) {

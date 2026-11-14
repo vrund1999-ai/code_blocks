@@ -54,6 +54,21 @@ textarea {
   border-bottom: 1px solid var(--border);
   z-index: 20;
 }
+/* The toolbar stays one line: buttons keep their size, and the project name
+   and save status give up room first. */
+.toolbar > * {
+  flex-shrink: 0;
+}
+.toolbar > .project-name {
+  flex-shrink: 1;
+  min-width: 90px;
+}
+.toolbar > .save-status {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .brand {
   font-weight: 700;
   font-size: 16px;
@@ -85,6 +100,7 @@ textarea {
   margin-left: 8px;
 }
 .tab {
+  white-space: nowrap;
   border: none;
   background: transparent;
   padding: 6px 14px;
@@ -1784,5 +1800,46 @@ button.save-status:hover {
 .app.boot {
   display: grid;
   place-items: center;
+  color: var(--muted);
+}
+
+/* Publishing (PL-3) */
+.publish-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 4px 0 8px;
+}
+.publish-link .server-url {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+a.icon-btn {
+  text-decoration: none;
+  color: inherit;
+}
+.published {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--bg, #f6f7fb);
+}
+.published-app {
+  width: min(480px, 100%);
+  flex: 1;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--border);
+}
+.published-message {
+  margin: 20vh 16px 0;
+  text-align: center;
+  color: var(--muted);
+}
+.published-footer {
+  padding: 10px;
+  font-size: 12px;
   color: var(--muted);
 }

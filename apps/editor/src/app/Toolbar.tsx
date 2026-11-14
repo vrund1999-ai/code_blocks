@@ -16,6 +16,7 @@ import { startApp, stopApp } from '../runtime/controller';
 import { pushToast, useRuntimeStore } from '../runtime/runtimeStore';
 import { TEMPLATES } from '../templates';
 import { AccountMenu } from './AccountMenu';
+import { PublishMenu } from './PublishMenu';
 import { ServerMenu } from './ServerMenu';
 import type { Project } from '../model/types';
 
@@ -289,6 +290,7 @@ export function Toolbar() {
         }}
       />
       <ServerMenu />
+      <PublishMenu />
       {running ? (
         <button className="btn stop" onClick={stopApp}>
           ■ Stop

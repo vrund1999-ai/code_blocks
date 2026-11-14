@@ -44,8 +44,11 @@ const deployedParts = (p: Project) => ({ graph: p.graph, variables: p.variables,
  * A short code that changes whenever the deployed parts of the project do,
  * so the editor can tell when the deployed copy is out of date.
  */
-export function fingerprint(p: Project): string {
-  const text = JSON.stringify(deployedParts(p));
+export const fingerprint = (p: Project) => hashOf(deployedParts(p));
+
+/** A short code for a JSON value (FNV-1a and the length), for telling copies apart. */
+export function hashOf(value: unknown): string {
+  const text = JSON.stringify(value);
   let h = 0x811c9dc5;
   for (let i = 0; i < text.length; i++) {
     h ^= text.charCodeAt(i);
