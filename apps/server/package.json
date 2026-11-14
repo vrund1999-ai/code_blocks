@@ -5,13 +5,14 @@
   "type": "module",
   "description": "Runs logic graphs on a server, with the same engine as the editor.",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "tsx watch src/main.ts --allow-private-addresses",
     "start": "tsx src/main.ts"
   },
   "dependencies": {
     "@code-blocks/engine": "*",
     "@hono/node-server": "^2.1.8",
     "hono": "^4.13.18",
+    "undici": "^7.30.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {
