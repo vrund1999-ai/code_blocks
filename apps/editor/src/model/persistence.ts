@@ -1,4 +1,5 @@
-import { PROJECT_VERSION, type Project } from './types';
+import { NOT_A_PROJECT, parseProject, ProjectFormatError } from '@code-blocks/engine/project';
+import type { Project } from './types';
 
 const INDEX_KEY = 'cb.projects';
 const LAST_KEY = 'cb.lastProject';
@@ -31,9 +32,20 @@ export function saveProject(project: Project) {
   localStorage.setItem(LAST_KEY, project.id);
 }
 
+/**
+ * A saved project, upgraded and checked; null if there's none. Throws a
+ * ProjectFormatError when what's saved can't be opened.
+ */
 export function loadProject(id: string): Project | null {
-  const p = readJSON<Project | null>(projectKey(id), null);
-  return p ? migrate(p) : null;
+  const raw = localStorage.getItem(projectKey(id));
+  if (raw === null) return null;
+  let data: unknown;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    throw new ProjectFormatError('Its saved copy is damaged.');
+  }
+  return parseProject(data);
 }
 
 export function loadLastProject(): Project | null {
@@ -54,29 +66,14 @@ export function deleteProject(id: string) {
 
 export const appStoragePrefix = (projectId: string) => `cb.app.${projectId}.`;
 
-/** Upgrade older saved projects to the current format. */
-export function migrate(p: Project): Project {
-  // Projects saved before data tables (BE-3) have no `tables`.
-  return { ...p, tables: Array.isArray(p.tables) ? p.tables : [], version: PROJECT_VERSION };
-}
-
-/** Validate an imported JSON file well enough to not crash the editor. */
+/** Reads a project file: upgraded and checked, or an error saying what's wrong. */
 export function parseImported(text: string): Project {
-  const data = JSON.parse(text) as Partial<Project>;
-  if (
-    !data ||
-    typeof data !== 'object' ||
-    !Array.isArray(data.screens) ||
-    data.screens.length === 0 ||
-    !Array.isArray(data.variables) ||
-    (data.tables !== undefined && !Array.isArray(data.tables)) ||
-    !data.graph ||
-    !Array.isArray(data.graph.nodes) ||
-    !Array.isArray(data.graph.edges)
-  ) {
-    throw new Error('This file does not look like a Code Blocks project.');
+  try {
+    return parseProject(JSON.parse(text));
+  } catch (err) {
+    const why = err instanceof ProjectFormatError ? err.message : NOT_A_PROJECT;
+    throw new ProjectFormatError(`This project file can’t be opened. ${why}`);
   }
-  return migrate(data as Project);
 }
 
 export function downloadProject(project: Project) {

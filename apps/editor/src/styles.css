@@ -826,6 +826,8 @@ textarea.field-input {
   position: fixed;
   top: 64px;
   z-index: 100;
+  /* Long messages, such as why a file can't be opened, wrap instead of crossing the page. */
+  max-width: min(560px, 90%);
 }
 .toast {
   background: #212529;
