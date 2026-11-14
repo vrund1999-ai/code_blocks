@@ -35,6 +35,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Secrets | 2026-11-13 | [#27](https://github.com/vrund1999-ai/code_blocks/pull/27) | See below |
 | Fetch through the server | 2026-11-13 | [#28](https://github.com/vrund1999-ai/code_blocks/pull/28) | See below |
 | Project file checks | 2026-11-13 | [#29](https://github.com/vrund1999-ai/code_blocks/pull/29) | See below |
+| Accounts | 2026-11-13 | [#30](https://github.com/vrund1999-ai/code_blocks/pull/30) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -198,6 +199,13 @@ Project file checks included:
 - **Small repairs:** wires to blocks that aren't there are dropped, and blocks without a place or settings get the defaults.
 - **Tests:** 14 new unit tests (including every template passing the check) and 3 new end-to-end tests.
 
+Accounts included:
+- **👤 in the toolbar:** create an account with an email and a password (at least 8 characters), sign in, and sign out. Signing in is optional: guests still build and run apps in the browser.
+- **Server features need an account:** the ☁ Server menu, table rows in the Data tab, *Try it*, and requests sent from the server ask guests to sign in instead of failing.
+- **Projects belong to accounts:** the first account that uses a project on the server owns it, and other accounts are refused (“This project belongs to another account.”). Web addresses and forms stay open, since they're how apps reach their workflows.
+- **Server:** `POST /api/auth/signup`, `/signin`, `/signout` and `GET /api/auth/me`. Passwords are hashed with scrypt; sessions last 30 days in an HttpOnly, SameSite=Lax cookie, and only their hashes are stored. Requests that change things are refused when they come from other sites (CSRF).
+- **Tests:** 10 new unit tests, 3 new end-to-end tests, and a `signedIn` option for end-to-end tests of the server features.
+
 ---
 
 ## Roadmap status
@@ -222,12 +230,13 @@ Project file checks included:
 ### 2. Platform
 | ID | Item | Status | Completed | PR |
 | --- | --- | --- | --- | --- |
-| PL-1 | Accounts and sign-in | ⬜ | | |
+| PL-1 | Accounts and sign-in | ✅ | 2026-11-13 | [#30](https://github.com/vrund1999-ai/code_blocks/pull/30) |
 | PL-2 | Cloud project storage | ⬜ | | |
 | PL-3 | Publish to a URL | ⬜ | | |
 | PL-4 | Sharing / collaboration | ⬜ | | |
 | PL-5 | Version history | ⬜ | | |
 | PL-6 | Project gallery | ⬜ | | |
+| PL-7 | Password reset and account settings | ⬜ | | |
 
 ### 3. Editor UX
 | ID | Item | Status | Completed | PR |
@@ -309,4 +318,4 @@ Project file checks included:
 
 ---
 
-**Totals:** 25 / 73 done · 0 in progress
+**Totals:** 26 / 74 done · 0 in progress
