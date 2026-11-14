@@ -2,7 +2,7 @@
 //   GET    /api/projects              { projects: [{ id, name, version, updatedAt }] }
 //   GET    /api/projects/:projectId   { project, version, updatedAt }
 //   PUT    /api/projects/:projectId   { project, baseVersion }  → { version, updatedAt }
-//   DELETE /api/projects/:projectId   deletes the saved copy and stops its server workflows
+//   DELETE /api/projects/:projectId   deletes the saved copy, stops its server workflows and unpublishes it
 // app.ts checks that the project is the account's before these run.
 
 import { parseProject, ProjectFormatError } from '@code-blocks/engine/project';
@@ -10,6 +10,7 @@ import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import type { AuthEnv } from './authRoutes';
 import type { SqliteProjects } from './projects';
+import type { SqlitePublications } from './publications';
 import type { Workflows } from './workflows';
 
 /** The biggest project accepted. */
@@ -39,7 +40,7 @@ function parseSave(body: unknown, projectId: string): { project: ReturnType<type
   return { project: parsed, base };
 }
 
-export function projectRoutes(projects: SqliteProjects, workflows: Workflows) {
+export function projectRoutes(projects: SqliteProjects, workflows: Workflows, publications?: SqlitePublications) {
   const app = new Hono<AuthEnv>();
 
   app.get('/', (c) => c.json({ projects: projects.list(c.get('user')!.id) }));
@@ -72,6 +73,7 @@ export function projectRoutes(projects: SqliteProjects, workflows: Workflows) {
   app.delete('/:projectId', (c) => {
     const id = c.req.param('projectId');
     workflows.undeploy(id);
+    publications?.unpublish(id);
     return projects.remove(id) ? c.json({ ok: true }) : c.json(problem(NOT_SAVED), 404);
   });
 

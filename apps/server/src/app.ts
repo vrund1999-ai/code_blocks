@@ -9,6 +9,8 @@ import { authRoutes, canUseProject, loadUser, requireUser, type AuthEnv } from '
 import { fetchRoutes } from './fetchRoutes';
 import { projectRoutes } from './projectRoutes';
 import { SqliteProjects } from './projects';
+import { SqlitePublications } from './publications';
+import { publishedRoutes, publishRoutes } from './publishRoutes';
 import { rowRoutes } from './rowRoutes';
 import { SqliteRowStore, type RowStore } from './rows';
 import { runGraph } from './run';
@@ -37,6 +39,8 @@ export interface AppOptions {
   users?: SqliteUsers;
   /** Projects saved to accounts. Defaults to a database in memory. */
   projects?: SqliteProjects;
+  /** Published apps. Defaults to a database in memory. */
+  publications?: SqlitePublications;
   timeLimitMs?: number;
 }
 
@@ -52,6 +56,7 @@ export function createApp(opts: AppOptions = {}) {
     new Workflows({ deployments: new SqliteDeployments(openDatabase(':memory:')), store, rows, secrets, timeLimitMs: opts.timeLimitMs });
   const users = opts.users ?? new SqliteUsers(openDatabase(':memory:'));
   const projects = opts.projects ?? new SqliteProjects(openDatabase(':memory:'));
+  const publications = opts.publications ?? new SqlitePublications(openDatabase(':memory:'));
   const app = new Hono<AuthEnv>().basePath('/api');
 
   app.use('*', loadUser(users));
@@ -74,11 +79,13 @@ export function createApp(opts: AppOptions = {}) {
   });
 
   app.route('/auth', authRoutes(users));
-  app.route('/projects', projectRoutes(projects, workflows));
+  app.route('/projects', projectRoutes(projects, workflows, publications));
+  app.route('/projects', publishRoutes(publications));
   app.route('/projects', rowRoutes(rows));
   app.route('/projects', workflowRoutes(workflows));
   app.route('/projects', secretRoutes(secrets));
   app.route('/hooks', hookRoutes(workflows));
+  app.route('/published', publishedRoutes(publications, rows));
   app.route('/fetch', fetchRoutes());
 
   app.get('/health', (c) => c.json({ ok: true }));
