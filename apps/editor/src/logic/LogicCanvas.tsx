@@ -20,6 +20,7 @@ import { useProjectStore } from '../model/projectStore';
 import { makeNameLookup } from '../model/tree';
 import { BlockNode, TYPE_COLORS } from './BlockNode';
 import { BlockSuggestMenu, type SuggestRequest } from './BlockSuggestMenu';
+import { useFocusStore } from './focus';
 import { ValueEdge } from './ValueEdge';
 
 export const NODE_DRAG_MIME = 'application/x-codeblocks-node';
@@ -61,6 +62,17 @@ export function LogicCanvas() {
   }, [selection]);
   const nodesRef = useRef(nodes);
   nodesRef.current = nodes;
+
+  // Zooms to a block asked for elsewhere (focus.ts). Asked before the graph
+  // was shown, the first fitView goes to it; asked later, it zooms there.
+  const [firstFocus] = useState(() => useFocusStore.getState().blockId);
+  const [started, setStarted] = useState(false);
+  const focusId = useFocusStore((s) => s.blockId);
+  useEffect(() => {
+    if (!focusId || !started) return;
+    useFocusStore.setState({ blockId: null });
+    void rf.fitView({ nodes: [{ id: focusId }], duration: 300, maxZoom: 1 });
+  }, [focusId, started, rf]);
 
   const edges: Edge[] = useMemo(
     () =>
@@ -210,6 +222,8 @@ export function LogicCanvas() {
     <div
       ref={canvasRef}
       className="logic-canvas"
+      // Busy until the blocks are shown, just after the graph opens.
+      aria-busy={nodes.length !== graph.nodes.length}
       onDragOver={(e) => {
         if (e.dataTransfer.types.includes(NODE_DRAG_MIME)) {
           e.preventDefault();
@@ -242,7 +256,11 @@ export function LogicCanvas() {
         onMoveStart={closeSuggest}
         deleteKeyCode={['Backspace', 'Delete']}
         fitView
-        fitViewOptions={{ padding: 0.2, maxZoom: 1 }}
+        fitViewOptions={{ padding: 0.2, maxZoom: 1, nodes: firstFocus ? [{ id: firstFocus }] : undefined }}
+        onInit={() => {
+          if (useFocusStore.getState().blockId === firstFocus) useFocusStore.setState({ blockId: null });
+          setStarted(true);
+        }}
         minZoom={0.2}
         maxZoom={1.5}
       >

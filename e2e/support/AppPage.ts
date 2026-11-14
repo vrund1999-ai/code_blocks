@@ -38,7 +38,8 @@ export class AppPage {
 
   async tab(name: 'Design' | 'Logic' | 'Data') {
     await this.page.locator('button.tab', { hasText: name }).click();
-    if (name === 'Logic') await expect(this.page.locator('.logic-canvas')).toBeVisible();
+    // The Logic tab is loaded on its own; its blocks are shown just after it opens.
+    if (name === 'Logic') await expect(this.page.locator('.logic-canvas')).toHaveAttribute('aria-busy', 'false');
     else if (name === 'Data') await expect(this.dataArea).toBeVisible();
     else await expect(this.designCanvas).toBeVisible();
   }

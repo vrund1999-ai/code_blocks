@@ -1,21 +1,21 @@
-import { ReactFlowProvider } from '@xyflow/react';
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { ComponentPalette } from '../designer/ComponentPalette';
-import { DesignCanvas, DeviceFrame } from '../designer/DesignCanvas';
+import { DesignCanvas } from '../designer/DesignCanvas';
 import { DesignDnd } from '../designer/DesignDnd';
 import { LayersPanel } from '../designer/LayersPanel';
-import { LogicCanvas } from '../logic/LogicCanvas';
-import { NodePalette } from '../logic/NodePalette';
-import { RunLog } from '../logic/RunLog';
 import { useProjectStore } from '../model/projectStore';
 import { stopApp } from '../runtime/controller';
-import { AppView } from '../runtime/Renderer';
 import { boot, markChanged, saveBeforeClosing, saveCurrent, useSaveStore } from '../data/projectSync';
 import { pushToast, useRuntimeStore } from '../runtime/runtimeStore';
 import { DataView } from './DataView';
 import { Inspector } from './Inspector';
 import { ScreensPanel, VariablesPanel } from './SidePanels';
 import { Toolbar } from './Toolbar';
+
+// The Logic tab, with React Flow, is loaded on its own: once the editor is
+// open, or right away when it's opened first.
+const loadLogic = () => import('./LogicWorkspace');
+const LogicWorkspace = lazy(() => loadLogic().then((m) => ({ default: m.LogicWorkspace })));
 
 const isTyping = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName));
@@ -105,38 +105,6 @@ function useShortcuts() {
   }, []);
 }
 
-/** Live app preview docked beside the logic graph, with the run log under it. */
-function LogicPreview() {
-  const running = useRuntimeStore((s) => s.running);
-  const runScreen = useRuntimeStore((s) => s.screenId);
-  const screenId = useProjectStore((s) => s.activeScreenId);
-  const [open, setOpen] = useState(true);
-  if (!open) {
-    return (
-      <button className="preview-tab" onClick={() => setOpen(true)}>
-        📱 Show preview
-      </button>
-    );
-  }
-  return (
-    <div className="logic-preview">
-      <div className="logic-preview-head">
-        <span>{running ? '▶ Your app (running)' : 'Preview'}</span>
-        <button className="icon-btn" onClick={() => setOpen(false)} title="Hide preview">
-          ✕
-        </button>
-      </div>
-      {!running && <p className="hint">Press ▶ Run, then use the app here and watch your blocks light up.</p>}
-      <div className="logic-preview-body">
-        <DeviceFrame device="phone" title={running ? 'Running' : 'Preview'}>
-          <AppView screenId={running && runScreen ? runScreen : screenId} mode={running ? 'run' : 'static'} />
-        </DeviceFrame>
-      </div>
-      <RunLog />
-    </div>
-  );
-}
-
 function GlobalToasts() {
   const running = useRuntimeStore((s) => s.running);
   const toasts = useRuntimeStore((s) => s.toasts);
@@ -157,6 +125,9 @@ export function App() {
   useShortcuts();
   const tab = useProjectStore((s) => s.tab);
   const ready = useSaveStore((s) => s.ready);
+  useEffect(() => {
+    if (ready) void loadLogic();
+  }, [ready]);
 
   if (!ready) {
     return (
@@ -166,39 +137,29 @@ export function App() {
     );
   }
   return (
-    <ReactFlowProvider>
-      <div className="app">
-        <Toolbar />
-        {tab === 'design' ? (
-          <DesignDnd>
-            <main className="workspace">
-              <aside className="sidebar">
-                <ComponentPalette />
-                <ScreensPanel />
-                <LayersPanel />
-                <VariablesPanel />
-              </aside>
-              <DesignCanvas />
-              <Inspector />
-            </main>
-          </DesignDnd>
-        ) : tab === 'data' ? (
-          <DataView />
-        ) : (
+    <div className="app">
+      <Toolbar />
+      {tab === 'design' ? (
+        <DesignDnd>
           <main className="workspace">
             <aside className="sidebar">
-              <NodePalette />
+              <ComponentPalette />
+              <ScreensPanel />
+              <LayersPanel />
               <VariablesPanel />
             </aside>
-            <div className="logic-area">
-              <LogicCanvas />
-              <LogicPreview />
-            </div>
+            <DesignCanvas />
             <Inspector />
           </main>
-        )}
-        <GlobalToasts />
-      </div>
-    </ReactFlowProvider>
+        </DesignDnd>
+      ) : tab === 'data' ? (
+        <DataView />
+      ) : (
+        <Suspense fallback={<main className="workspace" aria-busy="true" />}>
+          <LogicWorkspace />
+        </Suspense>
+      )}
+      <GlobalToasts />
+    </div>
   );
 }
