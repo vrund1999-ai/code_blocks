@@ -11,6 +11,7 @@ import { loadLastProject, saveProject } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { stopApp } from '../runtime/controller';
 import { AppView } from '../runtime/Renderer';
+import { refreshAuth } from '../data/authStore';
 import { pushToast, useRuntimeStore } from '../runtime/runtimeStore';
 import { TEMPLATES } from '../templates';
 import { DataView } from './DataView';
@@ -23,6 +24,7 @@ const isTyping = (t: EventTarget | null) =>
 
 function useBootAndAutosave() {
   useEffect(() => {
+    void refreshAuth();
     let last = null;
     try {
       last = loadLastProject();

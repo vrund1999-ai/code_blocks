@@ -1703,3 +1703,47 @@ textarea.field-input {
   gap: 6px;
   margin-top: 6px;
 }
+
+/* The account button and menu (AccountMenu.tsx) */
+.account-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.account-email {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-menu {
+  left: auto;
+  right: 0;
+  width: 300px;
+  padding: 10px;
+}
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.account-form .menu-title,
+.account-menu > .menu-title {
+  padding: 0;
+}
+.account-form .hint {
+  margin: 0 0 4px;
+}
+.account-form .field-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+.account-form .link-btn {
+  align-self: flex-start;
+}
+.server-sign-in {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}

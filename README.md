@@ -9,7 +9,7 @@ Build apps without writing code. Lay out your screens by dragging elements, make
 ```bash
 npm install
 npm run dev        # open http://localhost:5173
-npm run dev:server # server runtime at http://127.0.0.1:8787/api (table rows, deployed workflows)
+npm run dev:server # server runtime at http://127.0.0.1:8787/api (accounts, table rows, deployed workflows)
 npm test           # unit tests (engine, editor, server)
 npm run build      # production build of the editor (apps/editor/dist)
 ```
@@ -35,6 +35,7 @@ How the end-to-end tests are organised:
 - **`e2e/support/fixtures.ts`:**
   - Every test fails if the page logs a console error.
   - `seed()` stores a project in localStorage before the app starts.
+  - `test.use({ signedIn: true })` starts each test of a file signed in to a new account, for tests of the server features.
 - **`e2e/support/projects.ts`:** builds test projects with the app's own model code.
 - **`e2e/support/api.ts`:** `fakeApi()` answers web requests from a fake API, so tests never use the real internet.
 - **`e2e/support/AppPage.ts`:** a page object with helpers for dragging, connecting blocks, running the app and so on.
@@ -65,6 +66,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
   - Wires only connect where they make sense. Drag a wire out of a pin and let go on empty space to pick from the blocks that fit it; the one you pick is added already connected.
 - **▦ Data tab:** design your app's **tables**, like the header row of a spreadsheet. Add a table (such as *Contacts*), then add *Text*, *Number* and *Yes / No* columns, rename them, reorder them and remove them. Every row also gets an automatic `id`. Under the columns, add, edit and delete the table's **rows**. Tables are saved with the project; rows are kept by the server (`npm run dev:server`) in a SQLite database.
 - **▶ Run:** the app becomes live, both on the design canvas and in the preview beside the graph. Each block glows as it runs, and each value wire shows the last value that passed through it (point at it to see the whole value). The **Run log** under the preview lists every block that ran, with the values it used; click a line to jump to its block. A block that isn't set up properly is outlined in red, and the toolbar shows *show me*, which takes you to it.
+- **👤 Sign in:** building and running apps works without an account. The server features (the ☁ Server menu, table rows, *Try it* and requests sent from the server) need one: create it with an email and a password from the 👤 button. A project belongs to the first account that uses it on the server.
 - **☁ Server:** *Deploy* sends the project to the server, which runs its *On the server* workflows from that copy. The button shows *Live*, or *Changes not deployed* after you edit; deploy again to update the server, or *Stop workflows* to take the project off it. The menu lists the project's web addresses (with a copy button), forms and schedules, and its latest runs with their errors and messages. Its *Secrets* section keeps API keys and passwords on the server; the *Secret* block reads them in server workflows, they never reach the app, and runs show their values as •••.
 - **Copy and paste:** Ctrl+C / Ctrl+X / Ctrl+V copy, cut and paste the selected element or blocks, and Ctrl+D duplicates them (⌘ on a Mac). Select several blocks with Ctrl+click or a Shift+drag box; their copies keep the wires between them. Ctrl+Z / Ctrl+Y undo and redo.
 - Projects are saved automatically in your browser. Use **Projects** to start from a template (Hello Name, Counter, To-do List) and **Export / Import** to move projects around as `.json` files. Imported and saved projects are checked first; a file that can't be opened says where it goes wrong, and files from older versions are upgraded.
@@ -84,10 +86,10 @@ The repo is an npm workspace with two packages:
 | `apps/editor/src/runtime/` | Browser host for the engine (`controller.ts`), live state, run log, and the element `Renderer` |
 | `apps/editor/src/designer/` | Drag-and-drop design canvas (dnd-kit), element palette, layers panel |
 | `apps/editor/src/logic/` | Node-graph editor (React Flow), live wire values, run log panel |
-| `apps/editor/src/app/` | Shell: toolbar, inspector, side panels, the Data tab (`DataView.tsx`), the ☁ Server menu (`ServerMenu.tsx`, with `SecretsSection.tsx`), *Try it* for server blocks (`TryPanel.tsx`) |
-| `apps/editor/src/data/` | Server calls: table rows (`rowsApi.ts`), deploying and forms (`serverApi.ts`, `deployStore.ts`), trying server workflows (`tryApi.ts`) |
+| `apps/editor/src/app/` | Shell: toolbar, inspector, side panels, the Data tab (`DataView.tsx`), the ☁ Server menu (`ServerMenu.tsx`, with `SecretsSection.tsx`), the 👤 account menu (`AccountMenu.tsx`), *Try it* for server blocks (`TryPanel.tsx`) |
+| `apps/editor/src/data/` | Server calls: who is signed in (`authStore.ts`), table rows (`rowsApi.ts`), deploying and forms (`serverApi.ts`, `deployStore.ts`), trying server workflows (`tryApi.ts`) |
 | `apps/editor/src/templates/` | Starter projects |
-| `apps/server/src/` | Server routes (`app.ts`, `rowRoutes.ts`, `workflowRoutes.ts`, `secretRoutes.ts`, `fetchRoutes.ts`), the SQLite database (`db.ts`) with table rows (`rows.ts`), deployed projects (`deployments.ts`), saved values (`store.ts`) and secrets (`secrets.ts`), workflow triggers and schedules (`workflows.ts`), server host for the engine (`host.ts`) and its web requests (`http.ts`), runs (`run.ts`) and request checks (`validate.ts`) |
+| `apps/server/src/` | Server routes (`app.ts`, `authRoutes.ts`, `rowRoutes.ts`, `workflowRoutes.ts`, `secretRoutes.ts`, `fetchRoutes.ts`), the SQLite database (`db.ts`) with accounts and sessions (`users.ts`), table rows (`rows.ts`), deployed projects (`deployments.ts`), saved values (`store.ts`) and secrets (`secrets.ts`), workflow triggers and schedules (`workflows.ts`), server host for the engine (`host.ts`) and its web requests (`http.ts`), runs (`run.ts`) and request checks (`validate.ts`) |
 | `e2e/` | Playwright end-to-end tests of the editor, and their helpers (`e2e/support/`) |
 | `tsconfig.base.json`, `vitest.config.ts`, `playwright.config.ts` | Settings shared by the whole repo |
 | `.github/` | CI workflow and Dependabot config |

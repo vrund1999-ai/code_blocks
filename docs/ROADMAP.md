@@ -11,7 +11,7 @@ All of the first P1 wave (v1 follow-ups, data tables and server workflows) is do
 2. ✅ **BE-13:** try server workflows without deploying, to finish the server workflow work from BE-6.
 3. ✅ **BE-8**, then ✅ **BE-10:** a secrets store, and *Fetch from API* through the server, so API keys never reach the browser.
 4. ✅ **QE-4:** validate the project file format. The server will soon store whole projects (PL-2), so it has to check them first.
-5. **PL-1**, **PL-2**, then **PL-3:** sign-in, projects saved on the server, and apps published to a shareable address.
+5. ✅ **PL-1**, then **PL-2** and **PL-3:** sign-in, projects saved on the server, and apps published to a shareable address.
 6. **BE-11:** host the server, once sign-in (PL-1) and request limits are in place.
 
 Editor, element and block items (UX, EL, LB) stay P2. They can be picked up between these, when a smaller change is wanted.
@@ -33,19 +33,20 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | BE-8 | Server-side secrets store for API keys | P1 | Shipped: *☁ Server → Secrets* adds, replaces and deletes a project's secrets; the server keeps them in SQLite and only ever sends their names back. The *Secret* block reads one in server workflows (it stops with a message in the app), and runs hide the values of secrets they read as ••• in replies, messages, errors, variables and run details. That hiding is a safety net: a workflow that changes a secret before showing it can still reveal it |
 | BE-9 | *Send email* block | P3 | Needs the server runtime |
 | BE-10 | Send *Fetch from API* requests through the server | P1 | Shipped: a *Send from* setting (*The app* / *The server*) and `POST /api/fetch`, for APIs that block browser apps (CORS). The proxy never fills in secrets, since anyone using the app could send them anywhere; apps that need an API key call a server workflow's web address, which uses the *Secret* block. Like the server workflows, the proxy may reach any address, so BE-11 has to limit it before hosting |
-| BE-11 | Host the server runtime: a production build, deployment, and limits on where runs may send web requests | P1 | The server listens on 127.0.0.1 by default. Before it is reachable from the internet, block requests to private networks and add per-project rate limits. Deploying and web addresses need sign-in and limits too (PL-1). So do the secret routes, `POST /api/fetch` (which anyone using an app can call) and `POST /api/run`, which can read a project's secrets; secrets should also be encrypted in the database before hosting |
+| BE-11 | Host the server runtime: a production build, deployment, and limits on where runs may send web requests | P1 | The server listens on 127.0.0.1 by default. Before it is reachable from the internet, block requests to private networks and add per-project rate limits. Sign-in (PL-1) now guards deploying, secrets, rows, `POST /api/run` and `POST /api/fetch`; still needed are limits on sign-in attempts and sign-ups, per-account limits on `POST /api/fetch`, and secrets encrypted in the database |
 | BE-12 | Clean up rows of deleted tables and projects | P3 | Deleting a table or project in the editor leaves its rows on the server, so undo can bring a table back with its rows. Remove them after a while, or when a project is deleted for good |
 | BE-13 | Try server workflows without deploying | P1 | Shipped: a *Try it* section in the settings of *When web address is called*, *When form is sent* and *On a schedule* (*Run now*). It runs the editor's current copy once on the server with sample data, through `POST /api/run` with `replies: true`, and shows the reply, messages and errors; the blocks that ran go to the Run log. Tries use the real tables and saved values |
 
 ## 2. Platform
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
-| PL-1 | User accounts and sign-in | P1 | |
+| PL-1 | User accounts and sign-in | P1 | Shipped: email and password accounts (scrypt), 30-day session cookies, and project ownership (the first account to use a project on the server owns it). Signing in is optional; the server features need it. Not yet: password reset and account settings (PL-7), or limits on sign-in attempts (BE-11) |
 | PL-2 | Cloud project storage (replaces localStorage) | P1 | Keep local export/import |
-| PL-3 | Publish an app to a shareable URL | P1 | Run-only view of a project |
+| PL-3 | Publish an app to a shareable URL | P1 | Run-only view of a project. Web addresses and forms are already open to anyone; table rows are only for the project's owner today, so published apps need a way for their visitors to read and add rows |
 | PL-4 | Share projects and collaborate | P3 | |
 | PL-5 | Project version history and restore | P3 | |
 | PL-6 | Project gallery with thumbnails | P3 | |
+| PL-7 | Password reset by email, and account settings (change email or password, delete the account) | P2 | Needs an email service. Deleting an account should also delete its projects' rows, secrets and deployments |
 
 ## 3. Editor UX
 | ID | Item | Priority | Notes |

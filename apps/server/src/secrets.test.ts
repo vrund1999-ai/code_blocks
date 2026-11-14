@@ -6,6 +6,7 @@ import { runGraph } from './run';
 import { HIDDEN, redact, SqliteSecrets } from './secrets';
 import { MemoryStore } from './store';
 import { data, exec, node } from './testGraph';
+import { asUser } from './testAuth';
 
 const secretStore = () => new SqliteSecrets(openDatabase(':memory:'));
 
@@ -119,7 +120,7 @@ describe('runs that read secrets', () => {
 describe('secret routes', () => {
   const app = () => createApp({ secrets: secretStore() });
   const put = (a: ReturnType<typeof app>, name: string, body: unknown) =>
-    a.request(`/api/projects/p1/secrets/${name}`, {
+    asUser(a)(`/api/projects/p1/secrets/${name}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
@@ -131,13 +132,13 @@ describe('secret routes', () => {
     expect(saved.status).toBe(200);
     expect(await saved.json()).toMatchObject({ name: 'API_KEY' });
 
-    const list = await a.request('/api/projects/p1/secrets');
+    const list = await asUser(a)('/api/projects/p1/secrets');
     const text = await list.text();
     expect(JSON.parse(text).secrets).toEqual([{ name: 'API_KEY', updatedAt: expect.any(String) }]);
     expect(text).not.toContain('abcd1234');
 
-    expect((await a.request('/api/projects/p1/secrets/api_key', { method: 'DELETE' })).status).toBe(200);
-    const gone = await a.request('/api/projects/p1/secrets/api_key', { method: 'DELETE' });
+    expect((await asUser(a)('/api/projects/p1/secrets/api_key', { method: 'DELETE' })).status).toBe(200);
+    const gone = await asUser(a)('/api/projects/p1/secrets/api_key', { method: 'DELETE' });
     expect(gone.status).toBe(404);
     expect(await gone.json()).toEqual({ error: { message: 'There’s no secret “api_key”.' } });
   });
@@ -157,7 +158,7 @@ describe('secret routes', () => {
   it('lets tried runs use the project’s secrets', async () => {
     const a = app();
     await put(a, 'GREETING', { value: 'hello there' });
-    const res = await a.request('/api/run', {
+    const res = await asUser(a)('/api/run', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

@@ -3,6 +3,9 @@ import type { Page } from '@playwright/test';
 import { allowFailedRequestErrors } from './support/api';
 import { expect, test } from './support/fixtures';
 
+// These use the server, which needs an account.
+test.use({ signedIn: true });
+
 /** Waits until autosave has stored this many tables. */
 const tablesSaved = (page: Page, n: number) =>
   expect

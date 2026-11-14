@@ -1,8 +1,22 @@
+import { randomUUID } from 'node:crypto';
 import { test as base, expect } from '@playwright/test';
 import type { Project } from '../../apps/editor/src/model/types';
 import { AppPage } from './AppPage';
 
+/** The password of the accounts tests make. */
+export const TEST_PASSWORD = 'e2e password';
+
+interface Options {
+  /**
+   * Start signed in to a new account, for tests of the server features.
+   * Set it for a whole file with `test.use({ signedIn: true })`.
+   */
+  signedIn: boolean;
+}
+
 interface Fixtures {
+  /** The account the test is signed in to (with `signedIn`), or null. */
+  account: { email: string } | null;
   /** Console errors and uncaught exceptions; any left at the end fails the test. */
   consoleErrors: string[];
   /**
@@ -17,7 +31,18 @@ interface Fixtures {
   appNoBoot: AppPage;
 }
 
-export const test = base.extend<Fixtures>({
+export const test = base.extend<Options & Fixtures>({
+  signedIn: [false, { option: true }],
+
+  account: async ({ page, signedIn }, use) => {
+    if (!signedIn) return use(null);
+    // The page shares cookies with page.request, so it starts signed in.
+    const email = `e2e-${randomUUID()}@example.test`;
+    const res = await page.request.post('/api/auth/signup', { data: { email, password: TEST_PASSWORD } });
+    expect(res.ok(), await res.text()).toBe(true);
+    await use({ email });
+  },
+
   consoleErrors: [
     async ({ page }, use) => {
       const errors: string[] = [];
@@ -50,11 +75,11 @@ export const test = base.extend<Fixtures>({
     });
   },
 
-  appNoBoot: async ({ page }, use) => {
+  appNoBoot: async ({ page, account: _ }, use) => {
     await use(new AppPage(page));
   },
 
-  app: async ({ page }, use) => {
+  app: async ({ page, account: _ }, use) => {
     const app = new AppPage(page);
     await app.goto();
     await use(app);

@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { createApp, MAX_BODY_BYTES } from './app';
 import { exec, node } from './testGraph';
+import { asUser } from './testAuth';
 
 const post = (body: unknown) =>
-  createApp().request('/api/run', {
+  asUser(createApp())('/api/run', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: typeof body === 'string' ? body : JSON.stringify(body),

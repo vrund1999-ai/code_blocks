@@ -2,7 +2,7 @@
 // It listens on this computer only (127.0.0.1) unless HOST says otherwise,
 // because runs can make web requests from wherever the server is.
 
-// Table rows, deployed projects, saved values and secrets are kept in DB_FILE
+// Accounts, table rows, deployed projects, saved values and secrets are kept in DB_FILE
 // (data/code-blocks.db by default, inside apps/server); DB_FILE=:memory:
 // keeps them only while the server runs.
 
@@ -15,6 +15,7 @@ import { SqliteDeployments } from './deployments';
 import { SqliteRowStore } from './rows';
 import { SqliteSecrets } from './secrets';
 import { SqliteStore } from './store';
+import { SqliteUsers } from './users';
 import { Workflows } from './workflows';
 
 const port = Number(process.env.PORT ?? 8787);
@@ -27,10 +28,11 @@ const rows = new SqliteRowStore(db);
 const store = new SqliteStore(db);
 const secrets = new SqliteSecrets(db);
 const deployments = new SqliteDeployments(db);
+const users = new SqliteUsers(db);
 const workflows = new Workflows({ deployments, store, rows, secrets });
 workflows.start();
 
-serve({ fetch: createApp({ rows, store, secrets, workflows }).fetch, port, hostname }, (info) => {
+serve({ fetch: createApp({ rows, store, secrets, workflows, users }).fetch, port, hostname }, (info) => {
   console.log(`Code Blocks server running at http://${info.address}:${info.port}/api`);
   console.log(`Data: ${dbFile === ':memory:' ? 'in memory' : dbFile}`);
   console.log(`Deployed projects: ${deployments.all().length}`);

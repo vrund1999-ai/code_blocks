@@ -3,9 +3,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { CellValue } from '@code-blocks/engine/tables';
 import { pushToast } from '../runtime/runtimeStore';
+import { useAuthStore } from './authStore';
 import { addRow, deleteRow, listRows, OfflineError, updateRow, type Row } from './rowsApi';
 
-export type RowsStatus = 'loading' | 'ready' | 'offline' | 'failed';
+/** `signed-out`: rows are kept on the server, which needs an account. */
+export type RowsStatus = 'loading' | 'ready' | 'offline' | 'failed' | 'signed-out';
 
 export interface TableRows {
   status: RowsStatus;
@@ -33,9 +35,16 @@ export function useTableRows(projectId: string, tableId: string): TableRows {
     setMessage((err as Error).message);
   };
 
+  const auth = useAuthStore((s) => s.status);
   const reload = useCallback(() => {
     const ticket = ++current.current;
+    if (auth === 'guest') {
+      setStatus('signed-out');
+      setMessage('Rows are kept on the Code Blocks server. Sign in to add and see them.');
+      return;
+    }
     setStatus('loading');
+    if (auth === 'checking') return;
     listRows(projectId, tableId).then(
       (page) => {
         if (ticket !== current.current) return;
@@ -45,7 +54,7 @@ export function useTableRows(projectId: string, tableId: string): TableRows {
       },
       (err) => ticket === current.current && fail(err),
     );
-  }, [projectId, tableId]);
+  }, [projectId, tableId, auth]);
 
   useEffect(() => {
     reload();

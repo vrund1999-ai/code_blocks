@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from './app';
 import { MAX_CELL_TEXT } from './rowRoutes';
 import { SqliteRowStore } from './rows';
+import { asUser } from './testAuth';
 
 const stores: SqliteRowStore[] = [];
 const memory = () => {
@@ -70,7 +71,7 @@ describe('SqliteRowStore', () => {
 describe('row routes', () => {
   const base = '/api/projects/p1/tables/t1/rows';
   const send = (app: ReturnType<typeof createApp>, method: string, path: string, body?: unknown) =>
-    app.request(path, {
+    asUser(app)(path, {
       method,
       headers: { 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : typeof body === 'string' ? body : JSON.stringify(body),
@@ -87,7 +88,7 @@ describe('row routes', () => {
     expect(await changed.json()).toEqual({ id: 1, values: { c1: 'Ada', c2: null, c3: true } });
 
     expect((await send(app, 'DELETE', `${base}/2`)).status).toBe(200);
-    const list = await app.request(`${base}?limit=10&offset=0`);
+    const list = await asUser(app)(`${base}?limit=10&offset=0`);
     expect(await list.json()).toEqual({ total: 1, rows: [{ id: 1, values: { c1: 'Ada', c2: null, c3: true } }] });
   });
 
