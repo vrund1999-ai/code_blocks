@@ -14,6 +14,15 @@ All of the first P1 wave (v1 follow-ups, data tables and server workflows) is do
 5. ✅ **PL-1**, ✅ **PL-2** and ✅ **PL-3:** sign-in, projects saved on the server, and apps published to a shareable address.
 6. ✅ **BE-11:** the server is ready to host: it serves the editor, limits sign-ins and requests, keeps requests off its own network, and encrypts secrets.
 
+The third wave puts first what matters once real people sign up and visitors open published apps:
+
+1. ✅ **QE-12:** signing out waits for saves, so the last change before signing out isn't lost.
+2. **QE-3:** split the bundle, so published apps don't load the whole editor.
+3. **PL-8:** visitors can add rows to published apps (sign-up lists, guestbooks).
+4. **PL-7:** password reset and account settings. It needs an email service, which **BE-9** (*Send email*) can share.
+5. **QE-5:** an accessibility pass, for the editor and published apps.
+6. **RT-4:** Stop cancels pending *Wait* blocks right away.
+
 Editor, element and block items (UX, EL, LB) stay P2. They can be picked up between these, when a smaller change is wanted.
 
 ---
@@ -126,5 +135,5 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | QE-8 | Visual regression screenshots for the editor and templates | P3 | Playwright `toHaveScreenshot` |
 | QE-9 | Raise unit test coverage (about 24% today) | P2 | Runtime controller, persistence, model tree |
 | QE-10 | Review React Flow's `hideAttribution` setting | P1 | Shipped: the Logic tab shows React Flow's attribution again, in the bottom-right corner under the minimap. React Flow asks that only Pro subscribers hide it |
-| QE-12 | Find the stray 401 in *a project used by one account is kept from others* | P3 | Under parallel load the page sometimes logs a 401 after signing out, which fails the test: twice in about 650 runs, never in 90 runs of the test alone, and not caught with a trace yet. Likely a request sent just before signing out (the save to the account, or the publish or deploy check) that the server answered after the session ended. If it's the save, signing out should wait for it, or the last change before signing out may not reach the account |
+| QE-12 | Find the stray 401 in *a project used by one account is kept from others* | P1 | Shipped: signing out first sends a change still waiting for autosave, then waits for requests already sent (up to 5 seconds) before ending the session. Before, a change made less than a moment before signing out was saved nowhere, and a request answered after the session ended logged the 401 that failed the test |
 | QE-11 | Make the end-to-end tests reliable in Firefox and WebKit | P3 | Drag tests are marked `test.fixme` there: pointer drags hang in Firefox automation, and some drops don't register in WebKit. Local headless Firefox on Windows also hit graphics-process crashes and timeouts under parallel load. In WebKit, Ctrl+click selects only one block in the Logic tab, so that copy test is marked `test.fixme` there too, as is pasting into a settings text box, which depends on the system clipboard there and fails on some runs. CI runs Chromium only. |
