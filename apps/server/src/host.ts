@@ -5,12 +5,10 @@
 import { coerceTo } from '@code-blocks/engine/convert';
 import type { DataTable, StoredRow } from '@code-blocks/engine/tables';
 import { HostError, type HostApi } from '@code-blocks/engine/types';
+import { RequestProblem, sendRequest } from './http';
 import { MAX_PAGE, type RowStore } from './rows';
 import type { SecretStore } from './secrets';
 import type { KeyValueStore } from './store';
-
-/** A *Fetch from API* request that takes longer than this counts as failed. */
-export const FETCH_TIMEOUT_MS = 30_000;
 
 export interface ServerVariable {
   id: string;
@@ -108,15 +106,16 @@ export function createServerHost(opts: ServerHostOptions): ServerHost {
       if (value !== undefined) secretsRead.add(value);
       return value;
     },
+    // "Send from" doesn't matter here: the run is already on the server.
     httpRequest: async ({ method, url, headers, body }) => {
       check();
-      const res = await fetch(url, {
-        method,
-        headers,
-        body,
-        signal: AbortSignal.any([signal, AbortSignal.timeout(FETCH_TIMEOUT_MS)]),
-      });
-      return { status: res.status, statusText: res.statusText, text: await res.text() };
+      try {
+        return await sendRequest({ method, url, headers, body }, signal);
+      } catch (err) {
+        check();
+        if (err instanceof RequestProblem) throw new HostError(err.message);
+        throw err;
+      }
     },
     tables: {
       table: (id) => opts.tables.find((t) => t.id === id),

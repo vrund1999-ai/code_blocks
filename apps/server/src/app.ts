@@ -3,6 +3,7 @@
 
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
+import { fetchRoutes } from './fetchRoutes';
 import { rowRoutes } from './rowRoutes';
 import { SqliteRowStore, type RowStore } from './rows';
 import { runGraph } from './run';
@@ -44,6 +45,7 @@ export function createApp(opts: AppOptions = {}) {
   app.route('/projects', workflowRoutes(workflows));
   app.route('/projects', secretRoutes(secrets));
   app.route('/hooks', hookRoutes(workflows));
+  app.route('/fetch', fetchRoutes());
 
   app.get('/health', (c) => c.json({ ok: true }));
 

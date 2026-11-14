@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { GraphEdge, GraphNode, LogicGraph } from './graph';
 import { Interpreter } from './interpreter';
-import { methodOf, normalizeUrl, parseBody, pickPath } from './nodes/web';
+import { methodOf, normalizeUrl, parseBody, pickPath, webNodes } from './nodes/web';
 import { getNodeDef, inputPins } from './registry';
-import type { GraphError, HostApi, HttpRequest, HttpResponse } from './types';
+import { HostError, type GraphError, type HostApi, type HttpRequest, type HttpResponse, type NameLookup } from './types';
 
 /** A host whose web requests are answered by `answer` and recorded in `requests`. */
 function makeHost(answer: (req: HttpRequest) => HttpResponse | Promise<HttpResponse>) {
@@ -203,6 +203,37 @@ describe('Fetch from API', () => {
       { failBranch: true },
     );
     expect(toasts[0]).toMatch(/^Couldn’t reach api\.example\.com\. Check the web address/);
+  });
+
+  it('sends the request from the server when “Send from” says so', async () => {
+    const { vars, requests } = await fetchRun({ url: 'api.example.com/x', via: 'server' }, () => json({ a: 1 }));
+    expect(requests.map((r) => r.viaServer)).toEqual([true]);
+    expect(vars.out).toEqual({ a: 1 });
+
+    const fromApp = await fetchRun({ url: 'api.example.com/x' }, () => json({}));
+    expect(fromApp.requests[0]).not.toHaveProperty('viaServer');
+    const sentence = (c: Record<string, unknown>) => webNodes[0].sentence!(c, {} as NameLookup);
+    expect(sentence({ url: 'api.example.com/x', via: 'server' })).toBe('Load data from api.example.com through the server');
+    expect(sentence({ url: 'api.example.com/x' })).toBe('Load data from api.example.com');
+  });
+
+  it('suggests sending from the server when the app can’t reach an address, and shows the server’s reason', async () => {
+    const offline = () => {
+      throw new TypeError('Failed to fetch');
+    };
+    const fromApp = await fetchRun({ url: 'api.example.com' }, offline, { failBranch: true });
+    expect(fromApp.toasts[0]).toMatch(/for those, set “Send from” to “The server”\.$/);
+    const fromServer = await fetchRun({ url: 'api.example.com', via: 'server' }, offline, { failBranch: true });
+    expect(fromServer.toasts[0]).toBe('Couldn’t reach api.example.com. Check the web address and your internet connection.');
+
+    const refused = await fetchRun(
+      { url: 'api.example.com', via: 'server' },
+      () => {
+        throw new HostError('The server couldn’t reach api.example.com.');
+      },
+      { failBranch: true },
+    );
+    expect(refused.toasts).toEqual(['The server couldn’t reach api.example.com.']);
   });
 
   it('shows a block error when a failure has nowhere to go', async () => {

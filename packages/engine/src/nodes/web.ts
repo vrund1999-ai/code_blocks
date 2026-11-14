@@ -2,10 +2,13 @@
 // fetch today, Node's later), so this file stays free of DOM code.
 
 import { findField, isRecord, toNumber, toRecord, toText } from '../convert';
-import { execIn, GraphError, type NodeDef, type Pin } from '../types';
+import { execIn, GraphError, HostError, type NodeDef, type Pin } from '../types';
 
 export const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] as const;
 export type HttpMethod = (typeof HTTP_METHODS)[number];
+
+/** Whether the block sends its request from the server (see HttpRequest.viaServer). */
+export const viaServer = (config: Record<string, unknown>) => config.via === 'server';
 
 export function methodOf(config: Record<string, unknown>): HttpMethod {
   const m = String(config.method ?? 'GET').toUpperCase();
@@ -115,8 +118,19 @@ export const webNodes: NodeDef[] = [
           { value: 'DELETE', label: 'Delete' },
         ],
       },
+      {
+        key: 'via',
+        label: 'Send from',
+        type: 'select',
+        default: 'app',
+        options: [
+          { value: 'app', label: 'The app' },
+          { value: 'server', label: 'The server (for APIs that block apps)' },
+        ],
+      },
     ],
-    sentence: (c) => `${VERBS[methodOf(c)]} ${hostOf(toText(c.url)) ?? 'a web address'}`,
+    sentence: (c) =>
+      `${VERBS[methodOf(c)]} ${hostOf(toText(c.url)) ?? 'a web address'}${viaServer(c) ? ' through the server' : ''}`,
     async execute(ctx) {
       const method = methodOf(ctx.config);
       const url = normalizeUrl(toText(await ctx.input('url')));
@@ -148,15 +162,16 @@ export const webNodes: NodeDef[] = [
         return 'failed';
       };
 
+      const fromServer = viaServer(ctx.config);
       let res;
       try {
-        res = await ctx.host.httpRequest({ method, url, headers, body });
-      } catch {
-        return fail(
-          `Couldn’t reach ${where}. Check the web address and your internet connection. Some sites also don’t let apps in a browser read their data.`,
-          '',
-          0,
-        );
+        res = await ctx.host.httpRequest({ method, url, headers, body, ...(fromServer ? { viaServer: true } : {}) });
+      } catch (err) {
+        if (err instanceof HostError) return fail(err.message, '', 0);
+        const hint = fromServer
+          ? ''
+          : ' Some sites also don’t let apps in a browser read their data; for those, set “Send from” to “The server”.';
+        return fail(`Couldn’t reach ${where}. Check the web address and your internet connection.${hint}`, '', 0);
       }
       const data = parseBody(res.text);
       const status = toNumber(res.status);

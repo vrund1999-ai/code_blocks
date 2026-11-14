@@ -33,6 +33,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Server workflows | 2026-11-13 | [#23](https://github.com/vrund1999-ai/code_blocks/pull/23) | See below |
 | Try server workflows | 2026-11-13 | [#26](https://github.com/vrund1999-ai/code_blocks/pull/26) | See below |
 | Secrets | 2026-11-13 | [#27](https://github.com/vrund1999-ai/code_blocks/pull/27) | See below |
+| Fetch through the server | 2026-11-13 | [#28](https://github.com/vrund1999-ai/code_blocks/pull/28) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -182,6 +183,12 @@ Secrets included:
 - **Server:** secrets are kept per project in SQLite (names match ignoring case; values from 4 to 10,000 characters) through `GET /api/projects/:projectId/secrets` and `PUT` / `DELETE …/secrets/:name`.
 - **Tests:** 13 new unit tests and 2 new end-to-end tests.
 
+Fetch through the server included:
+- **“Send from”** on *Fetch from API*: *The app* (as before) or *The server*, for APIs that don't let apps in a browser read their answers (CORS). The block then reads “… through the server”. When the app can't reach an address, the problem now suggests sending from the server.
+- **Server:** `POST /api/fetch` sends the request (http and https only, up to 1 MB) and gives back the status and answer, or a plain reason when the address can't be reached, takes over 30 seconds, or answers with more than 5 MB. Server workflows share the same code, with the same limits.
+- **Secrets stay out of it:** the proxy never fills in secrets, since anyone using the app could send them anywhere. To use an API key from the app, call a server workflow's web address, and use the *Secret* block there.
+- **Tests:** 15 new unit tests and 2 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -198,7 +205,7 @@ Secrets included:
 | BE-7 | Fetch from API block | ✅ | 2026-11-11 | [#6](https://github.com/vrund1999-ai/code_blocks/pull/6) |
 | BE-8 | Secrets store | ✅ | 2026-11-13 | [#27](https://github.com/vrund1999-ai/code_blocks/pull/27) |
 | BE-9 | Send email block | ⬜ | | |
-| BE-10 | Fetch through a server proxy | ⬜ | | |
+| BE-10 | Fetch through a server proxy | ✅ | 2026-11-13 | [#28](https://github.com/vrund1999-ai/code_blocks/pull/28) |
 | BE-11 | Host the server runtime | ⬜ | | |
 | BE-12 | Clean up rows of deleted tables and projects | ⬜ | | |
 | BE-13 | Try server workflows without deploying | ✅ | 2026-11-13 | [#26](https://github.com/vrund1999-ai/code_blocks/pull/26) |
@@ -293,4 +300,4 @@ Secrets included:
 
 ---
 
-**Totals:** 23 / 73 done · 0 in progress
+**Totals:** 24 / 73 done · 0 in progress
