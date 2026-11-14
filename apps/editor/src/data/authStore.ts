@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { pushToast } from '../runtime/runtimeStore';
-import { call } from './api';
+import { call, requestsSettled } from './api';
 
 export interface User {
   id: string;
@@ -49,9 +49,16 @@ export async function signIn(email: string, password: string, create = false) {
   pushToast(create ? `Welcome! You’re signed in as ${user.email}.` : `Signed in as ${user.email}.`);
 }
 
+/** Run before signing out, such as to send a change that's waiting to be saved. */
+const beforeSignOut: (() => void)[] = [];
+export const onBeforeSignOut = (fn: () => void) => void beforeSignOut.push(fn);
+
 export async function signOut() {
   // Closed right away, so reopening it while this is under way isn't undone.
   useAuthStore.setState({ menuOpen: false });
+  for (const fn of beforeSignOut) fn();
+  // Requests sent before, such as a save, are answered while still signed in.
+  await requestsSettled();
   try {
     await call('/api/auth/signout', { method: 'POST' }, AUTH_OFFLINE);
     signedIn(null);

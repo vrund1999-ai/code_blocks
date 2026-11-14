@@ -21,7 +21,7 @@ import type { Project } from '../model/types';
 import { pushToast } from '../runtime/runtimeStore';
 import { TEMPLATES } from '../templates';
 import { ApiError, OfflineError } from './api';
-import { refreshAuth, useAuthStore } from './authStore';
+import { onBeforeSignOut, refreshAuth, useAuthStore } from './authStore';
 import { openSaved, saveToAccount } from './projectsApi';
 
 /**
@@ -248,6 +248,12 @@ async function openLast() {
   }
   useSaveStore.setState({ ready: true });
 }
+
+// A change still waiting for autosave is sent to the account before signing
+// out; otherwise it would be kept nowhere.
+onBeforeSignOut(() => {
+  if (useSaveStore.getState().status === 'pending') saveCurrent();
+});
 
 // Signing in saves the open project to the account; signing out stops
 // saving it there.

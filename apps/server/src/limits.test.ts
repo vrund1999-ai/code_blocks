@@ -55,7 +55,9 @@ describe('limits on a hosted server', () => {
 
     const blocked = await signIn('Ada@Example.com', 'correct horse');
     expect(blocked.status).toBe(429);
-    expect(blocked.headers.get('retry-after')).toBe('900');
+    // The window started with the first failed sign-in; checking passwords takes a moment.
+    expect(Number(blocked.headers.get('retry-after'))).toBeGreaterThan(880);
+    expect(Number(blocked.headers.get('retry-after'))).toBeLessThanOrEqual(900);
     expect(await errorOf(blocked)).toBe(`${TOO_MANY_SIGN_INS} Try again in 15 minutes.`);
     // Other emails aren't affected.
     expect((await signIn('bo@example.com', 'wrong')).status).toBe(401);
