@@ -67,7 +67,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
 - **▶ Run:** the app becomes live, both on the design canvas and in the preview beside the graph. Each block glows as it runs, and each value wire shows the last value that passed through it (point at it to see the whole value). The **Run log** under the preview lists every block that ran, with the values it used; click a line to jump to its block. A block that isn't set up properly is outlined in red, and the toolbar shows *show me*, which takes you to it.
 - **☁ Server:** *Deploy* sends the project to the server, which runs its *On the server* workflows from that copy. The button shows *Live*, or *Changes not deployed* after you edit; deploy again to update the server, or *Stop workflows* to take the project off it. The menu lists the project's web addresses (with a copy button), forms and schedules, and its latest runs with their errors and messages. Its *Secrets* section keeps API keys and passwords on the server; the *Secret* block reads them in server workflows, they never reach the app, and runs show their values as •••.
 - **Copy and paste:** Ctrl+C / Ctrl+X / Ctrl+V copy, cut and paste the selected element or blocks, and Ctrl+D duplicates them (⌘ on a Mac). Select several blocks with Ctrl+click or a Shift+drag box; their copies keep the wires between them. Ctrl+Z / Ctrl+Y undo and redo.
-- Projects are saved automatically in your browser. Use **Projects** to start from a template (Hello Name, Counter, To-do List) and **Export / Import** to move projects around as `.json` files.
+- Projects are saved automatically in your browser. Use **Projects** to start from a template (Hello Name, Counter, To-do List) and **Export / Import** to move projects around as `.json` files. Imported and saved projects are checked first; a file that can't be opened says where it goes wrong, and files from older versions are upgraded.
 
 ## Code layout
 
@@ -79,7 +79,7 @@ The repo is an npm workspace with two packages:
 
 | Path | What's there |
 | --- | --- |
-| `packages/engine/src/` | Interpreter, graph types (`graph.ts`), data table types and row/record conversion (`tables.ts`), value conversions, block registry (`nodes/*.ts`) and the value previews used by live wires and the run log |
+| `packages/engine/src/` | Interpreter, the project file format with its check and upgrades (`project.ts`), graph types (`graph.ts`), data table types and row/record conversion (`tables.ts`), value conversions, block registry (`nodes/*.ts`) and the value previews used by live wires and the run log |
 | `apps/editor/src/model/` | Project JSON types, element definitions, Zustand store (undo/redo, copy and paste), persistence |
 | `apps/editor/src/runtime/` | Browser host for the engine (`controller.ts`), live state, run log, and the element `Renderer` |
 | `apps/editor/src/designer/` | Drag-and-drop design canvas (dnd-kit), element palette, layers panel |

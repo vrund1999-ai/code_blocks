@@ -10,7 +10,7 @@ All of the first P1 wave (v1 follow-ups, data tables and server workflows) is do
 1. ✅ **QE-10:** show React Flow's attribution again. A small fix, and React Flow asks that only Pro subscribers hide it.
 2. ✅ **BE-13:** try server workflows without deploying, to finish the server workflow work from BE-6.
 3. ✅ **BE-8**, then ✅ **BE-10:** a secrets store, and *Fetch from API* through the server, so API keys never reach the browser.
-4. **QE-4:** validate the project file format. The server will soon store whole projects (PL-2), so it has to check them first.
+4. ✅ **QE-4:** validate the project file format. The server will soon store whole projects (PL-2), so it has to check them first.
 5. **PL-1**, **PL-2**, then **PL-3:** sign-in, projects saved on the server, and apps published to a shareable address.
 6. **BE-11:** host the server, once sign-in (PL-1) and request limits are in place.
 
@@ -115,8 +115,8 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | --- | --- | --- | --- |
 | QE-1 | Add the browser end-to-end tests (Playwright) to the repo | P1 | `e2e/`, covering every v1 feature |
 | QE-2 | GitHub Actions CI: test, type-check, build | P1 | |
-| QE-3 | Code-split the bundle (it is currently over 500 kB) | P2 | Lazy-load React Flow / the Logic tab |
-| QE-4 | Validate the project file format (e.g. zod) and test migrations | P1 | |
+| QE-3 | Code-split the bundle (it is currently over 500 kB) | P2 | Lazy-load React Flow / the Logic tab. zod (QE-4) added about 27 kB gzipped; `zod/mini` would be smaller |
+| QE-4 | Validate the project file format (e.g. zod) and test migrations | P1 | Shipped: `packages/engine/src/project.ts` holds the format, its version (now 2) with step-by-step upgrades in `MIGRATIONS`, and a zod check with plain messages. The editor checks imported and saved projects; the server checks the graph, variables and tables it runs and deploys. When the format changes, bump `PROJECT_VERSION` and add a step |
 | QE-5 | Accessibility pass (keyboard, screen readers, contrast) | P2 | Includes icon-only buttons (✕) that have a `title` but no `aria-label`, such as *Delete screen* |
 | QE-6 | Performance with large graphs and screens | P3 | |
 | QE-7 | Export an app as standalone HTML or generated code | P3 | |
