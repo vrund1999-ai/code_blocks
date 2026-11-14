@@ -7,13 +7,11 @@ import { LayersPanel } from '../designer/LayersPanel';
 import { LogicCanvas } from '../logic/LogicCanvas';
 import { NodePalette } from '../logic/NodePalette';
 import { RunLog } from '../logic/RunLog';
-import { loadLastProject, saveProject } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { stopApp } from '../runtime/controller';
 import { AppView } from '../runtime/Renderer';
-import { refreshAuth } from '../data/authStore';
+import { boot, markChanged, saveBeforeClosing, saveCurrent, useSaveStore } from '../data/projectSync';
 import { pushToast, useRuntimeStore } from '../runtime/runtimeStore';
-import { TEMPLATES } from '../templates';
 import { DataView } from './DataView';
 import { Inspector } from './Inspector';
 import { ScreensPanel, VariablesPanel } from './SidePanels';
@@ -24,28 +22,19 @@ const isTyping = (t: EventTarget | null) =>
 
 function useBootAndAutosave() {
   useEffect(() => {
-    void refreshAuth();
-    let last = null;
-    try {
-      last = loadLastProject();
-    } catch (err) {
-      // Start with a template instead; the saved copy stays in the Projects menu.
-      pushToast(`Your last project couldn’t be opened. ${(err as Error).message}`, 'error', 8000);
-    }
-    useProjectStore.getState().loadProject(last ?? TEMPLATES.find((t) => t.id === 'hello')!.create());
-
+    void boot();
     let timer: ReturnType<typeof setTimeout> | undefined;
     const unsub = useProjectStore.subscribe((s, prev) => {
-      if (s.project === prev.project) return;
+      if (s.project === prev.project || !useSaveStore.getState().ready) return;
+      markChanged();
       clearTimeout(timer);
-      timer = setTimeout(() => saveProject(useProjectStore.getState().project), 400);
+      timer = setTimeout(() => saveCurrent(), 400);
     });
-    const flush = () => saveProject(useProjectStore.getState().project);
-    window.addEventListener('beforeunload', flush);
+    window.addEventListener('beforeunload', saveBeforeClosing);
     return () => {
       unsub();
       clearTimeout(timer);
-      window.removeEventListener('beforeunload', flush);
+      window.removeEventListener('beforeunload', saveBeforeClosing);
       stopApp();
     };
   }, []);
@@ -167,7 +156,15 @@ export function App() {
   useBootAndAutosave();
   useShortcuts();
   const tab = useProjectStore((s) => s.tab);
+  const ready = useSaveStore((s) => s.ready);
 
+  if (!ready) {
+    return (
+      <div className="app boot" role="status">
+        Opening your project…
+      </div>
+    );
+  }
   return (
     <ReactFlowProvider>
       <div className="app">

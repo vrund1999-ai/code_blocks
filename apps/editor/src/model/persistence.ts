@@ -9,6 +9,11 @@ export interface ProjectMeta {
   id: string;
   name: string;
   updatedAt: number;
+  /**
+   * Set when this is a copy of a project saved to an account, kept here
+   * because it couldn't be saved there: the account's version it's based on.
+   */
+  accountVersion?: number;
 }
 
 function readJSON<T>(key: string, fallback: T): T {
@@ -24,12 +29,28 @@ export function listProjects(): ProjectMeta[] {
   return readJSON<ProjectMeta[]>(INDEX_KEY, []).sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
-export function saveProject(project: Project) {
+/** Saves the project in this browser. */
+export function saveProject(project: Project, accountVersion?: number) {
   localStorage.setItem(projectKey(project.id), JSON.stringify(project));
   const index = listProjects().filter((p) => p.id !== project.id);
-  index.push({ id: project.id, name: project.name, updatedAt: Date.now() });
+  index.push({ id: project.id, name: project.name, updatedAt: Date.now(), ...(accountVersion ? { accountVersion } : {}) });
   localStorage.setItem(INDEX_KEY, JSON.stringify(index));
-  localStorage.setItem(LAST_KEY, project.id);
+}
+
+export const localProject = (id: string): ProjectMeta | undefined => listProjects().find((p) => p.id === id);
+
+/** The project opened last, wherever it's saved. */
+export const lastProjectId = () => localStorage.getItem(LAST_KEY);
+export const setLastProject = (id: string) => localStorage.setItem(LAST_KEY, id);
+
+/**
+ * Removes the project's copy in this browser, once it's saved to the
+ * account. What the app itself saved with "Save to device" stays.
+ */
+export function forgetLocalCopy(id: string) {
+  if (localStorage.getItem(projectKey(id)) === null) return;
+  localStorage.removeItem(projectKey(id));
+  localStorage.setItem(INDEX_KEY, JSON.stringify(listProjects().filter((p) => p.id !== id)));
 }
 
 /**
@@ -46,11 +67,6 @@ export function loadProject(id: string): Project | null {
     throw new ProjectFormatError('Its saved copy is damaged.');
   }
   return parseProject(data);
-}
-
-export function loadLastProject(): Project | null {
-  const id = localStorage.getItem(LAST_KEY);
-  return id ? loadProject(id) : null;
 }
 
 export function deleteProject(id: string) {
