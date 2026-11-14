@@ -20,11 +20,45 @@ export class ApiError extends Error {
   }
 }
 
+/** Requests sent with `call` that haven't been answered yet. */
+const inFlight = new Set<Promise<unknown>>();
+
+/**
+ * Waits until every request sent with `call` has been answered, including
+ * ones sent while waiting, or until `ms` have passed. Signing out waits for
+ * this, so a request sent just before isn't answered after the session ends.
+ */
+export async function requestsSettled(ms = 5000): Promise<void> {
+  let late = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const deadline = new Promise<void>((resolve) => {
+    timer = setTimeout(() => {
+      late = true;
+      resolve();
+    }, ms);
+  });
+  try {
+    while (inFlight.size && !late) await Promise.race([Promise.allSettled([...inFlight]), deadline]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 /**
  * Sends a JSON request and gives the JSON answer. `offline` is the message
  * used when the server can't be reached.
  */
-export async function call<T>(url: string, init: RequestInit = {}, offline?: string): Promise<T> {
+export function call<T>(url: string, init: RequestInit = {}, offline?: string): Promise<T> {
+  const request = send<T>(url, init, offline);
+  inFlight.add(request);
+  void request.then(
+    () => inFlight.delete(request),
+    () => inFlight.delete(request),
+  );
+  return request;
+}
+
+async function send<T>(url: string, init: RequestInit, offline?: string): Promise<T> {
   let res: Response;
   try {
     res = await fetch(url, { ...init, headers: { 'Content-Type': 'application/json' } });

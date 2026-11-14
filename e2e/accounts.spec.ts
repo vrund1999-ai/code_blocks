@@ -117,6 +117,37 @@ test('a project used by one account is kept from others', async ({ app, page, co
 test.describe('signed in', () => {
   test.use({ signedIn: true });
 
+  test('signing out first saves the last change to the account', async ({ app, page, account }) => {
+    const accountButton = page.getByRole('button', { name: /👤/ }).first();
+    // Saves are held until the sign-out button has been clicked.
+    const order: string[] = [];
+    let release = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    const isSave = (r: { method(): string; url(): string }) => r.method() === 'PUT' && r.url().includes('/api/projects/');
+    await page.route('**/api/projects/*', async (route) => {
+      if (!isSave(route.request())) return route.continue();
+      order.push('save sent');
+      await held;
+      await route.continue();
+    });
+    page.on('requestfinished', (r) => void (isSave(r) && order.push('save answered')));
+    page.on('request', (r) => void (r.url().endsWith('/api/auth/signout') && order.push('sign out sent')));
+
+    await app.projectName.fill('Changed just before signing out');
+    await accountButton.click();
+    await page.getByRole('dialog', { name: 'Account' }).getByRole('button', { name: 'Sign out' }).click();
+    await expect.poll(() => order).toContain('save sent');
+    release();
+    await expect(accountButton).toHaveText('👤 Sign in');
+    expect(order).toEqual(['save sent', 'save answered', 'sign out sent']);
+
+    // The account has the change.
+    const id = await page.evaluate(() => localStorage.getItem('cb.lastProject'));
+    expect((await page.request.post('/api/auth/signin', { data: { email: account!.email, password: TEST_PASSWORD } })).ok()).toBe(true);
+    const saved = (await (await page.request.get(`/api/projects/${id}`)).json()) as { project: { name: string } };
+    expect(saved.project.name).toBe('Changed just before signing out');
+  });
+
   test('the toolbar stays on one line with a long email and a run problem', async ({ appNoBoot: app, seed, page, account, consoleErrors }) => {
     const b = build('Toolbar');
     const button = b.element('button', 'Load', { label: 'Load' });

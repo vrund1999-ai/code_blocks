@@ -2,14 +2,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeProject } from '../model/factory';
 import { listProjects, loadProject } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
-import { useAuthStore } from './authStore';
-import { keepThisCopy, saveCurrent, useSaveStore } from './projectSync';
+import { signOut, useAuthStore } from './authStore';
+import { keepThisCopy, markChanged, saveCurrent, useSaveStore } from './projectSync';
 
 const store = new Map<string, string>();
 /** The bodies of the saves sent to the server. */
 let sent: { project: { name: string }; baseVersion: unknown }[] = [];
 /** How the fake server answers the next save. */
 let answer: () => Response | Promise<Response>;
+/** What the fake server was sent and answered, in order. */
+let log: string[] = [];
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -17,6 +19,7 @@ const json = (body: unknown, status = 200) =>
 beforeEach(() => {
   store.clear();
   sent = [];
+  log = [];
   globalThis.localStorage = {
     getItem: (k: string) => store.get(k) ?? null,
     setItem: (k: string, v: string) => void store.set(k, v),
@@ -33,6 +36,10 @@ beforeEach(() => {
     'fetch',
     vi.fn(async (_url: string, init: RequestInit = {}) => {
       if (init.method === 'PUT') sent.push(JSON.parse(String(init.body)));
+      if (_url === '/api/auth/signout') {
+        log.push('sign out sent');
+        return json({ ok: true });
+      }
       return answer();
     }),
   );
@@ -143,5 +150,51 @@ describe('saving the open project', () => {
     expect(status()).toBe('refused');
     expect(useSaveStore.getState().problem).toBe('This project belongs to another account.');
     expect(loadProject(p.id)?.name).toBe('Theirs, changed');
+  });
+});
+
+describe('signing out', () => {
+  /** Answers saves only once `release` is called. */
+  function holdSaves() {
+    let release = () => {};
+    answer = () =>
+      new Promise((resolve) => {
+        release = () => {
+          log.push('save answered');
+          resolve(json({ version: 1, updatedAt: 1 }));
+        };
+      });
+    return () => release();
+  }
+
+  it('first waits for a save that was already sent', async () => {
+    signIn();
+    const p = openNew('Almost done');
+    const release = holdSaves();
+    p.rename('Almost done, changed');
+    saveCurrent();
+    await vi.waitFor(() => expect(sent).toHaveLength(1));
+    const signingOut = signOut();
+    await Promise.resolve();
+    expect(log).toEqual([]);
+    release();
+    await signingOut;
+    expect(log).toEqual(['save answered', 'sign out sent']);
+    expect(useAuthStore.getState().status).toBe('guest');
+    expect(status()).toBe('saved');
+  });
+
+  it('sends a change still waiting for autosave first', async () => {
+    signIn();
+    const p = openNew('Last change');
+    p.rename('Last change, just typed');
+    markChanged();
+    const release = holdSaves();
+    const signingOut = signOut();
+    await vi.waitFor(() => expect(sent).toHaveLength(1));
+    expect(sent[0].project.name).toBe('Last change, just typed');
+    release();
+    await signingOut;
+    expect(log).toEqual(['save answered', 'sign out sent']);
   });
 });
