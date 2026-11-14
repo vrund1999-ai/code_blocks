@@ -9,6 +9,7 @@ import { SqliteRowStore } from './rows';
 import { MemoryStore, SqliteStore } from './store';
 import { data, exec, node } from './testGraph';
 import { MAX_HISTORY, Workflows } from './workflows';
+import { asUser } from './testAuth';
 
 function setup() {
   const db = openDatabase(':memory:');
@@ -17,7 +18,7 @@ function setup() {
   const workflows = new Workflows({ deployments: new SqliteDeployments(db), store, rows });
   const app = createApp({ rows, store, workflows });
   const send = (method: string, path: string, body?: unknown, type = 'application/json') =>
-    app.request(path, {
+    asUser(app)(path, {
       method,
       headers: { 'Content-Type': type },
       body: body === undefined ? undefined : typeof body === 'string' ? body : JSON.stringify(body),

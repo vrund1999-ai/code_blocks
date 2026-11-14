@@ -2,13 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createApp } from './app';
 import { parseFetchRequest } from './fetchRoutes';
 import { MAX_ANSWER_BYTES } from './http';
+import { asUser } from './testAuth';
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
 const send = (body: unknown) =>
-  createApp().request('/api/fetch', {
+  asUser(createApp())('/api/fetch', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
