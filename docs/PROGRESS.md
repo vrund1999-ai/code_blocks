@@ -37,6 +37,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Project file checks | 2026-11-13 | [#29](https://github.com/vrund1999-ai/code_blocks/pull/29) | See below |
 | Accounts | 2026-11-13 | [#30](https://github.com/vrund1999-ai/code_blocks/pull/30) | See below |
 | Projects on your account | 2026-11-13 | [#31](https://github.com/vrund1999-ai/code_blocks/pull/31) | See below |
+| Publish apps | 2026-11-14 | [#32](https://github.com/vrund1999-ai/code_blocks/pull/32) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -215,6 +216,13 @@ Projects on your account included:
 - **Server:** `GET /api/projects`, and `GET`, `PUT` and `DELETE /api/projects/:projectId`. Saved projects are checked with the project file schema (QE-4), up to 2 MB.
 - **Tests:** 10 new unit tests and 4 new end-to-end tests.
 
+Publish apps included:
+- **🔗 Publish** in the toolbar: puts a copy of the app on a link like `/app/k3x9q2…` that anyone can open, without the editor or an account. The button shows *Live*, or *Changes not published* after you edit; publishing again keeps the link. *Unpublish* takes it down.
+- **The published app:** just the running app, centered on the page. It reads the rows of its tables, but can't add, change or delete them (only the owner can, in the Data tab). Forms and web addresses reach the deployed server workflows, as in the editor. Requests sent from the server aren't available to visitors yet.
+- **Server:** `GET`, `PUT` and `DELETE /api/projects/:projectId/publication` for the owner, and `GET /api/published/:slug` and `GET /api/published/:slug/tables/:tableId/rows` for anyone. Links are 12 random letters and digits. Deleting a project also unpublishes it.
+- **Toolbar:** stays on one line. With the new button it wrapped when the save status changed, which moved the canvas during block drags and made a Logic test flaky.
+- **Tests:** 5 new unit tests and 2 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -241,11 +249,12 @@ Projects on your account included:
 | --- | --- | --- | --- | --- |
 | PL-1 | Accounts and sign-in | ✅ | 2026-11-13 | [#30](https://github.com/vrund1999-ai/code_blocks/pull/30) |
 | PL-2 | Cloud project storage | ✅ | 2026-11-13 | [#31](https://github.com/vrund1999-ai/code_blocks/pull/31) |
-| PL-3 | Publish to a URL | ⬜ | | |
+| PL-3 | Publish to a URL | ✅ | 2026-11-14 | [#32](https://github.com/vrund1999-ai/code_blocks/pull/32) |
 | PL-4 | Sharing / collaboration | ⬜ | | |
 | PL-5 | Version history | ⬜ | | |
 | PL-6 | Project gallery | ⬜ | | |
 | PL-7 | Password reset and account settings | ⬜ | | |
+| PL-8 | Visitor access for published apps | ⬜ | | |
 
 ### 3. Editor UX
 | ID | Item | Status | Completed | PR |
@@ -327,4 +336,4 @@ Projects on your account included:
 
 ---
 
-**Totals:** 27 / 74 done · 0 in progress
+**Totals:** 28 / 75 done · 0 in progress
