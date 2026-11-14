@@ -12,9 +12,24 @@ npm run dev        # open http://localhost:5173
 npm run dev:server # server runtime at http://127.0.0.1:8787/api (accounts, table rows, deployed workflows)
 npm test           # unit tests (engine, editor, server)
 npm run build      # production build of the editor (apps/editor/dist)
+npm start          # build, then serve the editor, published apps and the API from one server
 ```
 
 Use Node 24 (see `.nvmrc`). The repo is an npm workspace: run every command from the root, and `npm install` links the packages together.
+
+## Hosting
+
+`npm start` builds the editor and starts the server, which then serves everything from one address: the editor at `/`, published apps at `/app/:slug` and the API at `/api`. It listens on `127.0.0.1:8787`; put it behind a proxy that handles https (such as Caddy or nginx) and set `TRUST_PROXY=1`. Settings come from the environment:
+
+| Setting | What it does |
+| --- | --- |
+| `PORT`, `HOST` | Where the server listens (`127.0.0.1:8787`). `HOST=0.0.0.0` lets other computers reach it directly |
+| `DB_FILE` | The SQLite database (`apps/server/data/code-blocks.db`) |
+| `SECRETS_KEY` | 32 random bytes as base64 (`openssl rand -base64 32`), the key that encrypts secrets. Without it, the server makes `secrets.key` next to the database: keep that file, and keep it out of database backups |
+| `TRUST_PROXY=1` | Behind a proxy: take the visitor's address and https from `X-Forwarded-For` and `X-Forwarded-Proto` |
+| `STATIC_DIR` | Where the built editor is (`npm start` uses `apps/editor/dist`) |
+| `RATE_LIMITS=off` | Turns off the limits on sign-ins, sign-ups and requests (`apps/server/src/limits.ts`) |
+| `ALLOW_PRIVATE_ADDRESSES=1` | Lets projects send requests to the server's own network (localhost, 192.168.…, the cloud metadata address). Only for a server on your own computer; `npm run dev:server` turns it on |
 
 ## Testing
 
@@ -28,7 +43,7 @@ Use Node 24 (see `.nvmrc`). The repo is an npm workspace: run every command from
 | `npm run test:e2e:all` | End-to-end tests in Chromium, Firefox and WebKit |
 | `npm run check` | Type-check (engine, editor and tests), unit tests and production build |
 
-The end-to-end tests start a dev server on port 4173 and the server runtime on port 8787 (with its database in memory) by themselves, or reuse ones that are already running. A running `npm run dev:server` is reused too, so stop it if it is older than your code. After a failure, `npx playwright show-report` opens the report with screenshots and traces.
+The end-to-end tests start a dev server on port 4173, the server runtime on port 8787, and a server set up like a hosted one on port 8788 that serves the built editor (`e2e/hosting.spec.ts`), all with their databases in memory. They start them by themselves, or reuse ones that are already running. A running `npm run dev:server` is reused too, so stop it if it is older than your code. After a failure, `npx playwright show-report` opens the report with screenshots and traces.
 
 How the end-to-end tests are organised:
 
@@ -78,7 +93,7 @@ The repo is an npm workspace with two packages:
 
 - **`packages/engine`** (`@code-blocks/engine`): runs logic graphs. It is plain TypeScript with no React, DOM or Node code; its `tsconfig.json` leaves those types out to keep it that way. That lets the same engine run in the editor and, later, on a server. Import its files by path, such as `@code-blocks/engine/registry`.
 - **`apps/editor`** (`@code-blocks/editor`): the React app you build apps in.
-- **`apps/server`** (`@code-blocks/server`): runs graphs on a server with the same engine (Hono on Node). `POST /api/run` runs one event block of a graph sent with the request and returns the blocks that ran, the final variable values, messages and any error. Blocks that change or read the screen stop with a friendly message there. It also keeps the rows of data tables, deployed projects, saved values and secrets in SQLite (`apps/server/data/code-blocks.db`; set `DB_FILE` to change it), and runs the workflows of deployed projects: web addresses, forms and schedules. In development the editor forwards `/api` to it.
+- **`apps/server`** (`@code-blocks/server`): runs graphs on a server with the same engine (Hono on Node). `POST /api/run` runs one event block of a graph sent with the request and returns the blocks that ran, the final variable values, messages and any error. Blocks that change or read the screen stop with a friendly message there. It also keeps the rows of data tables, deployed projects, saved values and secrets in SQLite (`apps/server/data/code-blocks.db`; set `DB_FILE` to change it), and runs the workflows of deployed projects: web addresses, forms and schedules. In development the editor forwards `/api` to it; hosted, it serves the built editor too (`site.ts`).
 
 | Path | What's there |
 | --- | --- |
@@ -90,7 +105,7 @@ The repo is an npm workspace with two packages:
 | `apps/editor/src/app/` | Shell: toolbar, inspector, side panels, the Data tab (`DataView.tsx`), the ☁ Server menu (`ServerMenu.tsx`, with `SecretsSection.tsx`), the 👤 account menu (`AccountMenu.tsx`), the 🔗 Publish menu (`PublishMenu.tsx`) and the page visitors of a published app see (`PublishedApp.tsx`), *Try it* for server blocks (`TryPanel.tsx`) |
 | `apps/editor/src/data/` | Server calls: who is signed in (`authStore.ts`), where the open project is saved (`projectSync.ts`, `projectsApi.ts`), publishing (`publishApi.ts`, `publishStore.ts`), table rows (`rowsApi.ts`), deploying and forms (`serverApi.ts`, `deployStore.ts`), trying server workflows (`tryApi.ts`) |
 | `apps/editor/src/templates/` | Starter projects |
-| `apps/server/src/` | Server routes (`app.ts`, `authRoutes.ts`, `projectRoutes.ts`, `publishRoutes.ts`, `rowRoutes.ts`, `workflowRoutes.ts`, `secretRoutes.ts`, `fetchRoutes.ts`), the SQLite database (`db.ts`) with accounts and sessions (`users.ts`), saved projects (`projects.ts`), published apps (`publications.ts`), table rows (`rows.ts`), deployed projects (`deployments.ts`), saved values (`store.ts`) and secrets (`secrets.ts`), workflow triggers and schedules (`workflows.ts`), server host for the engine (`host.ts`) and its web requests (`http.ts`), runs (`run.ts`) and request checks (`validate.ts`) |
+| `apps/server/src/` | Server routes (`app.ts`, `authRoutes.ts`, `projectRoutes.ts`, `publishRoutes.ts`, `rowRoutes.ts`, `workflowRoutes.ts`, `secretRoutes.ts`, `fetchRoutes.ts`), the SQLite database (`db.ts`) with accounts and sessions (`users.ts`), saved projects (`projects.ts`), published apps (`publications.ts`), table rows (`rows.ts`), deployed projects (`deployments.ts`), saved values (`store.ts`) and secrets, encrypted (`secrets.ts`), workflow triggers and schedules (`workflows.ts`), server host for the engine (`host.ts`) and its web requests (`http.ts`, which keeps them off the server's own network), rate limits (`limits.ts`), the built editor when hosted (`site.ts`), runs (`run.ts`) and request checks (`validate.ts`) |
 | `e2e/` | Playwright end-to-end tests of the editor, and their helpers (`e2e/support/`) |
 | `tsconfig.base.json`, `vitest.config.ts`, `playwright.config.ts` | Settings shared by the whole repo |
 | `.github/` | CI workflow and Dependabot config |

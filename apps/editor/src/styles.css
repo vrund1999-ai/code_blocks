@@ -63,8 +63,16 @@ textarea {
   flex-shrink: 1;
   min-width: 90px;
 }
-.toolbar > .save-status {
+/* Shrinks last: the save status and the account email give up room first. */
+.toolbar > .error-pill {
   flex-shrink: 1;
+  min-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.toolbar > .save-status {
+  flex-shrink: 100;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1726,7 +1734,17 @@ textarea.field-input {
   align-items: center;
   gap: 4px;
 }
+/* On a narrow toolbar, the email gives up room before anything is cut off. */
+.toolbar > .menu-anchor:last-child {
+  flex-shrink: 100;
+  min-width: 44px;
+}
+.toolbar > .menu-anchor:last-child > .account-btn {
+  max-width: 100%;
+  overflow: hidden;
+}
 .account-email {
+  min-width: 0;
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;

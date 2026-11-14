@@ -7,6 +7,7 @@ import { csrf } from 'hono/csrf';
 import { HTTPException } from 'hono/http-exception';
 import { authRoutes, canUseProject, loadUser, requireUser, type AuthEnv } from './authRoutes';
 import { fetchRoutes } from './fetchRoutes';
+import { clientAddress, rateLimit, RateLimiter, type Limits } from './limits';
 import { projectRoutes } from './projectRoutes';
 import { SqliteProjects } from './projects';
 import { SqlitePublications } from './publications';
@@ -42,7 +43,15 @@ export interface AppOptions {
   /** Published apps. Defaults to a database in memory. */
   publications?: SqlitePublications;
   timeLimitMs?: number;
+  /** How often things may happen (limits.ts). Left out, nothing is limited. */
+  limits?: Limits;
+  /** Read where requests come from from X-Forwarded-For, for a server behind a proxy. */
+  trustProxy?: boolean;
 }
+
+export const TOO_MANY_REQUESTS = 'Your account sent too many requests through the server.';
+export const TOO_MANY_RUNS = 'Your account started too many test runs.';
+export const TOO_MANY_CALLS = 'This project’s web addresses and forms were called too often.';
 
 const problem = (message: string) => ({ error: { message } });
 const PROJECT_ID = /^[\w-]{1,64}$/;
@@ -66,6 +75,19 @@ export function createApp(opts: AppOptions = {}) {
   app.use('/run', csrf(), requireUser);
   app.use('/fetch', csrf(), requireUser);
   app.use('/projects', requireUser);
+  const limits = opts.limits;
+  const addressOf = (c: Parameters<typeof clientAddress>[0]) => clientAddress(c, !!opts.trustProxy);
+  if (limits) {
+    const fetches = new RateLimiter(limits.fetch);
+    const runs = new RateLimiter(limits.run);
+    const calls = new RateLimiter(limits.workflow);
+    const userId = (c: { get(key: 'user'): { id: string } | null }) => c.get('user')?.id ?? '';
+    // After the sign-in checks above, so only signed-in requests count.
+    app.post('/fetch', rateLimit(fetches, userId, TOO_MANY_REQUESTS));
+    app.post('/run', rateLimit(runs, userId, TOO_MANY_RUNS));
+    app.use('/hooks/:projectId/*', rateLimit(calls, (c) => c.req.param('projectId') ?? '', TOO_MANY_CALLS));
+    app.post('/projects/:projectId/forms/*', rateLimit(calls, (c) => c.req.param('projectId') ?? '', TOO_MANY_CALLS));
+  }
 
   // A project's routes are for the account it belongs to. Its forms stay
   // open, like its web addresses (/api/hooks), since they're how apps reach
@@ -78,7 +100,13 @@ export function createApp(opts: AppOptions = {}) {
     await next();
   });
 
-  app.route('/auth', authRoutes(users));
+  app.route(
+    '/auth',
+    authRoutes(users, {
+      limits: limits && { signIn: new RateLimiter(limits.signIn), signUp: new RateLimiter(limits.signUp), addressOf },
+      trustProxy: opts.trustProxy,
+    }),
+  );
   app.route('/projects', projectRoutes(projects, workflows, publications));
   app.route('/projects', publishRoutes(publications));
   app.route('/projects', rowRoutes(rows));

@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 const CI = !!process.env.CI;
 const PORT = 4173;
+/** The server serving the built editor itself, as when hosted. */
+const HOSTED_PORT = 8788;
 
 export default defineConfig({
   testDir: 'e2e',
@@ -35,11 +37,23 @@ export default defineConfig({
       // The server runtime, which keeps table rows. The editor forwards /api to it.
       // Its database is in memory, so test runs leave nothing behind; each test's
       // project has its own id, so tests don't see each other's rows.
+      // Tests reach it at 127.0.0.1 and sign up many accounts, so private
+      // addresses are allowed and rate limits are off.
       command: 'npm run start:server',
       url: 'http://127.0.0.1:8787/api/health',
-      env: { DB_FILE: ':memory:' },
+      env: { DB_FILE: ':memory:', ALLOW_PRIVATE_ADDRESSES: '1', RATE_LIMITS: 'off' },
       reuseExistingServer: !CI,
       timeout: 60_000,
+    },
+    {
+      // The server as it's hosted: serving the built editor, with rate limits
+      // on and private addresses blocked (hosting.spec.ts). Servers start in
+      // order, so in CI the editor was built by the first one.
+      command: CI ? 'npm run start:server' : 'npm run build && npm run start:server',
+      url: `http://127.0.0.1:${HOSTED_PORT}/api/health`,
+      env: { DB_FILE: ':memory:', PORT: String(HOSTED_PORT), STATIC_DIR: '../editor/dist', TRUST_PROXY: '1' },
+      reuseExistingServer: !CI,
+      timeout: 120_000,
     },
   ],
   projects: [

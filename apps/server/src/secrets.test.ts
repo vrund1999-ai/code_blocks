@@ -3,7 +3,11 @@ import { createApp } from './app';
 import { openDatabase } from './db';
 import { SqliteRowStore } from './rows';
 import { runGraph } from './run';
-import { HIDDEN, redact, SqliteSecrets } from './secrets';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { randomBytes } from 'node:crypto';
+import { HIDDEN, loadSecretsKey, redact, SqliteSecrets, WRONG_KEY } from './secrets';
 import { MemoryStore } from './store';
 import { data, exec, node } from './testGraph';
 import { asUser } from './testAuth';
@@ -33,6 +37,56 @@ describe('secret store', () => {
     expect(s.remove('p1', 'weather_KEY')).toBe(false);
     expect(s.get('p1', 'Weather_Key')).toBeUndefined();
     expect(s.get('p2', 'Weather_Key')).toBe('other-project');
+  });
+});
+
+describe('secrets in the database', () => {
+  const stored = (db: ReturnType<typeof openDatabase>) =>
+    (db.prepare('SELECT value FROM secrets').all() as { value: string }[]).map((r) => r.value);
+
+  it('are encrypted, and need the same key to be read', () => {
+    const db = openDatabase(':memory:');
+    const key = randomBytes(32);
+    new SqliteSecrets(db, key).set('p1', 'API_KEY', 'abcd1234');
+    expect(stored(db)[0]).toMatch(/^enc1:/);
+    expect(stored(db)[0]).not.toContain('abcd1234');
+
+    expect(new SqliteSecrets(db, key).get('p1', 'API_KEY')).toBe('abcd1234');
+    expect(() => new SqliteSecrets(db, randomBytes(32))).toThrow(WRONG_KEY);
+  });
+
+  it('can’t be moved to another project', () => {
+    const db = openDatabase(':memory:');
+    const secrets = new SqliteSecrets(db);
+    secrets.set('p1', 'API_KEY', 'abcd1234');
+    db.prepare("UPDATE secrets SET project_id = 'p2'").run();
+    expect(() => secrets.get('p2', 'API_KEY')).toThrow(WRONG_KEY);
+  });
+
+  it('saved before encryption are encrypted when the server starts', () => {
+    const db = openDatabase(':memory:');
+    db.exec(`CREATE TABLE secrets (project_id TEXT NOT NULL, name TEXT NOT NULL COLLATE NOCASE, value TEXT NOT NULL,
+      updated_at TEXT NOT NULL, PRIMARY KEY (project_id, name)) STRICT`);
+    db.prepare("INSERT INTO secrets VALUES ('p1', 'API_KEY', 'plain-value', '2026-01-01T00:00:00.000Z')").run();
+    const secrets = new SqliteSecrets(db);
+    expect(stored(db)[0]).toMatch(/^enc1:/);
+    expect(secrets.get('p1', 'api_key')).toBe('plain-value');
+  });
+
+  it('use SECRETS_KEY, or a key file made the first time', () => {
+    const env = randomBytes(32).toString('base64');
+    expect(loadSecretsKey(env, null).toString('base64')).toBe(env);
+    expect(() => loadSecretsKey('too-short', null)).toThrow('The secrets key must be 32 bytes, written as base64.');
+
+    const dir = mkdtempSync(join(tmpdir(), 'cb-key-'));
+    try {
+      const file = join(dir, 'secrets.key');
+      const made = loadSecretsKey(undefined, file);
+      expect(readFileSync(file, 'utf8').trim()).toBe(made.toString('base64'));
+      expect(loadSecretsKey(undefined, file).equals(made)).toBe(true);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 
