@@ -5,9 +5,14 @@ import { create } from 'zustand';
 import { useProjectStore } from '../model/projectStore';
 import { pushToast } from '../runtime/runtimeStore';
 import { OfflineError } from './api';
+import { useAuthStore } from './authStore';
 import { deployProject, getDeployment, listRuns, undeployProject, type DeploymentSummary, type RunRecord } from './serverApi';
 
-export type DeployStatus = 'checking' | 'none' | 'deployed' | 'offline';
+/**
+ * `signed-out`: deploying needs an account, so the server isn't asked.
+ * `refused`: the server said no, such as for another account's project; `problem` says why.
+ */
+export type DeployStatus = 'checking' | 'none' | 'deployed' | 'offline' | 'signed-out' | 'refused';
 
 interface DeployState {
   /** The project the rest is about. */
@@ -17,6 +22,8 @@ interface DeployState {
   runs: RunRecord[];
   /** A deploy or undeploy is under way. */
   busy: boolean;
+  /** Why the server said no, for `refused`. */
+  problem: string;
 }
 
 export const useDeployStore = create<DeployState>()(() => ({
@@ -25,6 +32,7 @@ export const useDeployStore = create<DeployState>()(() => ({
   summary: null,
   runs: [],
   busy: false,
+  problem: '',
 }));
 
 const currentId = () => useProjectStore.getState().project.id;
@@ -52,15 +60,21 @@ export async function refreshDeployment(projectId = currentId()) {
   if (useDeployStore.getState().projectId !== projectId) {
     useDeployStore.setState({ projectId, status: 'checking', summary: null, runs: [] });
   }
+  const auth = useAuthStore.getState().status;
+  // Asked again once it's known who is signed in.
+  if (auth === 'checking') return;
+  if (auth === 'guest') return setFor(projectId, { status: 'signed-out', summary: null, runs: [] });
   try {
     const summary = await getDeployment(projectId);
     setFor(projectId, { status: summary ? 'deployed' : 'none', summary });
-  } catch {
-    setFor(projectId, { status: 'offline' });
+  } catch (err) {
+    if (err instanceof OfflineError) setFor(projectId, { status: 'offline' });
+    else setFor(projectId, { status: 'refused', summary: null, runs: [], problem: (err as Error).message });
   }
 }
 
 export async function refreshRuns(projectId = currentId()) {
+  if (useAuthStore.getState().status !== 'signed-in') return;
   try {
     const { runs } = await listRuns(projectId);
     setFor(projectId, { runs });
@@ -104,3 +118,8 @@ export function undeploy() {
     pushToast('The project’s server workflows are stopped.');
   });
 }
+
+// Signing in or out changes what the server shows.
+useAuthStore.subscribe((s, prev) => {
+  if (s.status !== prev.status || s.user?.id !== prev.user?.id) void refreshDeployment();
+});

@@ -12,6 +12,7 @@ import { useProjectStore } from '../model/projectStore';
 import { startApp, stopApp } from '../runtime/controller';
 import { pushToast, useRuntimeStore } from '../runtime/runtimeStore';
 import { TEMPLATES } from '../templates';
+import { AccountMenu } from './AccountMenu';
 import { ServerMenu } from './ServerMenu';
 import type { Project } from '../model/types';
 
@@ -167,6 +168,7 @@ export function Toolbar() {
           ▶ Run
         </button>
       )}
+      <AccountMenu />
     </header>
   );
 }

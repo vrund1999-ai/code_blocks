@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { cellValue, COLUMN_TYPES, columnProblem, tableProblem, type CellValue } from '@code-blocks/engine/tables';
+import { openAccountMenu } from '../data/authStore';
 import { useTableRows, type TableRows } from '../data/useTableRows';
 import type { Row } from '../data/rowsApi';
 import { useProjectStore } from '../model/projectStore';
@@ -155,6 +156,16 @@ function RowsBody({ table, data }: { table: DataTable; data: TableRows }) {
 }
 
 function RowsFooter({ data }: { data: TableRows }) {
+  if (data.status === 'signed-out') {
+    return (
+      <div className="rows-offline" role="status">
+        <span>{data.message}</span>
+        <button type="button" className="btn small" onClick={() => openAccountMenu()}>
+          👤 Sign in
+        </button>
+      </div>
+    );
+  }
   if (data.status === 'offline' || data.status === 'failed') {
     return (
       <div className="rows-offline" role="alert">
