@@ -74,18 +74,14 @@ export class AppPage {
     await expect(this.projectName).toHaveValue(name === 'Blank app' ? 'My App' : name);
   }
 
-  /** Waits until autosave has written the current project name to localStorage. */
+  /** Where the open project is saved, next to its name. */
+  get saveStatus() {
+    return this.page.locator('.save-status');
+  }
+
+  /** Waits until autosave has saved the latest change, in this browser or to the account. */
   async waitForSave() {
-    const name = await this.projectName.inputValue();
-    await expect
-      .poll(() =>
-        this.page.evaluate(() => {
-          const id = localStorage.getItem('cb.lastProject');
-          const raw = id && localStorage.getItem(`cb.project.${id}`);
-          return raw ? (JSON.parse(raw) as { name: string }).name : null;
-        }),
-      )
-      .toBe(name);
+    await expect(this.saveStatus).toHaveText(/^(☁ )?Saved /);
   }
 
   // ---- Surfaces --------------------------------------------------------------

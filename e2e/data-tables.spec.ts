@@ -6,17 +6,6 @@ import { expect, test } from './support/fixtures';
 // These use the server, which needs an account.
 test.use({ signedIn: true });
 
-/** Waits until autosave has stored this many tables. */
-const tablesSaved = (page: Page, n: number) =>
-  expect
-    .poll(() =>
-      page.evaluate(() => {
-        const raw = localStorage.getItem(`cb.project.${localStorage.getItem('cb.lastProject')}`);
-        return raw ? (JSON.parse(raw) as { tables: unknown[] }).tables.length : 0;
-      }),
-    )
-    .toBe(n);
-
 /** Runs `action` and waits for the server to answer the row change it makes. */
 async function saved(page: Page, method: string, action: () => Promise<unknown>) {
   const answer = page.waitForResponse((r) => r.url().includes('/rows') && r.request().method() === method);
@@ -94,15 +83,9 @@ test.describe('Data tab', () => {
     await app.tablesPanel.getByRole('button', { name: '+ Add table' }).click();
     await app.dataArea.getByLabel('Table name').fill('Orders');
     await app.dataArea.getByRole('button', { name: '+ Number column' }).click();
+    // Signed in, it's saved to the account.
     await app.waitForSave();
-    await expect
-      .poll(() =>
-        page.evaluate(() => {
-          const raw = localStorage.getItem(`cb.project.${localStorage.getItem('cb.lastProject')}`);
-          return raw ? (JSON.parse(raw) as { tables: { name: string }[] }).tables.map((t) => t.name) : null;
-        }),
-      )
-      .toEqual(['Orders']);
+    await expect(app.saveStatus).toHaveText('☁ Saved to your account');
 
     await app.reload();
     await app.tab('Data');
@@ -162,7 +145,7 @@ test.describe('Data tab', () => {
     await expect(area.getByText('1 row.')).toBeVisible();
 
     // The rows come back from the server after a reload.
-    await tablesSaved(page, 1);
+    await app.waitForSave();
     await app.reload();
     await app.tab('Data');
     await expect(area.getByLabel('Row 1 Name')).toHaveValue('Ada');

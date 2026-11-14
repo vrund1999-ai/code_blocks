@@ -81,6 +81,8 @@ test('guests are asked to sign in for table rows and requests sent from the serv
 test('a project used by one account is kept from others', async ({ app, page, consoleErrors }) => {
   const account = page.getByRole('dialog', { name: 'Account' });
   const accountButton = page.getByRole('button', { name: /👤/ }).first();
+  await app.projectName.fill('Whose app');
+  await app.waitForSave();
 
   for (const [i, email] of [newEmail(), newEmail()].entries()) {
     await accountButton.click();
@@ -101,6 +103,9 @@ test('a project used by one account is kept from others', async ({ app, page, co
     } else {
       await expect(app.serverMenu.getByRole('status')).toHaveText('⚠ This project belongs to another account.');
       await expect(app.serverMenu.getByRole('button', { name: /Deploy/ })).toHaveCount(0);
+      // It isn't saved to this account either; it stays in this browser.
+      await expect(app.saveStatus).toHaveText('⚠ Kept in this browser');
+      await expect(app.saveStatus).toHaveAttribute('title', 'This project belongs to another account.');
     }
     await page.keyboard.press('Escape');
   }

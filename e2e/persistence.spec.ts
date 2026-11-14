@@ -36,6 +36,9 @@ test('loads previously saved app data on start', async ({ appNoBoot: app, seed }
 
 test.describe('projects menu', () => {
   test('lists, switches between and deletes projects', async ({ app, page }) => {
+    // The starter project is kept once it's changed.
+    await app.paletteItem('Checkbox').click();
+    await app.waitForSave();
     await app.loadTemplate('Counter');
     let menu = await app.openProjects();
     const projects = menu.locator('.menu-item.project');
