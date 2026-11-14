@@ -36,6 +36,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Fetch through the server | 2026-11-13 | [#28](https://github.com/vrund1999-ai/code_blocks/pull/28) | See below |
 | Project file checks | 2026-11-13 | [#29](https://github.com/vrund1999-ai/code_blocks/pull/29) | See below |
 | Accounts | 2026-11-13 | [#30](https://github.com/vrund1999-ai/code_blocks/pull/30) | See below |
+| Projects on your account | 2026-11-13 | [#31](https://github.com/vrund1999-ai/code_blocks/pull/31) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -206,6 +207,14 @@ Accounts included:
 - **Server:** `POST /api/auth/signup`, `/signin`, `/signout` and `GET /api/auth/me`. Passwords are hashed with scrypt; sessions last 30 days in an HttpOnly, SameSite=Lax cookie, and only their hashes are stored. Requests that change things are refused when they come from other sites (CSRF).
 - **Tests:** 10 new unit tests, 3 new end-to-end tests, and a `signedIn` option for end-to-end tests of the server features.
 
+Projects on your account included:
+- **Saved to the account:** signed in, the project you work on is saved to your account on the server, so it opens in any browser you sign in to. Guests' projects are still saved in the browser, and Export/Import still work.
+- **Projects menu:** *On your account* lists the account's projects; *In this browser only* lists projects made before signing in, and opening one saves it to the account. Deleting an account project also stops its server workflows.
+- **Save status** next to the project name: *Saved in this browser*, *☁ Saved to your account*, or a warning when it can't be saved there (server unreachable, or another account's project). Until then, the changes are kept in this browser and sent later.
+- **Changed somewhere else:** each save says which version it was based on. When the project was changed in another tab or browser, the editor asks whether to open the newest copy or keep this one, instead of overwriting it.
+- **Server:** `GET /api/projects`, and `GET`, `PUT` and `DELETE /api/projects/:projectId`. Saved projects are checked with the project file schema (QE-4), up to 2 MB.
+- **Tests:** 10 new unit tests and 4 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -231,7 +240,7 @@ Accounts included:
 | ID | Item | Status | Completed | PR |
 | --- | --- | --- | --- | --- |
 | PL-1 | Accounts and sign-in | ✅ | 2026-11-13 | [#30](https://github.com/vrund1999-ai/code_blocks/pull/30) |
-| PL-2 | Cloud project storage | ⬜ | | |
+| PL-2 | Cloud project storage | ✅ | 2026-11-13 | [#31](https://github.com/vrund1999-ai/code_blocks/pull/31) |
 | PL-3 | Publish to a URL | ⬜ | | |
 | PL-4 | Sharing / collaboration | ⬜ | | |
 | PL-5 | Version history | ⬜ | | |
@@ -318,4 +327,4 @@ Accounts included:
 
 ---
 
-**Totals:** 26 / 74 done · 0 in progress
+**Totals:** 27 / 74 done · 0 in progress

@@ -1,12 +1,15 @@
 import { useReactFlow } from '@xyflow/react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useAuthStore } from '../data/authStore';
+import { deleteSaved, listSaved, type SavedProjectMeta } from '../data/projectsApi';
+import { keepThisCopy, openFromAccount, openInEditor, openNewestCopy, useSaveStore } from '../data/projectSync';
 import {
   deleteProject,
   downloadProject,
   listProjects,
   loadProject as loadSaved,
   parseImported,
-  saveProject,
+  type ProjectMeta,
 } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { startApp, stopApp } from '../runtime/controller';
@@ -16,17 +19,75 @@ import { AccountMenu } from './AccountMenu';
 import { ServerMenu } from './ServerMenu';
 import type { Project } from '../model/types';
 
-function openProject(p: Project) {
+/** Opens a project; `replace` saves it over the account's copy, for imported files. */
+function openProject(p: Project, replace = false) {
   stopApp();
-  const store = useProjectStore.getState();
-  saveProject(store.project);
-  store.loadProject(p);
-  saveProject(p);
+  openInEditor(p, { replace });
+}
+
+const showError = (name: string, err: unknown) =>
+  pushToast(`“${name || 'Untitled'}” can’t be opened. ${(err as Error).message}`, 'error', 8000);
+
+function ProjectRow({
+  project,
+  current,
+  onOpen,
+  onDelete,
+}: {
+  project: Pick<ProjectMeta, 'id' | 'name' | 'updatedAt'>;
+  current: boolean;
+  onOpen(): void;
+  onDelete(): void;
+}) {
+  return (
+    <div className={`menu-item project ${current ? 'current' : ''}`}>
+      <button className="link" onClick={onOpen}>
+        {project.name || 'Untitled'}
+        <span className="hint">{new Date(project.updatedAt).toLocaleString()}</span>
+      </button>
+      {!current && (
+        <button className="icon-btn" title="Delete project" onClick={onDelete}>
+          🗑
+        </button>
+      )}
+    </div>
+  );
 }
 
 function ProjectsMenu({ onClose }: { onClose(): void }) {
   const current = useProjectStore((s) => s.project.id);
-  const [projects, setProjects] = useState(listProjects);
+  const signedIn = useAuthStore((s) => s.status === 'signed-in');
+  const [local, setLocal] = useState(listProjects);
+  const [account, setAccount] = useState<SavedProjectMeta[] | null>(null);
+  const [accountProblem, setAccountProblem] = useState('');
+
+  useEffect(() => {
+    if (!signedIn) return;
+    listSaved().then(setAccount, (err: Error) => setAccountProblem(err.message));
+  }, [signedIn]);
+
+  const openLocal = (p: ProjectMeta) => {
+    try {
+      const loaded = loadSaved(p.id);
+      if (loaded) openProject(loaded);
+    } catch (err) {
+      showError(p.name, err);
+    }
+    onClose();
+  };
+  const localRow = (p: ProjectMeta) => (
+    <ProjectRow
+      key={p.id}
+      project={p}
+      current={p.id === current}
+      onOpen={() => openLocal(p)}
+      onDelete={() => {
+        deleteProject(p.id);
+        setLocal(listProjects());
+      }}
+    />
+  );
+  const browserOnly = local.filter((p) => !account?.some((a) => a.id === p.id));
 
   return (
     <div className="menu" onMouseLeave={onClose}>
@@ -44,39 +105,107 @@ function ProjectsMenu({ onClose }: { onClose(): void }) {
           <span className="hint">{t.description}</span>
         </button>
       ))}
-      <div className="menu-title">Your projects</div>
-      {projects.map((p) => (
-        <div key={p.id} className={`menu-item project ${p.id === current ? 'current' : ''}`}>
-          <button
-            className="link"
-            onClick={() => {
-              try {
-                const loaded = loadSaved(p.id);
-                if (loaded) openProject(loaded);
-              } catch (err) {
-                pushToast(`“${p.name || 'Untitled'}” can’t be opened. ${(err as Error).message}`, 'error', 8000);
-              }
-              onClose();
-            }}
-          >
-            {p.name || 'Untitled'}
-            <span className="hint">{new Date(p.updatedAt).toLocaleString()}</span>
-          </button>
-          {p.id !== current && (
+      {signedIn ? (
+        <>
+          <div className="menu-title">On your account</div>
+          {account === null ? (
+            <p className="hint menu-note" role="status">
+              {accountProblem ? `⚠ ${accountProblem}` : 'Loading your projects…'}
+            </p>
+          ) : account.length === 0 ? (
+            <p className="hint menu-note">Nothing saved yet. The projects you work on are saved here.</p>
+          ) : (
+            account.map((p) => (
+              <ProjectRow
+                key={p.id}
+                project={p}
+                current={p.id === current}
+                onOpen={() => {
+                  openFromAccount(p.id).catch((err) => showError(p.name, err));
+                  onClose();
+                }}
+                onDelete={async () => {
+                  try {
+                    await deleteSaved(p.id);
+                    deleteProject(p.id);
+                    setAccount((list) => list && list.filter((a) => a.id !== p.id));
+                    setLocal(listProjects());
+                  } catch (err) {
+                    pushToast((err as Error).message, 'error', 5000);
+                  }
+                }}
+              />
+            ))
+          )}
+          {account !== null && browserOnly.length > 0 && (
+            <>
+              <div className="menu-title">In this browser only</div>
+              <p className="hint menu-note">Opening one saves it to your account.</p>
+              {browserOnly.map(localRow)}
+            </>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="menu-title">Your projects</div>
+          {local.map(localRow)}
+          <p className="hint menu-note">Saved in this browser. Sign in to keep projects on your account and open them anywhere.</p>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Says where the open project is saved, and asks what to do when it was changed elsewhere. */
+function SaveIndicator() {
+  const { status, problem } = useSaveStore();
+  const [open, setOpen] = useState(false);
+  if (status === 'idle') return null;
+  if (status === 'conflict') {
+    return (
+      <div className="menu-anchor">
+        <button className="save-status problem" onClick={() => setOpen(!open)} aria-expanded={open}>
+          ⚠ Changed somewhere else
+        </button>
+        {open && (
+          <div className="menu save-conflict" role="dialog" aria-label="Which copy to keep">
+            <p>{problem}</p>
+            <p className="hint">Your changes here are kept in this browser until you choose.</p>
             <button
-              className="icon-btn"
-              title="Delete project"
+              className="btn"
               onClick={() => {
-                deleteProject(p.id);
-                setProjects(listProjects());
+                setOpen(false);
+                void openNewestCopy();
               }}
             >
-              🗑
+              Open the newest copy
             </button>
-          )}
-        </div>
-      ))}
-    </div>
+            <button
+              className="btn"
+              onClick={() => {
+                setOpen(false);
+                keepThisCopy();
+              }}
+            >
+              Keep this copy
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+  const [text, title] = {
+    pending: ['Saving…', ''],
+    saving: ['Saving…', ''],
+    browser: ['Saved in this browser', 'Sign in to keep projects on your account and open them in any browser.'],
+    saved: ['☁ Saved to your account', ''],
+    offline: ['⚠ Not saved to your account', `${problem} It’s kept in this browser for now.`],
+    refused: ['⚠ Kept in this browser', problem],
+  }[status];
+  return (
+    <span className={`save-status ${text.startsWith('⚠') ? 'problem' : ''}`} role="status" title={title || undefined}>
+      {text}
+    </span>
   );
 }
 
@@ -111,6 +240,7 @@ export function Toolbar() {
         {menu && <ProjectsMenu onClose={() => setMenu(false)} />}
       </div>
       <input className="project-name" value={name} onChange={(e) => renameProject(e.target.value)} aria-label="Project name" />
+      <SaveIndicator />
 
       <div className="tabs">
         <button className={`tab ${tab === 'design' ? 'active' : ''}`} onClick={() => setTab('design')}>
@@ -152,7 +282,7 @@ export function Toolbar() {
           e.target.value = '';
           if (!file) return;
           try {
-            openProject(parseImported(await file.text()));
+            openProject(parseImported(await file.text()), true);
           } catch (err) {
             pushToast((err as Error).message || 'Could not open that file.', 'error');
           }

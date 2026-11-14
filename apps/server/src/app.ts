@@ -7,6 +7,8 @@ import { csrf } from 'hono/csrf';
 import { HTTPException } from 'hono/http-exception';
 import { authRoutes, canUseProject, loadUser, requireUser, type AuthEnv } from './authRoutes';
 import { fetchRoutes } from './fetchRoutes';
+import { projectRoutes } from './projectRoutes';
+import { SqliteProjects } from './projects';
 import { rowRoutes } from './rowRoutes';
 import { SqliteRowStore, type RowStore } from './rows';
 import { runGraph } from './run';
@@ -33,6 +35,8 @@ export interface AppOptions {
   workflows?: Workflows;
   /** Accounts and sign-in. Defaults to a database in memory. */
   users?: SqliteUsers;
+  /** Projects saved to accounts. Defaults to a database in memory. */
+  projects?: SqliteProjects;
   timeLimitMs?: number;
 }
 
@@ -47,6 +51,7 @@ export function createApp(opts: AppOptions = {}) {
     opts.workflows ??
     new Workflows({ deployments: new SqliteDeployments(openDatabase(':memory:')), store, rows, secrets, timeLimitMs: opts.timeLimitMs });
   const users = opts.users ?? new SqliteUsers(openDatabase(':memory:'));
+  const projects = opts.projects ?? new SqliteProjects(openDatabase(':memory:'));
   const app = new Hono<AuthEnv>().basePath('/api');
 
   app.use('*', loadUser(users));
@@ -55,6 +60,7 @@ export function createApp(opts: AppOptions = {}) {
   app.use('/projects/*', csrf());
   app.use('/run', csrf(), requireUser);
   app.use('/fetch', csrf(), requireUser);
+  app.use('/projects', requireUser);
 
   // A project's routes are for the account it belongs to. Its forms stay
   // open, like its web addresses (/api/hooks), since they're how apps reach
@@ -68,6 +74,7 @@ export function createApp(opts: AppOptions = {}) {
   });
 
   app.route('/auth', authRoutes(users));
+  app.route('/projects', projectRoutes(projects, workflows));
   app.route('/projects', rowRoutes(rows));
   app.route('/projects', workflowRoutes(workflows));
   app.route('/projects', secretRoutes(secrets));

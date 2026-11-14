@@ -11,7 +11,7 @@ All of the first P1 wave (v1 follow-ups, data tables and server workflows) is do
 2. ✅ **BE-13:** try server workflows without deploying, to finish the server workflow work from BE-6.
 3. ✅ **BE-8**, then ✅ **BE-10:** a secrets store, and *Fetch from API* through the server, so API keys never reach the browser.
 4. ✅ **QE-4:** validate the project file format. The server will soon store whole projects (PL-2), so it has to check them first.
-5. ✅ **PL-1**, then **PL-2** and **PL-3:** sign-in, projects saved on the server, and apps published to a shareable address.
+5. ✅ **PL-1**, ✅ **PL-2**, then **PL-3:** sign-in, projects saved on the server, and apps published to a shareable address.
 6. **BE-11:** host the server, once sign-in (PL-1) and request limits are in place.
 
 Editor, element and block items (UX, EL, LB) stay P2. They can be picked up between these, when a smaller change is wanted.
@@ -41,7 +41,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | ID | Item | Priority | Notes |
 | --- | --- | --- | --- |
 | PL-1 | User accounts and sign-in | P1 | Shipped: email and password accounts (scrypt), 30-day session cookies, and project ownership (the first account to use a project on the server owns it). Signing in is optional; the server features need it. Not yet: password reset and account settings (PL-7), or limits on sign-in attempts (BE-11) |
-| PL-2 | Cloud project storage (replaces localStorage) | P1 | Keep local export/import |
+| PL-2 | Cloud project storage (replaces localStorage) | P1 | Shipped: signed in, projects are saved to the account (`/api/projects`), with a version on each save so a copy changed in another tab or browser isn't overwritten without asking. Guests keep saving in the browser; export/import stay. A copy stays in the browser only while it can't be saved to the account, so account projects can't be opened while the server is unreachable. Deleting a project stops its server workflows, but its table rows and secrets stay with the account |
 | PL-3 | Publish an app to a shareable URL | P1 | Run-only view of a project. Web addresses and forms are already open to anyone; table rows are only for the project's owner today, so published apps need a way for their visitors to read and add rows |
 | PL-4 | Share projects and collaborate | P3 | |
 | PL-5 | Project version history and restore | P3 | |
