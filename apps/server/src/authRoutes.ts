@@ -10,6 +10,7 @@ import type { Context, MiddlewareHandler } from 'hono';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
+import { tooMany, type RateLimiter } from './limits';
 import { emailProblem, passwordProblem, SESSION_DAYS, type SqliteUsers, type User } from './users';
 
 export const SESSION_COOKIE = 'cb_session';
@@ -46,11 +47,17 @@ export function canUseProject(c: Context<AuthEnv>, users: SqliteUsers, projectId
   return users.claimProject(projectId, user.id) ? null : c.json(problem(NOT_YOURS), 403);
 }
 
-function startSession(c: Context, users: SqliteUsers, user: User) {
+/** Whether the person reached the server over https, also behind a proxy that says so. */
+function overHttps(c: Context, trustProxy: boolean) {
+  if (trustProxy && c.req.header('x-forwarded-proto')?.split(',')[0]?.trim() === 'https') return true;
+  return new URL(c.req.url).protocol === 'https:';
+}
+
+function startSession(c: Context, users: SqliteUsers, user: User, trustProxy: boolean) {
   setCookie(c, SESSION_COOKIE, users.startSession(user.id), {
     httpOnly: true,
     sameSite: 'Lax',
-    secure: new URL(c.req.url).protocol === 'https:',
+    secure: overHttps(c, trustProxy),
     path: '/api',
     maxAge: SESSION_DAYS * 24 * 60 * 60,
   });
@@ -68,7 +75,25 @@ async function readCredentials(c: Context): Promise<{ email: string; password: s
   return { email: email.trim(), password };
 }
 
-export function authRoutes(users: SqliteUsers) {
+export interface AuthLimits {
+  /** Failed sign-ins, keyed by address and email. */
+  signIn: RateLimiter;
+  /** New accounts, keyed by address. */
+  signUp: RateLimiter;
+  /** Where a request came from. */
+  addressOf(c: Context): string;
+}
+
+export const TOO_MANY_SIGN_INS = 'Too many sign-in attempts with that email.';
+export const TOO_MANY_SIGN_UPS = 'Too many new accounts from your network.';
+
+export interface AuthOptions {
+  limits?: AuthLimits;
+  /** Behind a proxy: believe its X-Forwarded-Proto. */
+  trustProxy?: boolean;
+}
+
+export function authRoutes(users: SqliteUsers, { limits, trustProxy = false }: AuthOptions = {}) {
   const app = new Hono<AuthEnv>();
   const limit = bodyLimit({ maxSize: 4 * 1024, onError: (c) => c.json(problem('The request is too big.'), 413) });
 
@@ -79,18 +104,29 @@ export function authRoutes(users: SqliteUsers) {
     if (typeof creds === 'string') return c.json(problem(creds), 400);
     const bad = emailProblem(creds.email) ?? passwordProblem(creds.password);
     if (bad) return c.json(problem(bad), 400);
+    const address = limits?.addressOf(c) ?? '';
+    const wait = limits?.signUp.wait(address);
+    if (wait) return tooMany(c, wait, TOO_MANY_SIGN_UPS);
     const user = await users.create(creds.email, creds.password);
     if (!user) return c.json(problem('There’s already an account with that email. Sign in instead.'), 409);
-    startSession(c, users, user);
+    limits?.signUp.count(address);
+    startSession(c, users, user, trustProxy);
     return c.json({ user });
   });
 
   app.post('/signin', limit, async (c) => {
     const creds = await readCredentials(c);
     if (typeof creds === 'string') return c.json(problem(creds), 400);
+    // Only failed attempts count, so people who mistype a few times aren't locked out.
+    const key = `${limits?.addressOf(c) ?? ''} ${creds.email.toLowerCase()}`;
+    const wait = limits?.signIn.wait(key);
+    if (wait) return tooMany(c, wait, TOO_MANY_SIGN_INS);
     const user = await users.verify(creds.email, creds.password);
-    if (!user) return c.json(problem('That email and password don’t match an account.'), 401);
-    startSession(c, users, user);
+    if (!user) {
+      limits?.signIn.count(key);
+      return c.json(problem('That email and password don’t match an account.'), 401);
+    }
+    startSession(c, users, user, trustProxy);
     return c.json({ user });
   });
 
