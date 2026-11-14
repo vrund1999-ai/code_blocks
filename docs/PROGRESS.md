@@ -344,8 +344,8 @@ Ready to host included:
 | QE-9 | Raise unit test coverage | ⬜ | | |
 | QE-10 | React Flow attribution review | ✅ | 2026-11-13 | [#25](https://github.com/vrund1999-ai/code_blocks/pull/25) |
 | QE-11 | Drag tests in Firefox / WebKit | ⬜ | | |
-| QE-12 | Stray 401 after signing out in an accounts test | ⬜ | | |
+| QE-12 | Stray 401 after signing out in an accounts test | ✅ | 2026-11-14 | [#34](https://github.com/vrund1999-ai/code_blocks/pull/34) |
 
 ---
 
-**Totals:** 29 / 77 done · 0 in progress
+**Totals:** 30 / 77 done · 0 in progress
