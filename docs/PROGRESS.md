@@ -38,6 +38,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Accounts | 2026-11-13 | [#30](https://github.com/vrund1999-ai/code_blocks/pull/30) | See below |
 | Projects on your account | 2026-11-13 | [#31](https://github.com/vrund1999-ai/code_blocks/pull/31) | See below |
 | Publish apps | 2026-11-14 | [#32](https://github.com/vrund1999-ai/code_blocks/pull/32) | See below |
+| Ready to host | 2026-11-14 | [#33](https://github.com/vrund1999-ai/code_blocks/pull/33) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -223,6 +224,14 @@ Publish apps included:
 - **Toolbar:** stays on one line. With the new button it wrapped when the save status changed, which moved the canvas during block drags and made a Logic test flaky.
 - **Tests:** 5 new unit tests and 2 new end-to-end tests.
 
+Ready to host included:
+- **One server for everything:** `npm start` builds the editor and starts the server, which then serves the editor at `/`, published apps at `/app/:slug`, and the API at `/api`.
+- **Requests can't reach the server's own network:** *Fetch from API* blocks in server workflows and requests sent through the server are refused for localhost, private networks and the cloud metadata address, also after redirects. `npm run dev:server` still allows them, for APIs running on your own computer.
+- **Rate limits:** 10 failed sign-ins per email and address every 15 minutes, 5 new accounts per address an hour, 60 requests through the server and 60 test runs per account a minute, and 120 calls to a project's web addresses and forms a minute. Over a limit, the server answers 429 with how long to wait.
+- **Secrets are encrypted** in the database (AES-256-GCM), with `SECRETS_KEY` or a key file next to the database. Secrets saved before are encrypted when the server starts.
+- **Behind a proxy:** `TRUST_PROXY=1` reads the visitor's address and https from `X-Forwarded-*`, so limits count per visitor and session cookies are marked secure.
+- **Tests:** 38 new unit tests and 3 new end-to-end tests, against a third test server set up like a hosted one.
+
 ---
 
 ## Roadmap status
@@ -240,8 +249,9 @@ Publish apps included:
 | BE-8 | Secrets store | ✅ | 2026-11-13 | [#27](https://github.com/vrund1999-ai/code_blocks/pull/27) |
 | BE-9 | Send email block | ⬜ | | |
 | BE-10 | Fetch through a server proxy | ✅ | 2026-11-13 | [#28](https://github.com/vrund1999-ai/code_blocks/pull/28) |
-| BE-11 | Host the server runtime | ⬜ | | |
+| BE-11 | Host the server runtime | ✅ | 2026-11-14 | [#33](https://github.com/vrund1999-ai/code_blocks/pull/33) |
 | BE-12 | Clean up rows of deleted tables and projects | ⬜ | | |
+| BE-14 | Share rate limits between server instances | ⬜ | | |
 | BE-13 | Try server workflows without deploying | ✅ | 2026-11-13 | [#26](https://github.com/vrund1999-ai/code_blocks/pull/26) |
 
 ### 2. Platform
@@ -333,7 +343,8 @@ Publish apps included:
 | QE-9 | Raise unit test coverage | ⬜ | | |
 | QE-10 | React Flow attribution review | ✅ | 2026-11-13 | [#25](https://github.com/vrund1999-ai/code_blocks/pull/25) |
 | QE-11 | Drag tests in Firefox / WebKit | ⬜ | | |
+| QE-12 | Stray 401 after signing out in an accounts test | ⬜ | | |
 
 ---
 
-**Totals:** 28 / 75 done · 0 in progress
+**Totals:** 29 / 77 done · 0 in progress
