@@ -49,8 +49,12 @@ function ProjectsMenu({ onClose }: { onClose(): void }) {
           <button
             className="link"
             onClick={() => {
-              const loaded = loadSaved(p.id);
-              if (loaded) openProject(loaded);
+              try {
+                const loaded = loadSaved(p.id);
+                if (loaded) openProject(loaded);
+              } catch (err) {
+                pushToast(`“${p.name || 'Untitled'}” can’t be opened. ${(err as Error).message}`, 'error', 8000);
+              }
               onClose();
             }}
           >

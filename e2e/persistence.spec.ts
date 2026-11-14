@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
+import { PROJECT_VERSION } from '@code-blocks/engine/project';
 import { expect, test } from './support/fixtures';
-import { template } from './support/projects';
+import { build, template } from './support/projects';
 
 test('autosaves edits and restores them after a reload', async ({ app }) => {
   await app.projectName.fill('My Renamed App');
@@ -74,7 +75,7 @@ test.describe('export and import', () => {
     expect(file.suggestedFilename()).toBe('Hello Name.json');
     const data = JSON.parse(await readFile(await file.path(), 'utf8'));
     expect(data.name).toBe('Hello Name');
-    expect(data.version).toBe(1);
+    expect(data.version).toBe(PROJECT_VERSION);
     expect(data.screens).toHaveLength(1);
     expect(data.graph.nodes).toHaveLength(4);
     expect(data.graph.edges).toHaveLength(3);
@@ -99,8 +100,33 @@ test.describe('export and import', () => {
       mimeType: 'application/json',
       buffer: Buffer.from(JSON.stringify({ hello: 'world' })),
     });
-    await expect(app.globalToasts.first()).toContainText('does not look like a Code Blocks project');
+    await expect(app.globalToasts.first()).toHaveText('This project file can’t be opened. It doesn’t look like a Code Blocks project.');
     await expect(app.projectName).toHaveValue('Hello Name');
+  });
+
+  test('says where a broken project file goes wrong', async ({ app, page }) => {
+    const p = build('Broken').project;
+    const text = p.screens[0].root.children;
+    text.push({ id: 'x1', type: 'video' as never, name: 'Intro', props: {}, children: [] });
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'broken.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(p)),
+    });
+    await expect(app.globalToasts.first()).toHaveText(
+      'This project file can’t be opened. In screen “Home” → element “Intro”: “type” is “video”, which should be one of container, text, button, input, image, checkbox, dropdown, list.',
+    );
+    await expect(app.projectName).toHaveValue('Hello Name');
+  });
+
+  test('opens a file saved before data tables', async ({ app, page }) => {
+    const { tables: _, ...old } = { ...build('Old App').project, version: 1 };
+    await page.locator('input[type="file"]').setInputFiles({
+      name: 'old.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(JSON.stringify(old)),
+    });
+    await expect(app.projectName).toHaveValue('Old App');
   });
 
   test('rejects a file that is not JSON', async ({ app, page }) => {
@@ -112,4 +138,16 @@ test.describe('export and import', () => {
     await expect(app.globalToasts.first()).toBeVisible();
     await expect(app.projectName).toHaveValue('Hello Name');
   });
+});
+
+test('a saved project that can’t be opened is left alone, and says why', async ({ appNoBoot: app, seed, page }) => {
+  await seed({ ...build('Broken').project, screens: [] });
+  await app.goto();
+  await expect(app.globalToasts.first()).toHaveText('Your last project couldn’t be opened. A project needs at least one screen.');
+  await expect(app.projectName).toHaveValue('Hello Name');
+
+  await app.openProjects();
+  await page.getByRole('button', { name: /^Broken/ }).click();
+  await expect(app.globalToasts.last()).toHaveText('“Broken” can’t be opened. A project needs at least one screen.');
+  await expect(app.projectName).toHaveValue('Hello Name');
 });

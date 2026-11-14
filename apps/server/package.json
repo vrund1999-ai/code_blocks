@@ -11,7 +11,8 @@
   "dependencies": {
     "@code-blocks/engine": "*",
     "@hono/node-server": "^2.1.8",
-    "hono": "^4.13.18"
+    "hono": "^4.13.18",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "tsx": "^4.23.15"

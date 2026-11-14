@@ -23,7 +23,13 @@ const isTyping = (t: EventTarget | null) =>
 
 function useBootAndAutosave() {
   useEffect(() => {
-    const last = loadLastProject();
+    let last = null;
+    try {
+      last = loadLastProject();
+    } catch (err) {
+      // Start with a template instead; the saved copy stays in the Projects menu.
+      pushToast(`Your last project couldn’t be opened. ${(err as Error).message}`, 'error', 8000);
+    }
     useProjectStore.getState().loadProject(last ?? TEMPLATES.find((t) => t.id === 'hello')!.create());
 
     let timer: ReturnType<typeof setTimeout> | undefined;

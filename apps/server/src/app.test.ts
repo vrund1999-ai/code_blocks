@@ -51,12 +51,12 @@ describe('server routes', () => {
     ['not JSON', 'nope', 'The request body must be JSON.'],
     ['not an object', [1], 'Send a JSON object.'],
     ['no graph', { nodeId: 'start' }, '"graph" needs "nodes" and "edges" lists.'],
-    ['a broken wire', { ...hello, graph: { ...hello.graph, edges: [{ id: 'x' }] } }, /graph\.edges\[0\] needs/],
+    ['a broken wire', { ...hello, graph: { ...hello.graph, edges: [{ id: 'x' }] } }, /^In wire 1: “source” is missing\./],
     ['replies that are not true or false', { ...hello, replies: 'yes' }, '"replies" must be true or false.'],
     ['a missing block', { ...hello, nodeId: 'nope' }, 'There is no block "nope" in the graph.'],
     ['a block that is not an event', { ...hello, nodeId: 'msg' }, 'Block "msg" is not an event block, so it can\'t start a run.'],
-    ['a bad variable', { ...hello, variables: [{ id: 'v', type: 'date' }] }, /variables\[0\] needs/],
-    ['a bad table', { ...hello, tables: [{ id: 't', name: 'T', columns: [{ id: 'c', name: 'C', type: 'date' }] }] }, /tables\[0\]\.columns\[0\] needs/],
+    ['a bad variable', { ...hello, variables: [{ id: 'v', type: 'date' }] }, 'In variable 1: “type” is “date”, which should be one of text, number, boolean, list, record.'],
+    ['a bad table', { ...hello, tables: [{ id: 't', name: 'T', columns: [{ id: 'c', name: 'C', type: 'date' }] }] }, 'In table “T” → column “C”: “type” is “date”, which should be one of text, number, boolean.'],
   ])('rejects %s', async (_, body, message) => {
     const res = await post(body);
     expect(res.status).toBe(400);

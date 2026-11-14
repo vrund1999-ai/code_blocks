@@ -34,6 +34,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Try server workflows | 2026-11-13 | [#26](https://github.com/vrund1999-ai/code_blocks/pull/26) | See below |
 | Secrets | 2026-11-13 | [#27](https://github.com/vrund1999-ai/code_blocks/pull/27) | See below |
 | Fetch through the server | 2026-11-13 | [#28](https://github.com/vrund1999-ai/code_blocks/pull/28) | See below |
+| Project file checks | 2026-11-13 | [#29](https://github.com/vrund1999-ai/code_blocks/pull/29) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -189,6 +190,14 @@ Fetch through the server included:
 - **Secrets stay out of it:** the proxy never fills in secrets, since anyone using the app could send them anywhere. To use an API key from the app, call a server workflow's web address, and use the *Secret* block there.
 - **Tests:** 15 new unit tests and 2 new end-to-end tests.
 
+Project file checks included:
+- **One check for every project** (`packages/engine/src/project.ts`, with zod): imported files, projects saved in the browser, and the parts the server runs or deploys. It checks screens and their elements, settings, variables, tables, blocks and wires, that ids aren't repeated, and that each screen starts with a container.
+- **Plain messages** that name the place of the first problem, such as “In screen “Home” → element “Intro”: “type” is “video”, which should be one of …”. Files that aren't projects at all say so.
+- **Upgrades:** the format is now version 2. Older files are upgraded one version at a time (version 1 files without data tables get an empty list), and files from a newer Code Blocks say to update.
+- **Saved projects that can't be opened** are left alone: the editor starts with a template and says why, and the Projects menu says why when you pick one.
+- **Small repairs:** wires to blocks that aren't there are dropped, and blocks without a place or settings get the defaults.
+- **Tests:** 14 new unit tests (including every template passing the check) and 3 new end-to-end tests.
+
 ---
 
 ## Roadmap status
@@ -289,7 +298,7 @@ Fetch through the server included:
 | QE-1 | E2E tests in repo | ✅ | 2026-11-10 | [#2](https://github.com/vrund1999-ai/code_blocks/pull/2) |
 | QE-2 | CI workflow | ✅ | 2026-11-10 | [#2](https://github.com/vrund1999-ai/code_blocks/pull/2) |
 | QE-3 | Code-split bundle | ⬜ | | |
-| QE-4 | Project format validation | ⬜ | | |
+| QE-4 | Project format validation | ✅ | 2026-11-13 | [#29](https://github.com/vrund1999-ai/code_blocks/pull/29) |
 | QE-5 | Accessibility pass | ⬜ | | |
 | QE-6 | Large-graph performance | ⬜ | | |
 | QE-7 | Export as standalone app / code | ⬜ | | |
@@ -300,4 +309,4 @@ Fetch through the server included:
 
 ---
 
-**Totals:** 24 / 73 done · 0 in progress
+**Totals:** 25 / 73 done · 0 in progress
