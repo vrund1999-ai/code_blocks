@@ -2,6 +2,9 @@ import { allowFailedRequestErrors, API, fakeApi } from './support/api';
 import { expect, test } from './support/fixtures';
 import { build } from './support/projects';
 
+// These use the server, which needs an account.
+test.use({ signedIn: true });
+
 /** A "Load" button that fetches `url` and puts the result into the "Out" text. */
 function loadButtonProject(fetchConfig: Record<string, unknown>) {
   const b = build('Weather');

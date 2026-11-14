@@ -1,6 +1,9 @@
 import { expect, test } from './support/fixtures';
 import { build } from './support/projects';
 
+// These use the server, which needs an account.
+test.use({ signedIn: true });
+
 /**
  * A guest list kept in a table: "Add guest" adds a row from the text box and
  * reloads the list; opening the screen loads the rows saved earlier.

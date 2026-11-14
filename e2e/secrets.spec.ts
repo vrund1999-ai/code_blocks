@@ -1,6 +1,9 @@
 import { expect, test } from './support/fixtures';
 import { build } from './support/projects';
 
+// These use the server, which needs an account.
+test.use({ signedIn: true });
+
 /**
  * GET /weather shows the secret as a message and replies with its length, so
  * a test can tell the real value was used while it stays hidden.

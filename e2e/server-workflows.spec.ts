@@ -2,6 +2,9 @@ import { allowFailedRequestErrors } from './support/api';
 import { expect, test } from './support/fixtures';
 import { build } from './support/projects';
 
+// These use the server, which needs an account.
+test.use({ signedIn: true });
+
 /** Answers GET /hello?name=Ada with "Hi Ada", and has a daily schedule. */
 function helloAddress() {
   const b = build('Hooks');
