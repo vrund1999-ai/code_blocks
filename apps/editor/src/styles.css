@@ -1726,7 +1726,17 @@ textarea.field-input {
   align-items: center;
   gap: 4px;
 }
+/* On a narrow toolbar, the email gives up room before anything is cut off. */
+.toolbar > .menu-anchor:last-child {
+  flex-shrink: 1;
+  min-width: 44px;
+}
+.toolbar > .menu-anchor:last-child > .account-btn {
+  max-width: 100%;
+  overflow: hidden;
+}
 .account-email {
+  min-width: 0;
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;

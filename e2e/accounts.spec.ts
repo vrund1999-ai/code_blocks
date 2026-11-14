@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test, TEST_PASSWORD } from './support/fixtures';
+import { allowFailedRequestErrors } from './support/api';
 import { build } from './support/projects';
 
 const newEmail = () => `e2e-${randomUUID()}@example.test`;
@@ -111,4 +112,31 @@ test('a project used by one account is kept from others', async ({ app, page, co
   }
   // The browser logs the refused request.
   consoleErrors.splice(0, consoleErrors.length, ...consoleErrors.filter((e) => !/status of 403/.test(e)));
+});
+
+test.describe('signed in', () => {
+  test.use({ signedIn: true });
+
+  test('the toolbar stays on one line with a long email and a run problem', async ({ appNoBoot: app, seed, page, account, consoleErrors }) => {
+    const b = build('Toolbar');
+    const button = b.element('button', 'Load', { label: 'Load' });
+    const click = b.node('event.click', { element: button.id });
+    const fetch = b.node('action.fetch', { url: 'http://127.0.0.1:1/nothing', via: 'server' });
+    b.exec(click, 'next', fetch);
+    await seed(b.project);
+    await app.goto();
+    const toolbar = page.locator('header.toolbar');
+    const accountButton = page.getByRole('button', { name: /👤/ }).first();
+    await expect(accountButton).toContainText(account!.email);
+    const height = await toolbar.evaluate((t) => t.clientHeight);
+
+    await app.run();
+    await app.designCanvas.getByRole('button', { name: 'Load' }).click();
+    await expect(app.errorPill).toBeVisible();
+    // Nothing wraps or is pushed past the edge: the email gives up room instead.
+    expect(await toolbar.evaluate((t) => t.clientHeight)).toBe(height);
+    expect(await toolbar.evaluate((t) => t.scrollWidth <= t.clientWidth)).toBe(true);
+    await expect(accountButton).toBeInViewport({ ratio: 1 });
+    allowFailedRequestErrors(consoleErrors);
+  });
 });
