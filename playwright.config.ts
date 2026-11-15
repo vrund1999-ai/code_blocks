@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { OUTBOX } from './e2e/support/mail';
 
 const CI = !!process.env.CI;
 const PORT = 4173;
@@ -38,10 +39,11 @@ export default defineConfig({
       // Its database is in memory, so test runs leave nothing behind; each test's
       // project has its own id, so tests don't see each other's rows.
       // Tests reach it at 127.0.0.1 and sign up many accounts, so private
-      // addresses are allowed and rate limits are off.
+      // addresses are allowed and rate limits are off. Its emails go to a
+      // file the tests read (e2e/support/mail.ts).
       command: 'npm run start:server',
       url: 'http://127.0.0.1:8787/api/health',
-      env: { DB_FILE: ':memory:', ALLOW_PRIVATE_ADDRESSES: '1', RATE_LIMITS: 'off' },
+      env: { DB_FILE: ':memory:', ALLOW_PRIVATE_ADDRESSES: '1', RATE_LIMITS: 'off', MAIL_LOG_FILE: OUTBOX },
       reuseExistingServer: !CI,
       timeout: 60_000,
     },
