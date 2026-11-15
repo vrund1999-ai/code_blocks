@@ -298,7 +298,7 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
     type: 'spacer',
     label: 'Spacer',
     icon: '↕',
-    description: 'Empty space between elements. Only shown while designing.',
+    description: 'Empty space between elements. It’s striped only while designing.',
     canHaveChildren: false,
     defaults: { size: 24, visible: true },
     fields: [{ key: 'size', label: 'Size', type: 'number', help: 'How much space, across and down.' }, visibleField],
