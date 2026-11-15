@@ -102,11 +102,11 @@ export const dataNodes: NodeDef[] = [
     type: 'data.getInputValue',
     category: 'data',
     label: 'Get text box value',
-    description: 'Reads what is typed into a text box, the choice picked in a dropdown, or whether a checkbox is ticked.',
+    description: 'Reads what is typed into a text box or number box, the choice picked in a dropdown, a slider’s number, or whether a checkbox is ticked.',
     inputs: [],
     outputs: [{ id: 'value', label: 'Value', kind: 'data', valueType: 'any' }],
     configFields: [
-      { key: 'element', label: 'Text box / checkbox / dropdown', type: 'element', elementTypes: ['input', 'checkbox', 'dropdown'] },
+      { key: 'element', label: 'Input', type: 'element', elementTypes: ['input', 'checkbox', 'dropdown', 'number', 'slider'] },
     ],
     sentence: (c, n) => `Value of ${pick(n.element(c.element), '…')}`,
     validate: (c) => (c.element ? null : 'This block has no text box picked.'),

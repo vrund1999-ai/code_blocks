@@ -9,6 +9,7 @@ import { addPublishedRow, listPublishedRows } from '../data/publishApi';
 import { fetchViaServer, sendForm } from '../data/serverApi';
 import { appStoragePrefix } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
+import { fitNumber, numberLimits } from '../model/elements';
 import { findInProject } from '../model/tree';
 import { popScreen, pushScreen } from './history';
 import { clearRunLog, logError, logInput, logStep } from './runLog';
@@ -158,6 +159,13 @@ function makeTables(alive: () => boolean): TablesApi {
   };
 }
 
+/** An element's settings as set in the designer. */
+function staticProps(el: { props: Record<string, { kind: string; value?: unknown }> }) {
+  const out: Record<string, unknown> = {};
+  for (const [k, p] of Object.entries(el.props)) if (p.kind === 'static') out[k] = p.value;
+  return out;
+}
+
 /** Rows loaded per request when a block reads a whole table. */
 const RUN_PAGE_SIZE = 500;
 
@@ -181,6 +189,10 @@ function makeHost(gen: number): HostApi {
         if (p?.kind === 'variable') return toBool(useRuntimeStore.getState().vars[p.variableId]);
         return p?.kind === 'static' ? Boolean(p.value) : false;
       }
+      if (el.type === 'number' || el.type === 'slider') {
+        const raw = 'value' in state ? state.value : staticProps(el).value;
+        return fitNumber(raw, numberLimits(staticProps(el), el.type === 'slider'), el.type === 'slider');
+      }
       if ('value' in state) return state.value;
       const p = el.props.value;
       return p?.kind === 'static' ? toText(p.value) : '';
@@ -191,6 +203,10 @@ function makeHost(gen: number): HostApi {
       if (!el) return;
       let key = prop;
       if (prop === 'text' && (el.type === 'button' || el.type === 'checkbox')) key = 'label';
+      if (key === 'value' && (el.type === 'number' || el.type === 'slider')) {
+        // Number boxes and sliders show the number blocks will read back.
+        value = fitNumber(value, numberLimits(staticProps(el), el.type === 'slider'), el.type === 'slider');
+      }
       setElementState(id, { [key]: value });
     },
     toast: (message) => alive() && pushToast(message),
