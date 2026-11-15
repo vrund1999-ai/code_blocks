@@ -45,6 +45,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Accessibility pass | 2026-11-14 | [#38](https://github.com/vrund1999-ai/code_blocks/pull/38) | See below |
 | Stop cancels waits | 2026-11-15 | [#39](https://github.com/vrund1999-ai/code_blocks/pull/39) | See below |
 | Go back block | 2026-11-15 | [#40](https://github.com/vrund1999-ai/code_blocks/pull/40) | See below |
+| Math extras | 2026-11-15 | [#41](https://github.com/vrund1999-ai/code_blocks/pull/41) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -281,6 +282,11 @@ Go back block included:
 - **Tests:** 5 new unit tests for the history, 1 more server test, and 1 new end-to-end test that goes forward through three screens and back.
 - **Follow-up:** the browser's Back button in published apps (RT-7).
 
+Math extras included:
+- **Three more *Math* operations:** the remainder of A ÷ B (0 when B is 0, like dividing), and the smaller or the bigger of A and B.
+- **A *Round number* block** in *Values*: to the nearest, down or up, with a *Decimal places* input (0 to 10). Halves round away from zero (2.5 → 3, −2.5 → −3), and 1.005 rounds to 1.01 as written, not 1.00 as stored.
+- **Tests:** 9 new unit tests (`math.test.ts`), and a new end-to-end spec (`e2e/math.spec.ts`) that splits a bill, then changes the rounding and the operation while the app runs.
+
 ---
 
 ## Roadmap status
@@ -354,7 +360,7 @@ Go back block included:
 | LB-1 | Text blocks | ✅ | 2026-11-11 | [#7](https://github.com/vrund1999-ai/code_blocks/pull/7) |
 | LB-2 | List blocks | ✅ | 2026-11-11 | [#7](https://github.com/vrund1999-ai/code_blocks/pull/7) |
 | LB-3 | Records value type | ✅ | 2026-11-10 | [#4](https://github.com/vrund1999-ai/code_blocks/pull/4) |
-| LB-4 | Math extras | ⬜ | | |
+| LB-4 | Math extras | ✅ | 2026-11-15 | [#41](https://github.com/vrund1999-ai/code_blocks/pull/41) |
 | LB-5 | Date and time blocks | ⬜ | | |
 | LB-6 | Custom reusable blocks | ⬜ | | |
 | LB-7 | Local variables | ⬜ | | |
@@ -400,4 +406,4 @@ Go back block included:
 
 ---
 
-**Totals:** 36 / 81 done · 0 in progress
+**Totals:** 37 / 81 done · 0 in progress
