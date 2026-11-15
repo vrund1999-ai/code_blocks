@@ -18,7 +18,7 @@ export function LogicWorkspace() {
   return (
     <ReactFlowProvider>
       <main className="workspace">
-        <aside className="sidebar">
+        <aside className="sidebar" aria-label="Blocks and variables">
           <NodePalette />
           <VariablesPanel />
         </aside>
@@ -49,7 +49,7 @@ function LogicPreview() {
     <div className="logic-preview">
       <div className="logic-preview-head">
         <span>{running ? '▶ Your app (running)' : 'Preview'}</span>
-        <button className="icon-btn" onClick={() => setOpen(false)} title="Hide preview">
+        <button className="icon-btn" onClick={() => setOpen(false)} title="Hide preview" aria-label="Hide preview">
           ✕
         </button>
       </div>

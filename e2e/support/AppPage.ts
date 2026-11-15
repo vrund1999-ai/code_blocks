@@ -96,10 +96,10 @@ export class AppPage {
     return this.page.locator('aside.inspector');
   }
   get variablesPanel() {
-    return this.page.locator('.panel-section', { has: this.page.locator('h3', { hasText: 'Variables' }) });
+    return this.page.locator('.panel-section', { has: this.page.locator('h2', { hasText: 'Variables' }) });
   }
   get screensPanel() {
-    return this.page.locator('.panel-section', { has: this.page.locator('h3', { hasText: 'Screens' }) });
+    return this.page.locator('.panel-section', { has: this.page.locator('h2', { hasText: 'Screens' }) });
   }
   /** The ☁ Server button in the toolbar. */
   get serverButton() {

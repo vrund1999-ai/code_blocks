@@ -13,7 +13,9 @@ function project() {
 }
 
 const rowNames = (tree: import('@playwright/test').Locator) =>
-  tree.getByRole('treeitem').evaluateAll((rows) => rows.map((r) => r.getAttribute('aria-label')));
+  tree
+    .getByRole('treeitem')
+    .evaluateAll((rows) => rows.map((r) => r.getAttribute('aria-label') ?? r.querySelector('.layer-name')?.textContent));
 
 test('the layers panel outlines the screen and selects nested elements', async ({ appNoBoot: app, seed }) => {
   await seed(project());

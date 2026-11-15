@@ -3,11 +3,11 @@
   --panel: #ffffff;
   --border: #e3e5e8;
   --text: #1f2937;
-  --muted: #6b7280;
+  --muted: #555d6b;
   --accent: #5b5bd6;
   --accent-soft: #ecebff;
   --danger: #e03131;
-  --run: #2f9e44;
+  --run: #237d36;
   --radius: 8px;
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color: var(--text);
@@ -80,7 +80,22 @@ textarea {
 .brand {
   font-weight: 700;
   font-size: 16px;
-  margin-right: 6px;
+  margin: 0 6px 0 0;
+  white-space: nowrap;
+}
+/* One clear ring for whatever the keyboard is on. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* Read by screen readers, not shown. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 .logo {
@@ -94,9 +109,12 @@ textarea {
   width: 180px;
   background: transparent;
 }
-.project-name:hover,
-.project-name:focus {
+.project-name:hover {
   border-color: var(--border);
+  background: #fff;
+}
+.project-name:focus {
+  border-color: var(--accent);
   outline: none;
   background: #fff;
 }
@@ -170,7 +188,7 @@ textarea {
   padding: 6px 18px;
 }
 .btn.run:hover {
-  background: #2b8a3e !important;
+  background: #1b6a2c !important;
 }
 .btn.stop {
   background: var(--danger);
@@ -282,7 +300,7 @@ textarea {
   margin-left: 4px;
 }
 .server-badge.live {
-  color: #2b8a3e;
+  color: #237d36;
 }
 .server-badge.outdated {
   color: #b35c00;
@@ -353,7 +371,7 @@ textarea {
   padding: 12px 14px;
   border-bottom: 1px solid var(--border);
 }
-h3 {
+.panel-title {
   margin: 0 0 6px;
   font-size: 12px;
   text-transform: uppercase;
@@ -465,16 +483,16 @@ h3 {
   text-transform: uppercase;
 }
 .t-text {
-  background: #e64980;
+  background: #c2255c;
 }
 .t-number {
-  background: #15aabf;
+  background: #0b7285;
 }
 .t-boolean {
-  background: #fa5252;
+  background: #c92a2a;
 }
 .t-list {
-  background: #f08c00;
+  background: #c2410c;
 }
 .t-record {
   background: #7950f2;
@@ -603,7 +621,7 @@ textarea.field-input {
   margin-top: 4px;
   padding-top: 10px;
 }
-.style-section h4 {
+.style-section h3 {
   margin: 0 0 8px;
   font-size: 11px;
   text-transform: uppercase;
@@ -812,7 +830,7 @@ textarea.field-input {
 .list-delete {
   border: none;
   background: transparent;
-  color: #adb5bd;
+  color: #6c757d;
   border-radius: 4px;
   padding: 2px 6px;
 }
@@ -827,7 +845,7 @@ textarea.field-input {
   font-size: 13px;
 }
 .placeholder {
-  color: #adb5bd;
+  color: #6c757d;
   font-style: italic;
 }
 .hidden-in-design {
@@ -931,7 +949,7 @@ textarea.field-input {
   outline: 1px dashed #dee2e6;
 }
 .empty-hint {
-  color: #adb5bd;
+  color: #6c757d;
   font-size: 12px;
   text-align: center;
   padding: 16px;
@@ -1147,6 +1165,20 @@ textarea.field-input {
   font-weight: 700;
   font-size: 13px;
   margin-bottom: 4px;
+}
+/* The category's colour is a marker beside its name: as text, several colours are too light to read. */
+.node-cat-title::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  background: var(--cat);
+}
+.cat-word {
+  text-decoration: underline 3px var(--cat);
+  text-underline-offset: 3px;
 }
 .node-cat-title .hint {
   display: block;
@@ -1414,7 +1446,7 @@ textarea.field-input {
   border-radius: 4px;
 }
 .list-hint {
-  color: #adb5bd;
+  color: #6c757d;
   font-size: 11px;
   text-align: center;
   padding: 6px;

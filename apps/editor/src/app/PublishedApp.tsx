@@ -13,6 +13,7 @@ import { useRuntimeStore } from '../runtime/runtimeStore';
 export function PublishedApp({ slug }: { slug: string }) {
   const [state, setState] = useState<'loading' | 'ready' | string>('loading');
   const screenId = useRuntimeStore((s) => s.screenId);
+  const name = useProjectStore((s) => s.project.name);
 
   useEffect(() => {
     let cancelled = false;
@@ -38,6 +39,7 @@ export function PublishedApp({ slug }: { slug: string }) {
     <div className="published">
       {state === 'ready' && screenId ? (
         <main className="published-app">
+          <h1 className="visually-hidden">{name || 'Code Blocks app'}</h1>
           <AppView screenId={screenId} mode="run" />
         </main>
       ) : (

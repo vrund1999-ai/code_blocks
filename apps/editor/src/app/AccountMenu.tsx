@@ -309,7 +309,12 @@ export function AccountMenu() {
     const onDown = (e: MouseEvent) => {
       if (!ref.current?.contains(e.target as Node)) openAccountMenu(false);
     };
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && openAccountMenu(false);
+    // Escape closes the menu and puts the keyboard back on its button.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      openAccountMenu(false);
+      ref.current?.querySelector<HTMLButtonElement>(':scope > button')?.focus();
+    };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
     return () => {

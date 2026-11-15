@@ -57,6 +57,7 @@ How the end-to-end tests are organised:
 - **`e2e/support/projects.ts`:** builds test projects with the app's own model code.
 - **`e2e/support/api.ts`:** `fakeApi()` answers web requests from a fake API, so tests never use the real internet.
 - **`e2e/support/AppPage.ts`:** a page object with helpers for dragging, connecting blocks, running the app and so on.
+- **`e2e/accessibility.spec.ts`:** runs axe on the main screens and fails on any finding. A new panel or menu should get a scan there.
 - **No fixed waits:** use Playwright's auto-retrying `expect`, and use `page.clock` for anything timed.
 - **Clicks right after a drag:** for 50 ms after a drop, dnd-kit ignores clicks, and tests can click that fast. Use a helper that retries until the click has an effect, such as `linkSetting()`.
 

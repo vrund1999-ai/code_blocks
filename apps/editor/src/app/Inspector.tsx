@@ -111,7 +111,7 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
     const value = pv.value;
     switch (field.type) {
       case 'boolean':
-        editor = <input type="checkbox" checked={Boolean(value)} onChange={(e) => set({ kind: 'static', value: e.target.checked })} />;
+        editor = <input type="checkbox" aria-label={field.label} checked={Boolean(value)} onChange={(e) => set({ kind: 'static', value: e.target.checked })} />;
         break;
       case 'number':
         editor = field.optional ? (
@@ -131,6 +131,7 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
           <input
             type="number"
             className="field-input"
+            aria-label={field.label}
             value={String(value ?? 0)}
             onChange={(e) => set({ kind: 'static', value: Number(e.target.value) })}
           />
@@ -138,7 +139,7 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
         break;
       case 'select':
         editor = (
-          <select className="field-input" value={String(value)} onChange={(e) => set({ kind: 'static', value: e.target.value })}>
+          <select className="field-input" aria-label={field.label} value={String(value)} onChange={(e) => set({ kind: 'static', value: e.target.value })}>
             {field.options?.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
@@ -149,13 +150,14 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
         break;
       case 'color':
         editor = (
-          <input type="color" className="color-input" value={String(value || '#ffffff')} onChange={(e) => set({ kind: 'static', value: e.target.value })} />
+          <input type="color" className="color-input" aria-label={field.label} value={String(value || '#ffffff')} onChange={(e) => set({ kind: 'static', value: e.target.value })} />
         );
         break;
       case 'textarea':
         editor = (
           <textarea
             className="field-input"
+            aria-label={field.label}
             // Grows with its lines (up to 6), so a dropdown's choices all show.
             rows={Math.min(6, Math.max(2, String(value ?? '').split('\n').length))}
             value={String(value ?? '')} onChange={(e) => set({ kind: 'static', value: e.target.value })} />
@@ -163,7 +165,12 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
         break;
       default:
         editor = (
-          <input className="field-input" value={String(value ?? '')} onChange={(e) => set({ kind: 'static', value: e.target.value })} />
+          <input
+            className="field-input"
+            aria-label={field.label}
+            value={String(value ?? '')}
+            onChange={(e) => set({ kind: 'static', value: e.target.value })}
+          />
         );
     }
   }
@@ -217,7 +224,7 @@ function ElementInspector({ el, isRoot }: { el: UIElement; isRoot: boolean }) {
       {!isRoot && (
         <div className="prop-row">
           <div className="prop-label">Name</div>
-          <input className="field-input" value={el.name} onChange={(e) => renameElement(el.id, e.target.value)} />
+          <input className="field-input" aria-label="Name" value={el.name} onChange={(e) => renameElement(el.id, e.target.value)} />
           <div className="hint">Used to pick this element in logic blocks.</div>
         </div>
       )}
@@ -228,7 +235,7 @@ function ElementInspector({ el, isRoot }: { el: UIElement; isRoot: boolean }) {
         ))}
       {styleFields.length > 0 && (
         <section className="style-section" aria-label="Style">
-          <h4>Style</h4>
+          <h3>Style</h3>
           <div className="style-grid">
             {styleFields
               .filter((f) => f.type === 'number')
@@ -299,6 +306,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
           <div className="prop-label">{p.label}</div>
           <InlineValueInput
             type={p.inline!.type}
+            label={p.label}
             value={config[p.id] ?? p.inline!.default}
             onChange={(v) => updateNodeConfig(nodeId, { [p.id]: v })}
           />
@@ -332,8 +340,8 @@ export function Inspector() {
   }
 
   return (
-    <aside className="inspector">
-      <h3>Settings</h3>
+    <aside className="inspector" aria-label="Properties">
+      <h2 className="panel-title">Settings</h2>
       {body ?? (
         <div className="hint empty-inspector">
           {tab === 'design'

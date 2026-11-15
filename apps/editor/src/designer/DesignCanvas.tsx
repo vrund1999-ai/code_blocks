@@ -54,6 +54,11 @@ function DesignNode({
       }}
       {...(isRoot ? {} : drag.listeners)}
       {...(isRoot ? {} : drag.attributes)}
+      // A group rather than dnd-kit's button: it holds the element's preview,
+      // which can have inputs and buttons of its own. The keyboard picks
+      // elements in the Layers panel.
+      role="group"
+      aria-label={isRoot ? undefined : el.name}
       tabIndex={-1}
     >
       {!isRoot && (

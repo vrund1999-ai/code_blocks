@@ -42,6 +42,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Smaller downloads | 2026-11-14 | [#35](https://github.com/vrund1999-ai/code_blocks/pull/35) | See below |
 | Visitors add rows | 2026-11-14 | [#36](https://github.com/vrund1999-ai/code_blocks/pull/36) | See below |
 | Account settings | 2026-11-14 | [#37](https://github.com/vrund1999-ai/code_blocks/pull/37) | See below |
+| Accessibility pass | 2026-11-14 | [#38](https://github.com/vrund1999-ai/code_blocks/pull/38) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -258,6 +259,13 @@ Account settings included:
 - **Limits:** 3 reset emails an hour per email.
 - **Tests:** 11 new unit tests, and 3 new end-to-end tests that read the test server's emails from a file (`MAIL_LOG_FILE`). The reset test found that a link opened in a tab where the editor was already open wasn't noticed, since only the address's `#` changed; the editor now watches for that.
 
+Accessibility pass included:
+- **Automated checks:** a new end-to-end spec runs axe on the Design, Logic and Data tabs, the inspector for elements and blocks, the menus, a running app, an empty project and a published app, and fails on any finding.
+- **Easier to read:** darker muted text, *Run* button, variable type chips and block header colours, so text is at least 4.5:1 against its background. Palette category titles are dark text beside a coloured marker.
+- **Named for screen readers:** fields in the inspector and on blocks, icon-only buttons (undo, redo, delete screen, delete project, hide preview), the side panels, and a heading for the editor and for each published app.
+- **Keyboard:** the menus close with Escape and put the keyboard back on their button; the projects menu now closes with Escape or a click elsewhere. Anything the keyboard is on gets one clear ring.
+- **Follow-ups:** connecting and moving blocks without a mouse (QE-13), and checks on the apps people build (QE-14).
+
 ---
 
 ## Roadmap status
@@ -363,7 +371,7 @@ Account settings included:
 | QE-2 | CI workflow | ✅ | 2026-11-10 | [#2](https://github.com/vrund1999-ai/code_blocks/pull/2) |
 | QE-3 | Code-split bundle | ✅ | 2026-11-14 | [#35](https://github.com/vrund1999-ai/code_blocks/pull/35) |
 | QE-4 | Project format validation | ✅ | 2026-11-13 | [#29](https://github.com/vrund1999-ai/code_blocks/pull/29) |
-| QE-5 | Accessibility pass | ⬜ | | |
+| QE-5 | Accessibility pass | ✅ | 2026-11-14 | [#38](https://github.com/vrund1999-ai/code_blocks/pull/38) |
 | QE-6 | Large-graph performance | ⬜ | | |
 | QE-7 | Export as standalone app / code | ⬜ | | |
 | QE-8 | Visual regression screenshots | ⬜ | | |
@@ -371,7 +379,9 @@ Account settings included:
 | QE-10 | React Flow attribution review | ✅ | 2026-11-13 | [#25](https://github.com/vrund1999-ai/code_blocks/pull/25) |
 | QE-11 | Drag tests in Firefox / WebKit | ⬜ | | |
 | QE-12 | Stray 401 after signing out in an accounts test | ✅ | 2026-11-14 | [#34](https://github.com/vrund1999-ai/code_blocks/pull/34) |
+| QE-13 | Connect and move blocks without a mouse | ⬜ | | |
+| QE-14 | Accessibility checks for built apps | ⬜ | | |
 
 ---
 
-**Totals:** 33 / 78 done · 0 in progress
+**Totals:** 34 / 80 done · 0 in progress

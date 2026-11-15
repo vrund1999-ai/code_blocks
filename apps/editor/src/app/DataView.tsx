@@ -35,7 +35,7 @@ function TablesPanel({ active, onOpen }: { active: string | null; onOpen(id: str
   const addTable = useProjectStore((s) => s.addTable);
   return (
     <div className="panel-section" role="region" aria-label="Tables">
-      <h3>Tables</h3>
+      <h2 className="panel-title">Tables</h2>
       <p className="hint">Lists of rows your app keeps, like a simple spreadsheet. Every row has the same columns.</p>
       {tables.map((t) => (
         <button
@@ -352,7 +352,9 @@ function TableEditor({ table }: { table: DataTable }) {
                   </th>
                 );
               })}
-              <th className="row-actions" aria-label="Row actions" />
+              <th className="row-actions">
+                <span className="visually-hidden">Row actions</span>
+              </th>
             </tr>
           </thead>
           <RowsBody table={table} data={data} />
@@ -382,7 +384,7 @@ export function DataView() {
 
   return (
     <main className="workspace">
-      <aside className="sidebar">
+      <aside className="sidebar" aria-label="Tables">
         <TablesPanel active={table?.id ?? null} onOpen={setOpenId} />
       </aside>
       <section className="data-area" aria-label="Table designer">

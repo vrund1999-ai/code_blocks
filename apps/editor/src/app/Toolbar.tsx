@@ -47,7 +47,12 @@ function ProjectRow({
         <span className="hint">{new Date(project.updatedAt).toLocaleString()}</span>
       </button>
       {!current && (
-        <button className="icon-btn" title="Delete project" onClick={onDelete}>
+        <button
+          className="icon-btn"
+          title="Delete project"
+          aria-label={`Delete project “${project.name || 'Untitled'}”`}
+          onClick={onDelete}
+        >
           🗑
         </button>
       )}
@@ -220,6 +225,26 @@ export function Toolbar() {
   const error = useRuntimeStore((s) => s.error);
   const [menu, setMenu] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Escape or a click elsewhere closes the projects menu; Escape puts the keyboard back on its button.
+  useEffect(() => {
+    if (!menu) return;
+    const onDown = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenu(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setMenu(false);
+      menuRef.current?.querySelector<HTMLButtonElement>(':scope > button')?.focus();
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menu]);
 
   const showErrorBlock = () => {
     if (!error) return;
@@ -230,11 +255,14 @@ export function Toolbar() {
 
   return (
     <header className="toolbar">
-      <div className="brand">
-        <span className="logo">◆</span> Code Blocks
-      </div>
-      <div className="menu-anchor">
-        <button className="btn" onClick={() => setMenu(!menu)}>
+      <h1 className="brand">
+        <span className="logo" aria-hidden>
+          ◆
+        </span>{' '}
+        Code Blocks
+      </h1>
+      <div className="menu-anchor" ref={menuRef}>
+        <button className="btn" onClick={() => setMenu(!menu)} aria-expanded={menu}>
           📁 Projects ▾
         </button>
         {menu && <ProjectsMenu onClose={() => setMenu(false)} />}
@@ -260,10 +288,17 @@ export function Toolbar() {
           ⚠ Problem in a block — show me
         </button>
       )}
-      <button className="btn icon" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
+      <button className="btn icon" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)" aria-label="Undo" aria-keyshortcuts="Control+Z">
         ↶
       </button>
-      <button className="btn icon" onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)">
+      <button
+        className="btn icon"
+        onClick={redo}
+        disabled={!canRedo}
+        title="Redo (Ctrl+Shift+Z)"
+        aria-label="Redo"
+        aria-keyshortcuts="Control+Shift+Z Control+Y"
+      >
         ↷
       </button>
       <button className="btn" onClick={() => downloadProject(useProjectStore.getState().project)} title="Download as a file">
