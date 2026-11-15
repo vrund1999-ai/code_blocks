@@ -21,7 +21,7 @@ The third wave puts first what matters once real people sign up and visitors ope
 3. ✅ **PL-8:** visitors can add rows to published apps (sign-up lists, guestbooks), as each table allows. Requests sent from the server for visitors moved to **PL-9**.
 4. ✅ **PL-7:** password reset by email (SMTP), and account settings. **BE-9** (*Send email*) can use the same mailer.
 5. ✅ **QE-5:** an accessibility pass, for the editor and published apps. Connecting blocks without a mouse moved to **QE-13**, and checks on the apps people build to **QE-14**.
-6. **RT-4:** Stop cancels pending *Wait* blocks right away.
+6. ✅ **RT-4:** Stop cancels pending *Wait* blocks right away.
 
 Editor, element and block items (UX, EL, LB) stay P2. They can be picked up between these, when a smaller change is wanted.
 
@@ -112,7 +112,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | RT-1 | Show live values on wires while running | P1 | Shipped: each data wire shows the last value read through it, summed up for lists and records, with the whole value on hover; cleared on Stop |
 | RT-2 | Run log panel (which blocks ran, with values) | P2 | Shipped: a Run log under the Logic tab's preview, grouped by event, with each block's inputs and errors; click a line to show its block |
 | RT-3 | Step-through debugger with breakpoints | P3 | |
-| RT-4 | Cancel pending *Wait* blocks immediately on Stop | P2 | Today a pending wait finishes, but its effects are ignored |
+| RT-4 | Cancel pending *Wait* blocks immediately on Stop | P2 | Shipped: Stop ends each pending wait, and a stopped run ends before its next block, without reporting an error. Before, the blocks after a wait still ran once it finished: their changes to the app were ignored, but a *Fetch from API* after a wait still sent its request. Server workflows already cancelled their waits when stopped |
 | RT-5 | Navigation history and a *Go back* block | P2 | |
 | RT-6 | Run details for server workflow runs | P3 | The ☁ Server menu lists runs with their errors and messages; also show which blocks ran with their values, like the Run log |
 

@@ -19,6 +19,8 @@ const FETCH_TIMEOUT_MS = 30_000;
 let generation = 0;
 let timers: ReturnType<typeof setInterval>[] = [];
 let host: HostApi | null = null;
+/** Ends each pending *Wait*, so Stop cancels it instead of letting it finish. */
+let cancelWaits = new Set<() => void>();
 /** Set while running a published app for its visitors (app/PublishedApp.tsx): the slug of its link. */
 let publishedSlug: string | null = null;
 
@@ -34,6 +36,7 @@ export const READ_ONLY_TABLES = 'Visitors can’t change or delete rows. Only th
 export const NO_SERVER_REQUESTS = 'Published apps can’t send requests from the server yet. Its owner can set “Send from” to “The app”.';
 
 const project = () => useProjectStore.getState().project;
+const STOPPED = 'The app was stopped.';
 
 function flash(nodeId: string) {
   const rt = useRuntimeStore.getState();
@@ -207,7 +210,19 @@ function makeHost(gen: number): HostApi {
     storageSet: (key, value) => {
       if (alive()) localStorage.setItem(prefix + key, JSON.stringify(value ?? null));
     },
-    sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+    sleep: (ms) =>
+      new Promise<void>((resolve, reject) => {
+        if (!alive()) return reject(new HostError(STOPPED));
+        const cancel = () => {
+          clearTimeout(timer);
+          reject(new HostError(STOPPED));
+        };
+        const timer = setTimeout(() => {
+          cancelWaits.delete(cancel);
+          resolve();
+        }, ms);
+        cancelWaits.add(cancel);
+      }),
     httpRequest: async ({ method, url, headers, body, viaServer }) => {
       if (viaServer) {
         if (publishedSlug) throw new HostError(NO_SERVER_REQUESTS);
@@ -222,7 +237,7 @@ function makeHost(gen: number): HostApi {
     },
     tables: makeTables(alive),
     sendForm: async (form, values) => {
-      const stopped = () => new HostError('The app was stopped.');
+      const stopped = () => new HostError(STOPPED);
       if (!alive()) throw stopped();
       let result;
       try {
@@ -244,6 +259,7 @@ function interpreter(): Interpreter | null {
   const gen = generation;
   const alive = () => gen === generation;
   return new Interpreter(project().graph, host, {
+    stopped: () => !alive(),
     onNodeRun: (nodeId, payload) => {
       flash(nodeId);
       if (alive()) logStep(nodeId, payload);
@@ -280,6 +296,9 @@ export function startApp() {
 
 export function stopApp() {
   generation++;
+  const waits = cancelWaits;
+  cancelWaits = new Set();
+  waits.forEach((cancel) => cancel());
   clearWires();
   timers.forEach(clearInterval);
   timers = [];

@@ -43,6 +43,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Visitors add rows | 2026-11-14 | [#36](https://github.com/vrund1999-ai/code_blocks/pull/36) | See below |
 | Account settings | 2026-11-14 | [#37](https://github.com/vrund1999-ai/code_blocks/pull/37) | See below |
 | Accessibility pass | 2026-11-14 | [#38](https://github.com/vrund1999-ai/code_blocks/pull/38) | See below |
+| Stop cancels waits | 2026-11-15 | [#39](https://github.com/vrund1999-ai/code_blocks/pull/39) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -266,6 +267,12 @@ Accessibility pass included:
 - **Keyboard:** the menus close with Escape and put the keyboard back on their button; the projects menu now closes with Escape or a click elsewhere. Anything the keyboard is on gets one clear ring.
 - **Follow-ups:** connecting and moving blocks without a mouse (QE-13), and checks on the apps people build (QE-14).
 
+Stop cancels waits included:
+- **Stop ends pending *Wait* blocks** right away, and a stopped run ends before its next block (`stopped` in the interpreter's options), without reporting an error.
+- **The bug it fixes:** blocks after a wait still ran once it finished. Their changes to the app were ignored, but a *Fetch from API* still sent its request after Stop.
+- **Tests:** 2 new unit tests, and 1 new end-to-end test that stops during a wait and checks that only the next run's request is sent.
+- **Steadier timing tests:** the tests that use Playwright's fake clock now pause it, so time moves only when a test moves it. Before, the clock also ran in real time, and on a slow machine an *Every few seconds* test counted more ticks than expected.
+
 ---
 
 ## Roadmap status
@@ -353,7 +360,7 @@ Accessibility pass included:
 | RT-1 | Live values on wires | ✅ | 2026-11-12 | [#15](https://github.com/vrund1999-ai/code_blocks/pull/15) |
 | RT-2 | Run log panel | ✅ | 2026-11-12 | [#16](https://github.com/vrund1999-ai/code_blocks/pull/16) |
 | RT-3 | Step-through debugger | ⬜ | | |
-| RT-4 | Cancel waits on Stop | ⬜ | | |
+| RT-4 | Cancel waits on Stop | ✅ | 2026-11-15 | [#39](https://github.com/vrund1999-ai/code_blocks/pull/39) |
 | RT-5 | Navigation history / Go back | ⬜ | | |
 | RT-6 | Run details for server workflow runs | ⬜ | | |
 
@@ -384,4 +391,4 @@ Accessibility pass included:
 
 ---
 
-**Totals:** 34 / 80 done · 0 in progress
+**Totals:** 35 / 80 done · 0 in progress

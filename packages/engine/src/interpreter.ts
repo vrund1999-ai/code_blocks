@@ -17,6 +17,11 @@ export interface InterpreterOptions {
   onValue?(edgeId: string, value: unknown): void;
   /** Called for errors in event runs. If omitted, errors are re-thrown. */
   onError?(err: GraphError): void;
+  /**
+   * Whether the app was stopped. Once it is, runs end before their next
+   * block, and their errors (such as a cancelled *Wait*) aren't reported.
+   */
+  stopped?(): boolean;
   defs?: Record<string, NodeDef>;
 }
 
@@ -95,6 +100,7 @@ export class Interpreter {
     try {
       await this.execNode(node, run);
     } catch (err) {
+      if (this.opts.stopped?.()) return;
       const gErr = blockError(node.id, err);
       if (this.opts.onError) this.opts.onError(gErr);
       else throw gErr;
@@ -122,6 +128,7 @@ export class Interpreter {
   }
 
   private async execNode(node: GraphNode, run: RunState): Promise<void> {
+    if (this.opts.stopped?.()) return;
     if (++run.steps > this.maxSteps) {
       throw new GraphError(
         node.id,
