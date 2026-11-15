@@ -66,6 +66,9 @@ export const ELEMENT_TYPES = [
   'dropdown',
   'number',
   'slider',
+  'link',
+  'divider',
+  'spacer',
   'list',
 ] as const;
 export const VARIABLE_TYPES = ['text', 'number', 'boolean', 'list', 'record'] as const;

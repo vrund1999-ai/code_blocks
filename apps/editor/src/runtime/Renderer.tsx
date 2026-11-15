@@ -1,11 +1,11 @@
 import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
 import { toBool, toList, toNumber, toText } from '@code-blocks/engine/convert';
 import { cardValue, type CardItem } from './cards';
-import { dropdownChoices, fitNumber, numberLimits } from '../model/elements';
+import { dropdownChoices, fitNumber, linkHref, numberLimits } from '../model/elements';
 import { elementStyle, hasFixedWidth } from '../model/style';
 import { useProjectStore } from '../model/projectStore';
 import type { UIElement } from '../model/types';
-import { fireChange, fireClick, fireListDelete } from './controller';
+import { fireChange, fireClick, fireListDelete, isPublished } from './controller';
 import { setElementState, useRuntimeStore } from './runtimeStore';
 
 /**
@@ -265,6 +265,40 @@ export function ElementView({
           {toBool(p.showValue) && <output className="slider-value">{value}</output>}
         </div>
       );
+      break;
+    }
+    case 'link': {
+      const href = run ? linkHref(p.url) : undefined;
+      // The editor's preview always opens links in a new tab, so it isn't left.
+      const newTab = toBool(p.newTab) || !isPublished();
+      content = (
+        <a
+          className={`el el-link ${run && !href ? 'no-address' : ''}`}
+          style={box}
+          href={href}
+          target={href && newTab ? '_blank' : undefined}
+          rel={href ? 'noopener noreferrer' : undefined}
+          tabIndex={run && href ? 0 : -1}
+        >
+          {toText(p.text) || (mode === 'design' ? <span className="placeholder">(empty link)</span> : ' ')}
+        </a>
+      );
+      break;
+    }
+    case 'divider': {
+      const thickness = Math.max(1, toNumber(p.thickness) || 1);
+      content = (
+        <div
+          className="el el-divider"
+          role="separator"
+          style={{ ['--line' as string]: `${thickness}px solid ${toText(p.color) || '#dee2e6'}`, ...box }}
+        />
+      );
+      break;
+    }
+    case 'spacer': {
+      const size = Math.max(0, toNumber(p.size));
+      content = <div className="el el-spacer" aria-hidden="true" style={{ width: size, height: size, ...box }} />;
       break;
     }
     case 'image': {

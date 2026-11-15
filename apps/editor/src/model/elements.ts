@@ -260,6 +260,49 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
       visibleField,
     ],
   },
+  link: {
+    type: 'link',
+    label: 'Link',
+    icon: '↗',
+    description: 'Text that opens a web page, an email or a phone number.',
+    canHaveChildren: false,
+    defaults: { text: 'Visit our website', url: '', newTab: true, visible: true },
+    fields: [
+      { key: 'text', label: 'Text', type: 'text', bindable: 'text' },
+      {
+        key: 'url',
+        label: 'Web address',
+        type: 'text',
+        bindable: 'text',
+        placeholder: 'example.com',
+        help: 'A web page, or mailto: / tel: for an email or a phone number.',
+      },
+      { key: 'newTab', label: 'Open in a new tab', type: 'boolean', help: 'While editing, links always open in a new tab.' },
+      visibleField,
+    ],
+  },
+  divider: {
+    type: 'divider',
+    label: 'Divider',
+    icon: '―',
+    description: 'A line between elements.',
+    canHaveChildren: false,
+    defaults: { color: '#dee2e6', thickness: 1, visible: true },
+    fields: [
+      { key: 'color', label: 'Color', type: 'color' },
+      { key: 'thickness', label: 'Thickness', type: 'number' },
+      visibleField,
+    ],
+  },
+  spacer: {
+    type: 'spacer',
+    label: 'Spacer',
+    icon: '↕',
+    description: 'Empty space between elements. Only shown while designing.',
+    canHaveChildren: false,
+    defaults: { size: 24, visible: true },
+    fields: [{ key: 'size', label: 'Size', type: 'number', help: 'How much space, across and down.' }, visibleField],
+  },
   list: {
     type: 'list',
     label: 'List',
@@ -310,6 +353,9 @@ export const ELEMENT_ORDER: ElementType[] = [
   'number',
   'slider',
   'image',
+  'link',
+  'divider',
+  'spacer',
   'list',
 ];
 
@@ -389,4 +435,18 @@ export function fitNumber(value: unknown, limits: NumberLimits, slider: boolean)
   if (limits.max !== undefined) n = Math.min(limits.max, n);
   if (limits.min !== undefined) n = Math.max(limits.min, n);
   return n;
+}
+
+/**
+ * The address a Link opens, or undefined when it can't open one. Web pages,
+ * email (mailto:) and phone numbers (tel:) are allowed; an address without one,
+ * such as `example.com`, gets `https://`. Anything else, such as `javascript:`,
+ * is refused, so a link can't run code.
+ */
+export function linkHref(url: unknown): string | undefined {
+  const text = toText(url).trim();
+  if (!text) return undefined;
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(text)?.[1]?.toLowerCase();
+  if (!scheme) return /\s/.test(text) ? undefined : `https://${text.replace(/^\/\//, '')}`;
+  return ['http', 'https', 'mailto', 'tel'].includes(scheme) ? text : undefined;
 }

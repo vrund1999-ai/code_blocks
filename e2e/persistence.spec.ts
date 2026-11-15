@@ -117,7 +117,7 @@ test.describe('export and import', () => {
       buffer: Buffer.from(JSON.stringify(p)),
     });
     await expect(app.globalToasts.first()).toHaveText(
-      'This project file can’t be opened. In screen “Home” → element “Intro”: “type” is “video”, which should be one of container, text, button, input, image, checkbox, dropdown, number, slider, list.',
+      'This project file can’t be opened. In screen “Home” → element “Intro”: “type” is “video”, which should be one of container, text, button, input, image, checkbox, dropdown, number, slider, link, divider, spacer, list.',
     );
     await expect(app.projectName).toHaveValue('Hello Name');
   });

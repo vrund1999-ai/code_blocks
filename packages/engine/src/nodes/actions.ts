@@ -9,14 +9,14 @@ export const actionNodes: NodeDef[] = [
     type: 'action.setText',
     category: 'actions',
     label: 'Set text',
-    description: 'Changes the text shown on a Text, Button or Checkbox.',
+    description: 'Changes the text shown on a Text, Button, Checkbox or Link.',
     inputs: [
       ...flow,
       { id: 'text', label: 'Text', kind: 'data', valueType: 'text', inline: { type: 'text', default: '' } },
     ],
     outputs: [execOut],
     configFields: [
-      { key: 'element', label: 'Element', type: 'element', elementTypes: ['text', 'button', 'checkbox'] },
+      { key: 'element', label: 'Element', type: 'element', elementTypes: ['text', 'button', 'checkbox', 'link'] },
     ],
     sentence: (c, n) => `Set text of ${pick(n.element(c.element), '…')}`,
     validate: (c) => (c.element ? null : 'This “Set text” block has no element picked.'),

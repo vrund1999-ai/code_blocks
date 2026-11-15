@@ -34,6 +34,9 @@ export function runAsPublished(slug: string | null) {
   publishedSlug = slug;
 }
 
+/** Is this a published app, opened by its visitors? */
+export const isPublished = () => publishedSlug !== null;
+
 export const READ_ONLY_TABLES = 'Visitors can’t change or delete rows. Only the app’s owner can.';
 export const NO_SERVER_REQUESTS = 'Published apps can’t send requests from the server yet. Its owner can set “Send from” to “The app”.';
 
