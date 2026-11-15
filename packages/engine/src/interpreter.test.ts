@@ -325,4 +325,52 @@ describe('Interpreter', () => {
       ['input', 'set', 'text', 'Hi Bo'],
     ]);
   });
+
+  it('ends a run at its next block once the app is stopped', async () => {
+    const { host, toasts } = makeHost();
+    let stopped = false;
+    // Stop arrives during the wait.
+    host.sleep = async () => {
+      stopped = true;
+    };
+    const ran: string[] = [];
+    const graph: LogicGraph = {
+      nodes: [
+        n('e', 'event.click', { element: 'a' }),
+        n('w', 'action.wait', { seconds: 1 }),
+        n('t', 'action.toast', { message: 'Hi' }),
+      ],
+      edges: [ex('e', 'next', 'w'), ex('w', 'next', 't')],
+    };
+    const it = new Interpreter(graph, host, { stopped: () => stopped, onNodeRun: (id) => ran.push(id) });
+    await it.runEvent('e');
+    expect(ran).toEqual(['e', 'w']);
+    expect(toasts).toEqual([]);
+    // Nothing runs at all after Stop.
+    await it.runEvent('e');
+    expect(ran).toEqual(['e', 'w']);
+  });
+
+  it('doesn’t report the error of a run cancelled by Stop', async () => {
+    const { host } = makeHost();
+    let stopped = false;
+    host.sleep = async () => {
+      stopped = true;
+      throw new HostError('The app was stopped.');
+    };
+    const errors: GraphError[] = [];
+    const graph: LogicGraph = {
+      nodes: [n('e', 'event.click', { element: 'a' }), n('w', 'action.wait', { seconds: 1 })],
+      edges: [ex('e', 'next', 'w')],
+    };
+    await new Interpreter(graph, host, { stopped: () => stopped, onError: (e) => errors.push(e) }).runEvent('e');
+    expect(errors).toEqual([]);
+    // Without Stop, the same error is reported on the block.
+    stopped = false;
+    host.sleep = async () => {
+      throw new HostError('No more waiting.');
+    };
+    await new Interpreter(graph, host, { stopped: () => stopped, onError: (e) => errors.push(e) }).runEvent('e');
+    expect(errors.map((e) => [e.nodeId, e.message])).toEqual([['w', 'No more waiting.']]);
+  });
 });
