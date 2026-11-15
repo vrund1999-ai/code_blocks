@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CHANGES_SCREEN, NAVIGATES, READS_SCREEN } from './host';
+import { CHANGES_SCREEN, GOES_BACK, NAVIGATES, READS_SCREEN } from './host';
 import { MAX_STEPS_LOGGED, runGraph, type RunRequest } from './run';
 import { SqliteRowStore } from './rows';
 import { MemoryStore } from './store';
@@ -85,6 +85,7 @@ describe('runGraph', () => {
       );
     expect((await run('action.setText', { element: 'title' })).error).toEqual({ nodeId: 'b', message: CHANGES_SCREEN });
     expect((await run('action.goToScreen', { screen: 's2' })).error).toEqual({ nodeId: 'b', message: NAVIGATES });
+    expect((await run('action.goBack', {})).error).toEqual({ nodeId: 'b', message: GOES_BACK });
 
     const read = await runGraph(
       request({

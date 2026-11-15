@@ -44,6 +44,7 @@ export interface ServerHost {
 export const CHANGES_SCREEN = 'This block changes what’s on screen, so it only works in the app, not on the server.';
 export const READS_SCREEN = 'This block reads what’s on screen, so it only works in the app, not on the server.';
 export const NAVIGATES = 'Go to screen only works in the app, not on the server.';
+export const GOES_BACK = 'Go back only works in the app, not on the server.';
 
 export function createServerHost(opts: ServerHostOptions): ServerHost {
   const { projectId, store, rows, signal } = opts;
@@ -78,6 +79,9 @@ export function createServerHost(opts: ServerHostOptions): ServerHost {
     },
     navigate: () => {
       throw new HostError(NAVIGATES);
+    },
+    goBack: () => {
+      throw new HostError(GOES_BACK);
     },
     storageGet: (key) => {
       check();

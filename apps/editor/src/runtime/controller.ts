@@ -10,6 +10,7 @@ import { fetchViaServer, sendForm } from '../data/serverApi';
 import { appStoragePrefix } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { findInProject } from '../model/tree';
+import { popScreen, pushScreen } from './history';
 import { clearRunLog, logError, logInput, logStep } from './runLog';
 import { initialRuntime, pushToast, setElementState, useRuntimeStore } from './runtimeStore';
 
@@ -195,7 +196,16 @@ function makeHost(gen: number): HostApi {
     toast: (message) => alive() && pushToast(message),
     navigate: (screenId) => {
       if (!alive() || !project().screens.some((s) => s.id === screenId)) return;
-      useRuntimeStore.setState({ screenId });
+      const { screenId: from, history } = useRuntimeStore.getState();
+      useRuntimeStore.setState({ screenId, history: pushScreen(history, from, screenId) });
+      void interpreter()?.trigger('screenLoad', (c) => c.screen === screenId);
+    },
+    goBack: () => {
+      if (!alive()) return;
+      const exists = (id: string) => project().screens.some((s) => s.id === id);
+      const { screenId, history } = popScreen(useRuntimeStore.getState().history, exists);
+      if (!screenId) return;
+      useRuntimeStore.setState({ screenId, history });
       void interpreter()?.trigger('screenLoad', (c) => c.screen === screenId);
     },
     storageGet: (key) => {

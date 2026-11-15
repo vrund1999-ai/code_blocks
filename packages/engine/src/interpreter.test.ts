@@ -18,6 +18,7 @@ function makeHost(vars: Record<string, unknown> = {}) {
     },
     toast: (m) => toasts.push(m),
     navigate: () => {},
+    goBack: () => {},
     storageGet: (k) => storage[k],
     storageSet: (k, v) => {
       storage[k] = v;

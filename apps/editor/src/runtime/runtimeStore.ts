@@ -9,6 +9,8 @@ export interface Toast {
 export interface RuntimeState {
   running: boolean;
   screenId: string | null;
+  /** The screens shown before the current one, oldest first, for *Go back*. */
+  history: string[];
   /** Live variable values while the app runs. */
   vars: Record<string, unknown>;
   /** Per-element overrides set by logic (text, visibility, typed values…). */
@@ -27,6 +29,7 @@ export interface RuntimeState {
 export const initialRuntime: RuntimeState = {
   running: false,
   screenId: null,
+  history: [],
   vars: {},
   elements: {},
   toasts: [],

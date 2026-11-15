@@ -16,6 +16,7 @@ function makeHost(vars: Record<string, unknown>) {
     setElementProp: () => {},
     toast: () => {},
     navigate: () => {},
+    goBack: () => {},
     storageGet: () => undefined,
     storageSet: () => {},
     sleep: async () => {},

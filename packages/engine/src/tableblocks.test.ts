@@ -51,6 +51,7 @@ function makeHost(tables?: TablesApi) {
     setElementProp: () => {},
     toast: () => {},
     navigate: () => {},
+    goBack: () => {},
     storageGet: () => undefined,
     storageSet: () => {},
     sleep: async () => {},
