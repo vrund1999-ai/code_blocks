@@ -27,7 +27,7 @@ With no P1 items left, the fourth wave turns to the P2 items for people building
 
 1. ✅ **RT-5:** a *Go back* block, which returns to the screen shown before. The browser's own Back button in published apps moved to **RT-7**.
 2. ✅ **LB-4:** math extras: round, min / max and remainder.
-3. **EL-3** and **EL-5:** number inputs and sliders, then links, dividers and spacers.
+3. ✅ **EL-3**, then **EL-5:** number boxes and sliders, then links, dividers and spacers.
 4. **UX-8:** "Where is this used?" for elements and variables.
 5. **QE-13:** connecting and moving blocks without a mouse.
 6. **QE-9:** more unit tests for the runtime controller, persistence and the model tree.
@@ -92,7 +92,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | --- | --- | --- | --- |
 | EL-1 | Dropdown (select) element | P1 | Shipped: typed choices or a linked list variable (with a field for records); works with the text box blocks and *When value changes* |
 | EL-2 | List with item templates (cards with several fields) | P1 | Shipped: elements inside a List form a card that repeats per item, settings can show item fields, and card buttons pass their item to *When button clicked*. Text boxes, checkboxes and nested lists can't be repeated in cards yet |
-| EL-3 | Number input / slider | P2 | |
+| EL-3 | Number input / slider | P2 | Shipped as a *Number Box* and a *Slider*, with smallest and biggest numbers, a step and a starting value (a slider can show its number). Blocks read them as numbers kept within their ends, and a slider's on a step; *Get / Set text box value* and *When value changes* work with both. Like text boxes, they stay out of List cards |
 | EL-4 | Grid / columns layout | P2 | |
 | EL-5 | Link, divider and spacer elements | P2 | |
 | EL-6 | Date picker | P3 | |
