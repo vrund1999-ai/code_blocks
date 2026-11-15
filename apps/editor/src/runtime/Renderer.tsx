@@ -1,7 +1,7 @@
 import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
 import { toBool, toList, toNumber, toText } from '@code-blocks/engine/convert';
 import { cardValue, type CardItem } from './cards';
-import { dropdownChoices } from '../model/elements';
+import { dropdownChoices, fitNumber, numberLimits } from '../model/elements';
 import { elementStyle, hasFixedWidth } from '../model/style';
 import { useProjectStore } from '../model/projectStore';
 import type { UIElement } from '../model/types';
@@ -201,6 +201,69 @@ export function ElementView({
             </option>
           ))}
         </select>
+      );
+      break;
+    }
+    case 'number': {
+      const limits = numberLimits(p, false);
+      // Shows what was typed; blocks read it kept within the limits, and leaving the box shows that.
+      const fit = () => {
+        const fitted = fitNumber(p.value, limits, false);
+        if (fitted !== p.value) setElementState(el.id, { value: fitted });
+      };
+      content = (
+        <input
+          className="el el-input el-number"
+          style={box}
+          type="number"
+          aria-label={el.name}
+          placeholder={toText(p.placeholder)}
+          value={p.value === '' || p.value === null || p.value === undefined ? '' : toText(p.value)}
+          min={limits.min}
+          max={limits.max}
+          step={limits.step}
+          readOnly={!run}
+          tabIndex={run ? 0 : -1}
+          onChange={
+            run
+              ? (e) => {
+                  const typed = e.target.value === '' ? '' : Number(e.target.value);
+                  setElementState(el.id, { value: typed });
+                  fireChange(el.id, fitNumber(typed, limits, false));
+                }
+              : undefined
+          }
+          onBlur={run ? fit : undefined}
+        />
+      );
+      break;
+    }
+    case 'slider': {
+      const limits = numberLimits(p, true);
+      const value = fitNumber(p.value, limits, true) as number;
+      content = (
+        <div className="el el-slider" style={box}>
+          <input
+            type="range"
+            aria-label={el.name}
+            min={limits.min}
+            max={limits.max}
+            step={limits.step}
+            value={value}
+            disabled={!run}
+            tabIndex={run ? 0 : -1}
+            onChange={
+              run
+                ? (e) => {
+                    const n = Number(e.target.value);
+                    setElementState(el.id, { value: n });
+                    fireChange(el.id, n);
+                  }
+                : undefined
+            }
+          />
+          {toBool(p.showValue) && <output className="slider-value">{value}</output>}
+        </div>
       );
       break;
     }

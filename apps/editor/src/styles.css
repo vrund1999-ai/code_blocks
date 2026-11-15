@@ -768,8 +768,32 @@ textarea.field-input {
 .cb-row > .el-input,
 .cb-row > .el-wrap-input,
 .cb-row > .el-dropdown,
-.cb-row > .el-wrap-dropdown {
+.cb-row > .el-wrap-dropdown,
+.cb-row > .el-slider,
+.cb-row > .el-wrap-slider,
+.cb-row > .el-wrap-number {
   flex: 1;
+}
+.el-slider {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+.el-slider input[type='range'] {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--accent);
+}
+.el-slider input[type='range']:disabled {
+  opacity: 1;
+  /* In the designer, clicks go through to the element so it can be selected. */
+  pointer-events: none;
+}
+.slider-value {
+  min-width: 2.5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 .el-dropdown {
   border: 1px solid #ced4da;

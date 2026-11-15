@@ -13,6 +13,8 @@ export type ElementType =
   | 'image'
   | 'checkbox'
   | 'dropdown'
+  | 'number'
+  | 'slider'
   | 'list';
 
 export interface GraphNode {

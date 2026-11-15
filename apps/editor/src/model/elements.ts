@@ -1,4 +1,4 @@
-import { isRecord, toList, toText } from '@code-blocks/engine/convert';
+import { isRecord, toList, toNumber, toText } from '@code-blocks/engine/convert';
 import type { ElementType, PropValue, ValueType } from './types';
 
 /** Describes one editable property of a UI element, used by the Inspector. */
@@ -14,6 +14,8 @@ export interface PropField {
   help?: string;
   /** A number that may be left empty (for "automatic"). */
   optional?: boolean;
+  /** An optional number that may be below zero (sizes can't be). */
+  negative?: boolean;
   placeholder?: string;
   /** Shown in the Style section of the Settings panel. */
   group?: 'style';
@@ -226,6 +228,38 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
       visibleField,
     ],
   },
+  number: {
+    type: 'number',
+    label: 'Number Box',
+    icon: '#',
+    description: 'Lets people type a number.',
+    canHaveChildren: false,
+    defaults: { placeholder: '0', value: '', min: '', max: '', step: 1, visible: true },
+    fields: [
+      { key: 'placeholder', label: 'Hint text', type: 'text' },
+      { key: 'value', label: 'Starting value', type: 'number', optional: true, negative: true, placeholder: 'Empty' },
+      { key: 'min', label: 'Smallest', type: 'number', optional: true, negative: true, placeholder: 'No limit' },
+      { key: 'max', label: 'Biggest', type: 'number', optional: true, negative: true, placeholder: 'No limit' },
+      { key: 'step', label: 'Step', type: 'number', optional: true, placeholder: '1', help: 'How much the arrows change it.' },
+      visibleField,
+    ],
+  },
+  slider: {
+    type: 'slider',
+    label: 'Slider',
+    icon: '⇆',
+    description: 'Lets people pick a number by sliding.',
+    canHaveChildren: false,
+    defaults: { value: 50, min: 0, max: 100, step: 1, showValue: true, visible: true },
+    fields: [
+      { key: 'value', label: 'Starting value', type: 'number', optional: true, negative: true, placeholder: 'Smallest' },
+      { key: 'min', label: 'Smallest', type: 'number', optional: true, negative: true, placeholder: '0' },
+      { key: 'max', label: 'Biggest', type: 'number', optional: true, negative: true, placeholder: '100' },
+      { key: 'step', label: 'Step', type: 'number', optional: true, placeholder: '1', help: 'The slider moves by this much.' },
+      { key: 'showValue', label: 'Show the number', type: 'boolean' },
+      visibleField,
+    ],
+  },
   list: {
     type: 'list',
     label: 'List',
@@ -273,6 +307,8 @@ export const ELEMENT_ORDER: ElementType[] = [
   'input',
   'checkbox',
   'dropdown',
+  'number',
+  'slider',
   'image',
   'list',
 ];
@@ -304,4 +340,53 @@ export function dropdownChoices(options: unknown, field = ''): string[] {
     if (choice && !out.includes(choice)) out.push(choice);
   }
   return out;
+}
+
+/** A number setting that may be left empty: undefined when it is. */
+function optionalNumber(v: unknown): number | undefined {
+  if (v === '' || v === null || v === undefined) return undefined;
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+export interface NumberLimits {
+  min?: number;
+  max?: number;
+  step: number;
+}
+
+/**
+ * The smallest and biggest numbers and the step set on a Number Box or a
+ * Slider. A slider always has both ends (0 and 100 unless set). Ends set the
+ * wrong way round are swapped, and a step of 0 or less counts as 1.
+ */
+export function numberLimits(props: Record<string, unknown>, slider: boolean): NumberLimits {
+  let min = optionalNumber(props.min);
+  let max = optionalNumber(props.max);
+  if (slider) {
+    min ??= 0;
+    max ??= 100;
+  }
+  if (min !== undefined && max !== undefined && min > max) [min, max] = [max, min];
+  const step = optionalNumber(props.step);
+  return { min, max, step: step && step > 0 ? step : 1 };
+}
+
+/**
+ * The number blocks read from a Number Box or Slider: kept between its
+ * smallest and biggest numbers. A slider's also lands on a step, and starts at
+ * its smallest number when no value is set. An empty Number Box stays empty.
+ */
+export function fitNumber(value: unknown, limits: NumberLimits, slider: boolean): number | '' {
+  const empty = value === '' || value === null || value === undefined;
+  if (empty && !slider) return '';
+  let n = empty ? (limits.min ?? 0) : toNumber(value);
+  if (slider) {
+    const base = limits.min ?? 0;
+    // toPrecision drops float noise such as 0.30000000000000004.
+    n = Number((base + Math.round((n - base) / limits.step) * limits.step).toPrecision(12));
+  }
+  if (limits.max !== undefined) n = Math.min(limits.max, n);
+  if (limits.min !== undefined) n = Math.max(limits.min, n);
+  return n;
 }

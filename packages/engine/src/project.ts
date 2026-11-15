@@ -56,7 +56,18 @@ export interface Project {
   graph: LogicGraph;
 }
 
-export const ELEMENT_TYPES = ['container', 'text', 'button', 'input', 'image', 'checkbox', 'dropdown', 'list'] as const;
+export const ELEMENT_TYPES = [
+  'container',
+  'text',
+  'button',
+  'input',
+  'image',
+  'checkbox',
+  'dropdown',
+  'number',
+  'slider',
+  'list',
+] as const;
 export const VARIABLE_TYPES = ['text', 'number', 'boolean', 'list', 'record'] as const;
 
 // Fails to compile if a kind of element or variable is missing from the lists above.

@@ -16,6 +16,8 @@ const EVENT_FOR: Partial<Record<ElementType, { type: string; label: string }>> =
   input: { type: 'event.inputChange', label: 'When typed in…' },
   checkbox: { type: 'event.inputChange', label: 'When ticked…' },
   dropdown: { type: 'event.inputChange', label: 'When a choice is picked…' },
+  number: { type: 'event.inputChange', label: 'When a number is typed…' },
+  slider: { type: 'event.inputChange', label: 'When slid…' },
   list: { type: 'event.listDelete', label: 'When item deleted…' },
 };
 
@@ -115,17 +117,19 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
         break;
       case 'number':
         editor = field.optional ? (
-          // Can be left empty, meaning automatic. No negative sizes.
+          // Can be left empty, meaning automatic. No negative sizes, unless the field allows them.
           <input
             type="number"
-            min={0}
+            min={field.negative ? undefined : 0}
             className="field-input"
             aria-label={field.label}
             placeholder={field.placeholder}
             value={value === '' || value === undefined || value === null ? '' : String(value)}
-            onChange={(e) =>
-              set({ kind: 'static', value: e.target.value === '' ? '' : Math.max(0, Number(e.target.value) || 0) })
-            }
+            onChange={(e) => {
+              if (e.target.value === '') return set({ kind: 'static', value: '' });
+              const n = Number(e.target.value) || 0;
+              set({ kind: 'static', value: field.negative ? n : Math.max(0, n) });
+            }}
           />
         ) : (
           <input

@@ -46,6 +46,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Stop cancels waits | 2026-11-15 | [#39](https://github.com/vrund1999-ai/code_blocks/pull/39) | See below |
 | Go back block | 2026-11-15 | [#40](https://github.com/vrund1999-ai/code_blocks/pull/40) | See below |
 | Math extras | 2026-11-15 | [#41](https://github.com/vrund1999-ai/code_blocks/pull/41) | See below |
+| Number box and slider | 2026-11-15 | [#42](https://github.com/vrund1999-ai/code_blocks/pull/42) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -287,6 +288,12 @@ Math extras included:
 - **A *Round number* block** in *Values*: to the nearest, down or up, with a *Decimal places* input (0 to 10). Halves round away from zero (2.5 → 3, −2.5 → −3), and 1.005 rounds to 1.01 as written, not 1.00 as stored.
 - **Tests:** 9 new unit tests (`math.test.ts`), and a new end-to-end spec (`e2e/math.spec.ts`) that splits a bill, then changes the rounding and the operation while the app runs.
 
+Number box and slider included:
+- **Two new elements:** a *Number Box* to type a number, and a *Slider* to pick one by sliding. Both have *Smallest*, *Biggest*, *Step* and *Starting value* settings, and a slider can show its number beside it.
+- **Numbers for blocks:** *Get text box value* reads a number, kept within the ends (`fitNumber` in `model/elements.ts`); a slider's also lands on a step. A number typed past the ends is corrected when the box is left. *Set text box value* and *When value changes* work with both.
+- **Settings panel:** number settings can now allow numbers below zero, for these ends and starting values. Sizes still can't be negative.
+- **Tests:** 6 new unit tests, and a new end-to-end spec (`e2e/number-slider.spec.ts`) that adds both from the palette, and has blocks read, set and react to them while the app runs.
+
 ---
 
 ## Roadmap status
@@ -345,7 +352,7 @@ Math extras included:
 | --- | --- | --- | --- | --- |
 | EL-1 | Dropdown | ✅ | 2026-11-11 | [#13](https://github.com/vrund1999-ai/code_blocks/pull/13) |
 | EL-2 | List item templates (cards) | ✅ | 2026-11-10 | [#5](https://github.com/vrund1999-ai/code_blocks/pull/5) |
-| EL-3 | Number input / slider | ⬜ | | |
+| EL-3 | Number input / slider | ✅ | 2026-11-15 | [#42](https://github.com/vrund1999-ai/code_blocks/pull/42) |
 | EL-4 | Grid / columns layout | ⬜ | | |
 | EL-5 | Link, divider, spacer | ⬜ | | |
 | EL-6 | Date picker | ⬜ | | |
@@ -406,4 +413,4 @@ Math extras included:
 
 ---
 
-**Totals:** 37 / 81 done · 0 in progress
+**Totals:** 38 / 81 done · 0 in progress
