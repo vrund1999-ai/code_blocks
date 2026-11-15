@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { defaultProps, dropdownChoices, fitNumber, numberLimits } from './elements';
+import { defaultProps, dropdownChoices, fitNumber, linkHref, numberLimits } from './elements';
 import { makeElement, makeProject } from './factory';
 import { canPlaceInside } from './tree';
 
@@ -74,5 +74,28 @@ describe('number boxes and sliders', () => {
     project.screens[0].root.children.push(list);
     expect(canPlaceInside(project.screens[0].root, list.id, 'number')).toBe(false);
     expect(canPlaceInside(project.screens[0].root, list.id, 'slider')).toBe(false);
+  });
+});
+
+describe('link addresses', () => {
+  it('opens web pages, emails and phone numbers', () => {
+    expect(linkHref('https://example.com/a?b=1')).toBe('https://example.com/a?b=1');
+    expect(linkHref('HTTP://example.com')).toBe('HTTP://example.com');
+    expect(linkHref('mailto:hello@example.com')).toBe('mailto:hello@example.com');
+    expect(linkHref('tel:+15551234')).toBe('tel:+15551234');
+  });
+
+  it('adds https:// to an address without it', () => {
+    expect(linkHref(' example.com/menu ')).toBe('https://example.com/menu');
+    expect(linkHref('//example.com')).toBe('https://example.com');
+  });
+
+  it('refuses addresses that could run code, and empty or odd ones', () => {
+    expect(linkHref('javascript:alert(1)')).toBeUndefined();
+    expect(linkHref(' JavaScript:alert(1)')).toBeUndefined();
+    expect(linkHref('data:text/html,<b>hi</b>')).toBeUndefined();
+    expect(linkHref('')).toBeUndefined();
+    expect(linkHref(undefined)).toBeUndefined();
+    expect(linkHref('two words')).toBeUndefined();
   });
 });

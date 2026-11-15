@@ -47,6 +47,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Go back block | 2026-11-15 | [#40](https://github.com/vrund1999-ai/code_blocks/pull/40) | See below |
 | Math extras | 2026-11-15 | [#41](https://github.com/vrund1999-ai/code_blocks/pull/41) | See below |
 | Number box and slider | 2026-11-15 | [#42](https://github.com/vrund1999-ai/code_blocks/pull/42) | See below |
+| Link, divider and spacer | 2026-11-15 | [#43](https://github.com/vrund1999-ai/code_blocks/pull/43) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -294,6 +295,13 @@ Number box and slider included:
 - **Settings panel:** number settings can now allow numbers below zero, for these ends and starting values. Sizes still can't be negative.
 - **Tests:** 6 new unit tests, and a new end-to-end spec (`e2e/number-slider.spec.ts`) that adds both from the palette, and has blocks read, set and react to them while the app runs.
 
+Link, divider and spacer included:
+- **A *Link* element:** text that opens a web page, an email or a phone number. An address without `https://` gets it; anything other than web, `mailto:` and `tel:` addresses is refused, so a link can't run code (`linkHref` in `model/elements.ts`). Its text and address can be linked to variables, and *Set text* changes its text.
+- **Where links open:** published apps use the same tab, or a new one when *Open in a new tab* is on (the default). The editor's preview always uses a new tab, so the editor isn't left. While designing, links don't open, so clicking selects them.
+- **A *Divider* element:** a line with a colour and thickness. Side by side, it's an upright line.
+- **A *Spacer* element:** empty space of a set size, striped while designing so it can be found and selected.
+- **Tests:** 3 new unit tests for link addresses, and a new end-to-end spec (`e2e/link-divider-spacer.spec.ts`) for the designer, a running app and a published one.
+
 ---
 
 ## Roadmap status
@@ -354,7 +362,7 @@ Number box and slider included:
 | EL-2 | List item templates (cards) | ✅ | 2026-11-10 | [#5](https://github.com/vrund1999-ai/code_blocks/pull/5) |
 | EL-3 | Number input / slider | ✅ | 2026-11-15 | [#42](https://github.com/vrund1999-ai/code_blocks/pull/42) |
 | EL-4 | Grid / columns layout | ⬜ | | |
-| EL-5 | Link, divider, spacer | ⬜ | | |
+| EL-5 | Link, divider, spacer | ✅ | 2026-11-15 | [#43](https://github.com/vrund1999-ai/code_blocks/pull/43) |
 | EL-6 | Date picker | ⬜ | | |
 | EL-7 | Icon | ⬜ | | |
 | EL-8 | More styling options | ✅ | 2026-11-12 | [#14](https://github.com/vrund1999-ai/code_blocks/pull/14) |
@@ -413,4 +421,4 @@ Number box and slider included:
 
 ---
 
-**Totals:** 38 / 81 done · 0 in progress
+**Totals:** 39 / 81 done · 0 in progress

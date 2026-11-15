@@ -15,6 +15,9 @@ export type ElementType =
   | 'dropdown'
   | 'number'
   | 'slider'
+  | 'link'
+  | 'divider'
+  | 'spacer'
   | 'list';
 
 export interface GraphNode {
