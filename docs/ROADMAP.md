@@ -26,7 +26,7 @@ The third wave puts first what matters once real people sign up and visitors ope
 With no P1 items left, the fourth wave turns to the P2 items for people building apps:
 
 1. ✅ **RT-5:** a *Go back* block, which returns to the screen shown before. The browser's own Back button in published apps moved to **RT-7**.
-2. **LB-4:** math extras: round, min / max and remainder.
+2. ✅ **LB-4:** math extras: round, min / max and remainder.
 3. **EL-3** and **EL-5:** number inputs and sliders, then links, dividers and spacers.
 4. **UX-8:** "Where is this used?" for elements and variables.
 5. **QE-13:** connecting and moving blocks without a mouse.
@@ -107,7 +107,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | LB-1 | Text blocks: uppercase/lowercase, contains, length, split, replace | P1 | Shipped: *Change text*, *Text contains* (contains / starts with / ends with), *Text length*, *Replace text*, *Split text* |
 | LB-2 | List blocks: insert at, find, sort, filter, update item | P1 | Shipped: *Find in list*, *Sort list*, *Filter list*, *Join list into text*, *Insert into list*, *Change item in list*. Find, sort, filter and join take an optional record field |
 | LB-3 | Records (objects with named fields) as a value type | P1 | Needed for tables and cards. Shipped: the record type, record variables, *Make record*, *Get field*, *Change field* and *Set field of variable* |
-| LB-4 | Math extras: round, min/max, remainder | P2 | |
+| LB-4 | Math extras: round, min/max, remainder | P2 | Shipped: *Math* can also give the remainder of A ÷ B, and the smaller or bigger of two numbers. A new *Round number* block rounds to the nearest, down or up, to whole numbers or up to 10 decimal places. Halves round away from zero, and numbers like 1.005 round as written |
 | LB-5 | Date and time blocks | P2 | |
 | LB-6 | Custom reusable blocks (functions) | P2 | |
 | LB-7 | Local variables scoped to a single run | P3 | |
