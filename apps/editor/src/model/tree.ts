@@ -138,3 +138,28 @@ export function ancestorIds(root: UIElement, id: string): string[] {
   for (let p = parents.get(id); p; p = parents.get(p)) out.unshift(p);
   return out;
 }
+
+/**
+ * Where Alt+arrow keys in the Layers panel move an element: up or down among
+ * the elements beside it, right into the end of the box above it, or left out
+ * of its box, just after it. Undefined when it can't go that way.
+ */
+export function layerMoveTarget(
+  root: UIElement,
+  id: string,
+  key: 'ArrowUp' | 'ArrowDown' | 'ArrowLeft' | 'ArrowRight',
+): { parentId: string; index: number } | undefined {
+  const el = findElement(root, id);
+  const parent = findParent(root, id);
+  if (!el || !parent) return undefined;
+  const i = parent.children.findIndex((c) => c.id === id);
+  if (key === 'ArrowUp') return i > 0 ? { parentId: parent.id, index: i - 1 } : undefined;
+  if (key === 'ArrowDown') return i < parent.children.length - 1 ? { parentId: parent.id, index: i + 2 } : undefined;
+  if (key === 'ArrowRight') {
+    const above = parent.children[i - 1];
+    return above && canPlaceInside(root, above.id, el) ? { parentId: above.id, index: above.children.length } : undefined;
+  }
+  const outer = findParent(root, parent.id);
+  if (!outer || !canPlaceInside(root, outer.id, el)) return undefined;
+  return { parentId: outer.id, index: outer.children.findIndex((c) => c.id === parent.id) + 1 };
+}

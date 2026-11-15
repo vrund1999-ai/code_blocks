@@ -11,6 +11,7 @@ import { TryPanel } from './TryPanel';
 import { UsedBy } from './UsedBy';
 import { TRYABLE } from '../data/tryApi';
 import { focusBlock } from '../logic/focus';
+import { WiresSection } from '../logic/WiresSection';
 
 const EVENT_FOR: Partial<Record<ElementType, { type: string; label: string }>> = {
   button: { type: 'event.click', label: 'When clicked…' },
@@ -320,6 +321,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
         </div>
       ))}
       {TRYABLE.includes(node.type) && <TryPanel nodeId={nodeId} type={node.type} config={config} />}
+      <WiresSection nodeId={nodeId} />
       <div className="inspector-actions">
         <button className="btn" onClick={duplicateSelection} title="Copy: Ctrl+C · Paste: Ctrl+V · Duplicate: Ctrl+D">
           {many > 1 ? `Duplicate ${many} blocks` : 'Duplicate'}

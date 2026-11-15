@@ -245,3 +245,20 @@ describe('addWiredNode', () => {
     expect(store().project.graph.nodes[0]).toMatchObject({ type: 'table.query', config: {} });
   });
 });
+
+describe('moveNodes', () => {
+  it('makes key presses that move the same blocks one undo step, but not separate drags', () => {
+    const a = store().addNode('action.toast', { x: 0, y: 0 });
+    const pos = () => store().project.graph.nodes[0].position;
+    store().moveNodes({ [a]: { x: 5, y: 0 } }, `keys:${a}`);
+    store().moveNodes({ [a]: { x: 10, y: 0 } }, `keys:${a}`);
+    store().moveNodes({ [a]: { x: 10, y: 20 } }, `keys:${a}`);
+    store().undo();
+    expect(pos()).toEqual({ x: 0, y: 0 });
+
+    store().moveNodes({ [a]: { x: 50, y: 0 } });
+    store().moveNodes({ [a]: { x: 90, y: 0 } });
+    store().undo();
+    expect(pos()).toEqual({ x: 50, y: 0 });
+  });
+});

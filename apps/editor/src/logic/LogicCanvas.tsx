@@ -62,6 +62,7 @@ export function LogicCanvas() {
   }, [selection]);
   const nodesRef = useRef(nodes);
   nodesRef.current = nodes;
+  const dragging = useRef(false);
 
   // Zooms to a block asked for elsewhere (focus.ts). Asked before the graph
   // was shown, the first fitView goes to it; asked later, it zooms there.
@@ -105,6 +106,12 @@ export function LogicCanvas() {
       );
       nodesRef.current = next;
       setNodes(next);
+      // A selected block moves with the arrow keys (Shift for bigger steps).
+      // A drag with the pointer is saved when it ends, in onNodeDragStop.
+      if (!dragging.current) {
+        const moved = changes.flatMap((c) => (c.type === 'position' && !c.dragging && c.position ? [[c.id, c.position] as const] : []));
+        if (moved.length) moveNodes(Object.fromEntries(moved), `keys:${moved.map(([id]) => id).join(',')}`);
+      }
       if (!changes.some((c) => c.type === 'select')) return;
       // Several blocks can be selected (Ctrl+click, or Shift+drag a box) to copy or move them together.
       const ids = next.filter((n) => n.selected).map((n) => n.id);
@@ -122,7 +129,7 @@ export function LogicCanvas() {
             : ids[ids.length - 1];
       select({ kind: 'node', id, ids: ids.length > 1 ? ids : undefined });
     },
-    [select],
+    [select, moveNodes],
   );
 
   const onEdgesChange = useCallback((changes: EdgeChange[]) => {
@@ -242,9 +249,11 @@ export function LogicCanvas() {
         onConnect={onConnect}
         onConnectEnd={onConnectEnd}
         isValidConnection={isValidConnection}
-        onNodeDragStop={(_, __, dragged) =>
-          moveNodes(Object.fromEntries(dragged.map((n) => [n.id, { x: n.position.x, y: n.position.y }])))
-        }
+        onNodeDragStart={() => (dragging.current = true)}
+        onNodeDragStop={(_, __, dragged) => {
+          dragging.current = false;
+          moveNodes(Object.fromEntries(dragged.map((n) => [n.id, { x: n.position.x, y: n.position.y }])));
+        }}
         onDelete={({ nodes: dn, edges: de }) => {
           const nodeIds = dn.map((n) => n.id);
           const gone = new Set(nodeIds);

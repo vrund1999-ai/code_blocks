@@ -4,6 +4,7 @@ import { defaultConfig, getNodeDef } from '@code-blocks/engine/registry';
 import { ELEMENT_DEFS } from './elements';
 import { makeNameLookup, walk } from './tree';
 import type { GraphNode, Project } from './types';
+import type { NameLookup } from '@code-blocks/engine/types';
 
 export type Use =
   | { kind: 'block'; id: string; label: string }
@@ -14,14 +15,17 @@ export type Use =
  * described by their sentences. An event block also names the block it runs
  * first, so two of them for the same element can be told apart.
  */
+/** A block described by its sentence, such as “Change “points” by”, or its name. */
+export function describeBlock(node: GraphNode, names: NameLookup): string {
+  const def = getNodeDef(node.type);
+  if (!def) return node.type;
+  return def.sentence?.({ ...defaultConfig(def), ...node.config }, names) ?? def.label;
+}
+
 function blocksUsing(project: Project, kind: 'element' | 'variable', id: string): Use[] {
   const names = makeNameLookup(project);
   const { nodes, edges } = project.graph;
-  const describe = (node: GraphNode) => {
-    const def = getNodeDef(node.type);
-    if (!def) return node.type;
-    return def.sentence?.({ ...defaultConfig(def), ...node.config }, names) ?? def.label;
-  };
+  const describe = (node: GraphNode) => describeBlock(node, names);
   const uses: Use[] = [];
   for (const node of nodes) {
     const def = getNodeDef(node.type);

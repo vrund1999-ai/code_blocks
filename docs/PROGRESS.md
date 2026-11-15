@@ -49,6 +49,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Number box and slider | 2026-11-15 | [#42](https://github.com/vrund1999-ai/code_blocks/pull/42) | See below |
 | Link, divider and spacer | 2026-11-15 | [#43](https://github.com/vrund1999-ai/code_blocks/pull/43) | See below |
 | Where is this used? | 2026-11-15 | [#44](https://github.com/vrund1999-ai/code_blocks/pull/44) | See below |
+| No mouse needed | 2026-11-15 | [#45](https://github.com/vrund1999-ai/code_blocks/pull/45) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -309,6 +310,12 @@ Where is this used? included:
 - **Each entry opens where it is:** a block is selected and zoomed to in the Logic tab; a setting selects its element on its screen in the Design tab.
 - **Tests:** 4 new unit tests (`model/usage.test.ts`), and a new end-to-end spec (`e2e/where-used.spec.ts`).
 
+No mouse needed included:
+- **Wires from a list:** a block's Settings has a *Wires* section. Each pin shows what it's wired to, with a Disconnect button, and a list of the pins on other blocks that fit it (`model/wiring.ts`). The arrows are called *Comes from* and *Then*.
+- **Moving blocks:** select a block (Tab to it, then Enter) and move it with the arrow keys, or Shift+arrows for bigger steps. React Flow already moved it, but the new place wasn't saved; now it is, and a run of key presses is one undo step.
+- **Moving elements:** in the Layers panel, Alt+arrow keys move the selected element up or down, into the end of the box above it, or out of its box (`layerMoveTarget` in `model/tree.ts`). They keep out of List cards what can't go in them.
+- **Tests:** 9 new unit tests (`model/wiring.test.ts`, `model/tree.test.ts`, `model/projectStore.test.ts`), and a new end-to-end spec (`e2e/keyboard-blocks.spec.ts`).
+
 ---
 
 ## Roadmap status
@@ -423,9 +430,9 @@ Where is this used? included:
 | QE-10 | React Flow attribution review | ✅ | 2026-11-13 | [#25](https://github.com/vrund1999-ai/code_blocks/pull/25) |
 | QE-11 | Drag tests in Firefox / WebKit | ⬜ | | |
 | QE-12 | Stray 401 after signing out in an accounts test | ✅ | 2026-11-14 | [#34](https://github.com/vrund1999-ai/code_blocks/pull/34) |
-| QE-13 | Connect and move blocks without a mouse | ⬜ | | |
+| QE-13 | Connect and move blocks without a mouse | ✅ | 2026-11-15 | [#45](https://github.com/vrund1999-ai/code_blocks/pull/45) |
 | QE-14 | Accessibility checks for built apps | ⬜ | | |
 
 ---
 
-**Totals:** 40 / 81 done · 0 in progress
+**Totals:** 41 / 81 done · 0 in progress
