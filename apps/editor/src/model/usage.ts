@@ -3,21 +3,36 @@
 import { defaultConfig, getNodeDef } from '@code-blocks/engine/registry';
 import { ELEMENT_DEFS } from './elements';
 import { makeNameLookup, walk } from './tree';
-import type { Project } from './types';
+import type { GraphNode, Project } from './types';
 
 export type Use =
   | { kind: 'block'; id: string; label: string }
   | { kind: 'element'; id: string; screenId: string; label: string };
 
-/** Blocks with a setting of this kind (element or variable) set to `id`, described by their sentences. */
+/**
+ * Blocks with a setting of this kind (element or variable) set to `id`,
+ * described by their sentences. An event block also names the block it runs
+ * first, so two of them for the same element can be told apart.
+ */
 function blocksUsing(project: Project, kind: 'element' | 'variable', id: string): Use[] {
   const names = makeNameLookup(project);
+  const { nodes, edges } = project.graph;
+  const describe = (node: GraphNode) => {
+    const def = getNodeDef(node.type);
+    if (!def) return node.type;
+    return def.sentence?.({ ...defaultConfig(def), ...node.config }, names) ?? def.label;
+  };
   const uses: Use[] = [];
-  for (const node of project.graph.nodes) {
+  for (const node of nodes) {
     const def = getNodeDef(node.type);
     if (!def?.configFields.some((f) => f.type === kind && node.config[f.key] === id)) continue;
-    const config = { ...defaultConfig(def), ...node.config };
-    uses.push({ kind: 'block', id: node.id, label: def.sentence?.(config, names) ?? def.label });
+    let label = describe(node);
+    if (def.category === 'events') {
+      const wire = edges.find((e) => e.source === node.id && e.kind === 'exec');
+      const next = wire && nodes.find((n) => n.id === wire.target);
+      if (next) label += ` → ${describe(next)}`;
+    }
+    uses.push({ kind: 'block', id: node.id, label });
   }
   return uses;
 }

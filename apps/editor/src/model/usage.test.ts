@@ -24,13 +24,14 @@ function project() {
     node('get', 'data.getVariable', { variable: 'v1' }),
     node('other', 'action.toast', {}),
   );
+  p.graph.edges.push({ id: 'e1', source: 'click', sourcePin: 'next', target: 'add', targetPin: 'in', kind: 'exec' });
   return { p, save, title, score, details };
 }
 
 describe('where an element is used', () => {
-  it('lists the blocks that point at it, by their sentences', () => {
+  it('lists the blocks that point at it, by their sentences, and what an event runs first', () => {
     const { p, save, title } = project();
-    expect(usesOfElement(p, save.id)).toEqual([{ kind: 'block', id: 'click', label: 'When “Save” is clicked' }]);
+    expect(usesOfElement(p, save.id)).toEqual([{ kind: 'block', id: 'click', label: 'When “Save” is clicked → Change “points” by' }]);
     expect(usesOfElement(p, title.id)).toEqual([{ kind: 'block', id: 'set', label: 'Set text of “Title”' }]);
   });
 

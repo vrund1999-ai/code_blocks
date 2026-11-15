@@ -304,7 +304,7 @@ Link, divider and spacer included:
 - **Tests:** 3 new unit tests for link addresses, and a new end-to-end spec (`e2e/link-divider-spacer.spec.ts`) for the designer, a running app and a published one.
 
 Where is this used? included:
-- **For elements:** a *Used by* list in the Settings panel, with each block that points at the element, described by its sentence (such as *When “Save” is clicked*).
+- **For elements:** a *Used by* list in the Settings panel, with each block that points at the element, described by its sentence. An event block also names the block it runs first, so two of them can be told apart (such as *When “Save” is clicked → Set “saved”*).
 - **For variables:** the same list in the Variables panel, with the blocks that read or change the variable, then the element settings linked to it, on any screen (such as *“Score”: Text*).
 - **Each entry opens where it is:** a block is selected and zoomed to in the Logic tab; a setting selects its element on its screen in the Design tab.
 - **Tests:** 4 new unit tests (`model/usage.test.ts`), and a new end-to-end spec (`e2e/where-used.spec.ts`).

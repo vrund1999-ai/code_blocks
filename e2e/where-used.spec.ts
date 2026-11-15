@@ -24,8 +24,8 @@ test('an element lists the blocks that use it, and each one opens the block', as
   await expect(usedBy).toContainText('No blocks use this yet.');
 
   await app.select('Add point');
-  await expect(usedBy.locator('.used-by-label')).toHaveText(['When “Add point” is clicked']);
-  await usedBy.getByRole('button', { name: 'When “Add point” is clicked' }).click();
+  await expect(usedBy.locator('.used-by-label')).toHaveText(['When “Add point” is clicked → Change “points” by']);
+  await usedBy.getByRole('button', { name: 'When “Add point” is clicked → Change “points” by' }).click();
   // The Logic tab opens with that block selected.
   await expect(app.block('event.click')).toHaveClass(/selected/);
   await expect(app.inspector.locator('.inspector-head .title')).toHaveText('When button clicked');
