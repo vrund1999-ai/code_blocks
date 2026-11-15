@@ -63,7 +63,8 @@ interface Actions {
 
   addNode(type: string, position: { x: number; y: number }, config?: Record<string, unknown>): string;
   updateNodeConfig(id: string, patch: Record<string, unknown>): void;
-  moveNodes(positions: Record<string, { x: number; y: number }>): void;
+  /** Moves blocks. Moves with the same `coalesce` key in a row (arrow key presses) are one undo step. */
+  moveNodes(positions: Record<string, { x: number; y: number }>, coalesce?: string): void;
   deleteNodes(ids: string[]): void;
   addEdge(edge: Omit<GraphEdge, 'id'>): void;
   /**
@@ -389,10 +390,10 @@ export const useProjectStore = create<ProjectStore>()(
           p.graph.edges = p.graph.edges.filter((e) => e.target !== id || !gone.has(e.targetPin));
           for (const pin of gone) delete n.config[pin];
         }, `node:${id}:${Object.keys(patch).join(',')}`),
-      moveNodes: (positions) =>
+      moveNodes: (positions, coalesce) =>
         mutate((p) => {
           for (const n of p.graph.nodes) if (positions[n.id]) n.position = positions[n.id];
-        }),
+        }, coalesce),
       deleteNodes: (ids) => {
         const gone = new Set(ids);
         mutate((p) => {

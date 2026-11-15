@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { create } from 'zustand';
 import { ELEMENT_DEFS } from '../model/elements';
 import { useProjectStore } from '../model/projectStore';
-import { ancestorIds, layerRows } from '../model/tree';
+import { ancestorIds, layerMoveTarget, layerRows } from '../model/tree';
 
 /** The element whose layer row the pointer is over, outlined on the canvas. */
 export const useLayerHover = create<{ id: string | null }>(() => ({ id: null }));
@@ -13,12 +13,13 @@ const showOnCanvas = (id: string) =>
 /**
  * A tree outline of the open screen. Click a row to select its element, even
  * one deep inside boxes or a List's card; double-click to rename it. Arrow
- * keys move through the rows and open or close them.
+ * keys move through the rows and open or close them; with Alt, they move the
+ * selected element.
  */
 export function LayersPanel() {
   const screen = useProjectStore((s) => s.project.screens.find((x) => x.id === s.activeScreenId) ?? s.project.screens[0]);
   const selectedId = useProjectStore((s) => (s.selection?.kind === 'element' ? s.selection.id : null));
-  const { select, renameElement } = useProjectStore.getState();
+  const { select, renameElement, moveElement } = useProjectStore.getState();
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<string | null>(null);
   const treeRef = useRef<HTMLDivElement>(null);
@@ -59,7 +60,16 @@ export function LayersPanel() {
       pick(id);
       requestAnimationFrame(() => treeRef.current?.querySelector<HTMLElement>(`[data-layer-id="${id}"]`)?.focus());
     };
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    const arrow = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key);
+    if (arrow && e.altKey) {
+      // Alt+arrows move the element: up or down, into the box above it, or out of its box.
+      e.preventDefault();
+      const to = row && layerMoveTarget(screen.root, row.el.id, e.key as 'ArrowUp');
+      if (!to) return;
+      moveElement(row.el.id, to.parentId, to.index);
+      setCollapsed((c) => new Set([...c].filter((id) => id !== to.parentId)));
+      focusRow(row.el.id);
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
       const next = rows[Math.max(0, Math.min(rows.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)))];
       if (next) focusRow(next.el.id);
@@ -113,7 +123,7 @@ export function LayersPanel() {
               onClick={() => pick(el.id)}
               onDoubleClick={() => !isRoot && setEditing(el.id)}
               onPointerEnter={() => useLayerHover.setState({ id: el.id })}
-              title={isRoot ? 'The screen itself' : `${def.label}${inCard ? ', in each card' : ''}. Double-click to rename.`}
+              title={isRoot ? 'The screen itself' : `${def.label}${inCard ? ', in each card' : ''}. Double-click to rename; Alt+arrow keys move it.`}
             >
               <span
                 className="layer-toggle"

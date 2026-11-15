@@ -805,6 +805,43 @@ textarea.field-input {
 .used-by-item:hover {
   border-color: var(--accent);
 }
+.wires {
+  margin: 12px 0 4px;
+}
+.wires h3 {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0 0 2px;
+}
+.wire-pin {
+  margin-top: 8px;
+  font-size: 12px;
+}
+.wire-pin-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.wire-pin ul {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wire-pin li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 3px 4px 3px 8px;
+}
+.wire-end {
+  flex: 1;
+  min-width: 0;
+}
 .el-link {
   color: var(--accent);
   text-decoration: underline;
