@@ -30,7 +30,7 @@ With no P1 items left, the fourth wave turns to the P2 items for people building
 3. ✅ **EL-3**, then ✅ **EL-5:** number boxes and sliders, then links, dividers and spacers.
 4. ✅ **UX-8:** "Where is this used?" for elements and variables.
 5. ✅ **QE-13:** connecting and moving blocks without a mouse.
-6. **QE-9:** more unit tests for the runtime controller, persistence and the model tree.
+6. ✅ **QE-9:** more unit tests for the runtime controller, persistence and the model tree.
 
 Smaller P3 fixes, such as **UX-12** (the Projects menu closing on mouse-leave), can be picked up between these.
 
@@ -144,9 +144,10 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | QE-6 | Performance with large graphs and screens | P3 | |
 | QE-7 | Export an app as standalone HTML or generated code | P3 | |
 | QE-8 | Visual regression screenshots for the editor and templates | P3 | Playwright `toHaveScreenshot` |
-| QE-9 | Raise unit test coverage (about 24% today) | P2 | Runtime controller, persistence, model tree |
+| QE-9 | Raise unit test coverage (about 24% today) | P2 | Shipped: unit test line coverage went from 56% to 63%. New tests for the runtime controller (0% → 97%), cloud project sync (48% → 79%), projects saved in the browser (67% → 83%) and the engine's value and action blocks (100%), including a check that every block's sentence works. The model tree was at 97% already. CI now fails if coverage drops below a floor a few points under today's: lines 60%, statements 58%, functions 52%, branches 46% |
 | QE-10 | Review React Flow's `hideAttribution` setting | P1 | Shipped: the Logic tab shows React Flow's attribution again, in the bottom-right corner under the minimap. React Flow asks that only Pro subscribers hide it |
 | QE-13 | Connect and move blocks without a mouse | P2 | Shipped: a block's Settings has a *Wires* section that lists each of its pins with what it's wired to (each with a Disconnect button) and a list of the pins on other blocks that fit. A selected block moves with the arrow keys (Shift for bigger steps); the move is saved, and a run of key presses is one undo step. In the Layers panel, Alt+arrow keys move the selected element up or down, into the box above it, or out of its box |
 | QE-14 | Accessibility checks for the apps people build | P3 | Warn in the editor when an image has no description, a text box has no label, or chosen colours are hard to read, and let images have a description |
 | QE-12 | Find the stray 401 in *a project used by one account is kept from others* | P1 | Shipped: signing out first sends a change still waiting for autosave, then waits for requests already sent (up to 5 seconds) before ending the session. Before, a change made less than a moment before signing out was saved nowhere, and a request answered after the session ended logged the 401 that failed the test |
 | QE-11 | Make the end-to-end tests reliable in Firefox and WebKit | P3 | Drag tests are marked `test.fixme` there: pointer drags hang in Firefox automation, and some drops don't register in WebKit. Local headless Firefox on Windows also hit graphics-process crashes and timeouts under parallel load. In WebKit, Ctrl+click selects only one block in the Logic tab, so that copy test is marked `test.fixme` there too, as is pasting into a settings text box, which depends on the system clipboard there and fails on some runs. CI runs Chromium only. |
+| QE-15 | Speed up the server's sign-in limit test | P3 | `limits.test.ts` (*stop guessing passwords for an email*) hashes several passwords and can pass its 5-second limit on a busy machine, as it did once while coverage ran for QE-9. Use cheaper hashing in tests, or a longer limit for that test |
