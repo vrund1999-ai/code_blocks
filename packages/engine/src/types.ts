@@ -73,6 +73,8 @@ export interface HostApi {
   setElementProp(elementId: string, prop: string, value: unknown): void;
   toast(message: string): void;
   navigate(screenId: string): void;
+  /** Returns to the screen shown before the current one. Does nothing on the first screen. */
+  goBack(): void;
   storageGet(key: string): unknown;
   storageSet(key: string, value: unknown): void;
   sleep(ms: number): Promise<void>;

@@ -23,7 +23,16 @@ The third wave puts first what matters once real people sign up and visitors ope
 5. ✅ **QE-5:** an accessibility pass, for the editor and published apps. Connecting blocks without a mouse moved to **QE-13**, and checks on the apps people build to **QE-14**.
 6. ✅ **RT-4:** Stop cancels pending *Wait* blocks right away.
 
-Editor, element and block items (UX, EL, LB) stay P2. They can be picked up between these, when a smaller change is wanted.
+With no P1 items left, the fourth wave turns to the P2 items for people building apps:
+
+1. ✅ **RT-5:** a *Go back* block, which returns to the screen shown before. The browser's own Back button in published apps moved to **RT-7**.
+2. **LB-4:** math extras: round, min / max and remainder.
+3. **EL-3** and **EL-5:** number inputs and sliders, then links, dividers and spacers.
+4. **UX-8:** "Where is this used?" for elements and variables.
+5. **QE-13:** connecting and moving blocks without a mouse.
+6. **QE-9:** more unit tests for the runtime controller, persistence and the model tree.
+
+Smaller P3 fixes, such as **UX-12** (the Projects menu closing on mouse-leave), can be picked up between these.
 
 ---
 
@@ -113,8 +122,9 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | RT-2 | Run log panel (which blocks ran, with values) | P2 | Shipped: a Run log under the Logic tab's preview, grouped by event, with each block's inputs and errors; click a line to show its block |
 | RT-3 | Step-through debugger with breakpoints | P3 | |
 | RT-4 | Cancel pending *Wait* blocks immediately on Stop | P2 | Shipped: Stop ends each pending wait, and a stopped run ends before its next block, without reporting an error. Before, the blocks after a wait still ran once it finished: their changes to the app were ignored, but a *Fetch from API* after a wait still sent its request. Server workflows already cancelled their waits when stopped |
-| RT-5 | Navigation history and a *Go back* block | P2 | |
+| RT-5 | Navigation history and a *Go back* block | P2 | Shipped: a running app remembers the screens it showed (up to 50), and *Go back* returns to the one before, running its *When screen opens* blocks again. On the first screen it does nothing; screens deleted while the app runs are skipped. On the server it stops with a friendly message, like *Go to screen* |
 | RT-6 | Run details for server workflow runs | P3 | The ☁ Server menu lists runs with their errors and messages; also show which blocks ran with their values, like the Run log |
+| RT-7 | The browser's Back button in published apps | P3 | Follow-up to RT-5. Visitors expect Back (or a phone's back gesture) to return to the screen before, as *Go back* does; today it leaves the app. Each screen change would add a browser history entry |
 
 ## 7. AI assistance
 | ID | Item | Priority | Notes |

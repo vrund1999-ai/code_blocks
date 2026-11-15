@@ -89,6 +89,55 @@ test.describe('screens', () => {
     await expect(app.designCanvas.locator('.el-button')).toHaveText('Next');
   });
 
+  test('Go back returns through the screens shown before, and does nothing on the first one', async ({
+    appNoBoot: app,
+    seed,
+  }) => {
+    const b = build('Three Screens');
+    const opens = b.variable('opens', 'number', 0);
+    const opened = b.element('text', 'Opened');
+    opened.props.text = { kind: 'variable', variableId: opens.id };
+    const next = b.element('button', 'Next', { label: 'Next' });
+    const homeBack = b.element('button', 'Home Back', { label: 'Back' });
+    const details = b.addScreen('Details');
+    const more = b.element('button', 'More', { label: 'More' }, details.root);
+    const detailsBack = b.element('button', 'Details Back', { label: 'Back' }, details.root);
+    const settings = b.addScreen('Settings');
+    b.element('text', 'Settings Title', { text: 'Settings here' }, settings.root);
+    const settingsBack = b.element('button', 'Settings Back', { label: 'Back' }, settings.root);
+
+    const homeOpened = b.node('event.screenLoad', { screen: b.screen.id });
+    b.exec(homeOpened, 'next', b.node('action.changeVariable', { variable: opens.id, amount: 1 }));
+    b.exec(b.node('event.click', { element: next.id }), 'next', b.node('action.goToScreen', { screen: details.id }));
+    b.exec(b.node('event.click', { element: more.id }), 'next', b.node('action.goToScreen', { screen: settings.id }));
+    for (const back of [homeBack, detailsBack, settingsBack]) {
+      b.exec(b.node('event.click', { element: back.id }), 'next', b.node('action.goBack'));
+    }
+    await seed(b.project);
+    await app.goto();
+
+    await app.run();
+    const canvas = app.designCanvas;
+    await expect(canvas.locator('.el-text')).toHaveText('1');
+    // Nowhere to go back to yet.
+    await canvas.getByRole('button', { name: 'Back' }).click();
+    await expect(canvas.getByRole('button', { name: 'Next' })).toBeVisible();
+    await expect(canvas.locator('.el-text')).toHaveText('1');
+
+    await canvas.getByRole('button', { name: 'Next' }).click();
+    await canvas.getByRole('button', { name: 'More' }).click();
+    await expect(canvas.locator('.el-text')).toHaveText('Settings here');
+    await canvas.getByRole('button', { name: 'Back' }).click();
+    await expect(canvas.getByRole('button', { name: 'More' })).toBeVisible();
+    await canvas.getByRole('button', { name: 'Back' }).click();
+    // Back on the first screen, whose open event runs again.
+    await expect(canvas.getByRole('button', { name: 'Next' })).toBeVisible();
+    await expect(canvas.locator('.el-text')).toHaveText('2');
+    await canvas.getByRole('button', { name: 'Back' }).click();
+    await expect(canvas.getByRole('button', { name: 'Next' })).toBeVisible();
+    await expect(canvas.locator('.el-text')).toHaveText('2');
+  });
+
   test('deleting an element clears blocks that pointed at it', async ({ app }) => {
     await app.select('Greeting');
     await app.page.keyboard.press('Delete');

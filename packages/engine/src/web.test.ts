@@ -19,6 +19,7 @@ function makeHost(answer: (req: HttpRequest) => HttpResponse | Promise<HttpRespo
     setElementProp: () => {},
     toast: (m) => toasts.push(m),
     navigate: () => {},
+    goBack: () => {},
     storageGet: () => undefined,
     storageSet: () => {},
     sleep: async () => {},

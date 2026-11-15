@@ -166,6 +166,19 @@ export const actionNodes: NodeDef[] = [
     },
   },
   {
+    type: 'action.goBack',
+    category: 'actions',
+    label: 'Go back',
+    description: 'Returns to the screen shown before this one. On the first screen, nothing happens.',
+    inputs: [...flow],
+    outputs: [execOut],
+    configFields: [],
+    sentence: () => 'Go back to the screen before',
+    execute(ctx) {
+      ctx.host.goBack();
+    },
+  },
+  {
     type: 'action.wait',
     category: 'actions',
     label: 'Wait',

@@ -44,6 +44,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Account settings | 2026-11-14 | [#37](https://github.com/vrund1999-ai/code_blocks/pull/37) | See below |
 | Accessibility pass | 2026-11-14 | [#38](https://github.com/vrund1999-ai/code_blocks/pull/38) | See below |
 | Stop cancels waits | 2026-11-15 | [#39](https://github.com/vrund1999-ai/code_blocks/pull/39) | See below |
+| Go back block | 2026-11-15 | [#40](https://github.com/vrund1999-ai/code_blocks/pull/40) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -273,6 +274,13 @@ Stop cancels waits included:
 - **Tests:** 2 new unit tests, and 1 new end-to-end test that stops during a wait and checks that only the next run's request is sent.
 - **Steadier timing tests:** the tests that use Playwright's fake clock now pause it, so time moves only when a test moves it. Before, the clock also ran in real time, and on a slow machine an *Every few seconds* test counted more ticks than expected.
 
+Go back block included:
+- **A *Go back* block** in *Do…*: it returns to the screen shown before, and that screen's *When screen opens* blocks run again. On the first screen nothing happens.
+- **Screen history** while the app runs (`runtime/history.ts`): *Go to screen* remembers the screen it leaves, up to 50, but not when going to the screen already shown. Screens deleted while running are skipped.
+- **On the server**, *Go back* stops with a friendly message, as *Go to screen* does.
+- **Tests:** 5 new unit tests for the history, 1 more server test, and 1 new end-to-end test that goes forward through three screens and back.
+- **Follow-up:** the browser's Back button in published apps (RT-7).
+
 ---
 
 ## Roadmap status
@@ -361,8 +369,9 @@ Stop cancels waits included:
 | RT-2 | Run log panel | ✅ | 2026-11-12 | [#16](https://github.com/vrund1999-ai/code_blocks/pull/16) |
 | RT-3 | Step-through debugger | ⬜ | | |
 | RT-4 | Cancel waits on Stop | ✅ | 2026-11-15 | [#39](https://github.com/vrund1999-ai/code_blocks/pull/39) |
-| RT-5 | Navigation history / Go back | ⬜ | | |
+| RT-5 | Navigation history / Go back | ✅ | 2026-11-15 | [#40](https://github.com/vrund1999-ai/code_blocks/pull/40) |
 | RT-6 | Run details for server workflow runs | ⬜ | | |
+| RT-7 | Browser Back button in published apps | ⬜ | | |
 
 ### 7. AI assistance
 | ID | Item | Status | Completed | PR |
@@ -391,4 +400,4 @@ Stop cancels waits included:
 
 ---
 
-**Totals:** 35 / 80 done · 0 in progress
+**Totals:** 36 / 81 done · 0 in progress
