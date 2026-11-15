@@ -40,6 +40,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Publish apps | 2026-11-14 | [#32](https://github.com/vrund1999-ai/code_blocks/pull/32) | See below |
 | Ready to host | 2026-11-14 | [#33](https://github.com/vrund1999-ai/code_blocks/pull/33) | See below |
 | Smaller downloads | 2026-11-14 | [#35](https://github.com/vrund1999-ai/code_blocks/pull/35) | See below |
+| Visitors add rows | 2026-11-14 | [#36](https://github.com/vrund1999-ai/code_blocks/pull/36) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -241,6 +242,13 @@ Smaller downloads included:
 - **Zooming to a block** (the error pill's "show me", the Inspector's "add logic") goes through a small request (`logic/focus.ts`) that the graph handles once it's shown, instead of needing React Flow everywhere.
 - **Tests:** the hosted test server checks that a published app loads no editor files, and that the built editor's Logic tab opens. A new test checks that the error pill's "show me" zooms to the block, from the Design tab and with the Logic tab already open.
 
+Visitors add rows included:
+- **A setting per table** in the Data tab: visitors of the published app can see the rows (as before), see them and add new ones (a guestbook), or add new ones without seeing any (a sign-up list). Changing and deleting rows is still only for the owner. The setting is part of the published copy, so it reaches visitors when the app is published again.
+- **Added through the app's link:** *Add row* blocks in a published app send the row to `POST /api/published/:slug/tables/:tableId/rows`. The server keeps only the table's columns, each as its column's kind.
+- **A limit of its own:** 30 visitor rows a minute per project. Pages on other sites can't send forms to the published app routes.
+- **Requests sent from the server** for visitors moved to a new item, PL-9.
+- **Tests:** 4 new unit tests and 1 new end-to-end test, where the owner turns on each setting and a visitor adds rows.
+
 ---
 
 ## Roadmap status
@@ -273,7 +281,8 @@ Smaller downloads included:
 | PL-5 | Version history | ⬜ | | |
 | PL-6 | Project gallery | ⬜ | | |
 | PL-7 | Password reset and account settings | ⬜ | | |
-| PL-8 | Visitor access for published apps | ⬜ | | |
+| PL-8 | Visitor access for published apps | ✅ | 2026-11-14 | [#36](https://github.com/vrund1999-ai/code_blocks/pull/36) |
+| PL-9 | Server requests from published apps | ⬜ | | |
 
 ### 3. Editor UX
 | ID | Item | Status | Completed | PR |
@@ -356,4 +365,4 @@ Smaller downloads included:
 
 ---
 
-**Totals:** 31 / 77 done · 0 in progress
+**Totals:** 32 / 78 done · 0 in progress

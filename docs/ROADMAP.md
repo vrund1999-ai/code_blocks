@@ -18,7 +18,7 @@ The third wave puts first what matters once real people sign up and visitors ope
 
 1. ✅ **QE-12:** signing out waits for saves, so the last change before signing out isn't lost.
 2. ✅ **QE-3:** the bundle is split, so published apps don't load the editor, and the editor loads the Logic tab on its own.
-3. **PL-8:** visitors can add rows to published apps (sign-up lists, guestbooks).
+3. ✅ **PL-8:** visitors can add rows to published apps (sign-up lists, guestbooks), as each table allows. Requests sent from the server for visitors moved to **PL-9**.
 4. **PL-7:** password reset and account settings. It needs an email service, which **BE-9** (*Send email*) can share.
 5. **QE-5:** an accessibility pass, for the editor and published apps.
 6. **RT-4:** Stop cancels pending *Wait* blocks right away.
@@ -57,7 +57,8 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | PL-5 | Project version history and restore | P3 | |
 | PL-6 | Project gallery with thumbnails | P3 | |
 | PL-7 | Password reset by email, and account settings (change email or password, delete the account) | P2 | Needs an email service. Deleting an account should also delete its projects' rows, secrets and deployments |
-| PL-8 | Visitor access for published apps: a per-table setting so visitors can add rows (sign-up lists, guestbooks), and requests sent from the server | P2 | Published apps read rows only (PL-3). BE-11's rate limits are in place now; visitor row adds need a per-project limit of their own, keyed like the web address and form calls |
+| PL-8 | Visitor access for published apps: a per-table setting so visitors can add rows (sign-up lists, guestbooks) | P2 | Shipped: each table's *Visitors of the published app can* setting in the Data tab: see the rows (the default), see them and add new ones, or only add new ones without seeing any. `POST /api/published/:slug/tables/:tableId/rows` keeps only the table's columns, each as its column's kind, and allows 30 visitor rows a minute per project. Changing and deleting rows stays with the owner. Requests sent from the server moved to PL-9. There is no limit on how many rows visitors add in all |
+| PL-9 | Let published apps send *Fetch from API* requests from the server | P3 | Split from PL-8. Visitors can't use `POST /api/fetch`, which needs an account; a route for published apps would need a per-project limit like PL-8's, and should only send the requests the published blocks make |
 
 ## 3. Editor UX
 | ID | Item | Priority | Notes |
