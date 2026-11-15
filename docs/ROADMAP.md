@@ -29,7 +29,7 @@ With no P1 items left, the fourth wave turns to the P2 items for people building
 2. ✅ **LB-4:** math extras: round, min / max and remainder.
 3. ✅ **EL-3**, then ✅ **EL-5:** number boxes and sliders, then links, dividers and spacers.
 4. ✅ **UX-8:** "Where is this used?" for elements and variables.
-5. **QE-13:** connecting and moving blocks without a mouse.
+5. ✅ **QE-13:** connecting and moving blocks without a mouse.
 6. **QE-9:** more unit tests for the runtime controller, persistence and the model tree.
 
 Smaller P3 fixes, such as **UX-12** (the Projects menu closing on mouse-leave), can be picked up between these.
@@ -146,7 +146,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | QE-8 | Visual regression screenshots for the editor and templates | P3 | Playwright `toHaveScreenshot` |
 | QE-9 | Raise unit test coverage (about 24% today) | P2 | Runtime controller, persistence, model tree |
 | QE-10 | Review React Flow's `hideAttribution` setting | P1 | Shipped: the Logic tab shows React Flow's attribution again, in the bottom-right corner under the minimap. React Flow asks that only Pro subscribers hide it |
-| QE-13 | Connect and move blocks without a mouse | P2 | The Logic tab needs a pointer to draw wires and move blocks, and the Design tab to drag elements (the Layers panel and click-to-add work from the keyboard). For example: pick a pin, then the pin to connect it to, from a list |
+| QE-13 | Connect and move blocks without a mouse | P2 | Shipped: a block's Settings has a *Wires* section that lists each of its pins with what it's wired to (each with a Disconnect button) and a list of the pins on other blocks that fit. A selected block moves with the arrow keys (Shift for bigger steps); the move is saved, and a run of key presses is one undo step. In the Layers panel, Alt+arrow keys move the selected element up or down, into the box above it, or out of its box |
 | QE-14 | Accessibility checks for the apps people build | P3 | Warn in the editor when an image has no description, a text box has no label, or chosen colours are hard to read, and let images have a description |
 | QE-12 | Find the stray 401 in *a project used by one account is kept from others* | P1 | Shipped: signing out first sends a change still waiting for autosave, then waits for requests already sent (up to 5 seconds) before ending the session. Before, a change made less than a moment before signing out was saved nowhere, and a request answered after the session ended logged the 401 that failed the test |
 | QE-11 | Make the end-to-end tests reliable in Firefox and WebKit | P3 | Drag tests are marked `test.fixme` there: pointer drags hang in Firefox automation, and some drops don't register in WebKit. Local headless Firefox on Windows also hit graphics-process crashes and timeouts under parallel load. In WebKit, Ctrl+click selects only one block in the Logic tab, so that copy test is marked `test.fixme` there too, as is pasting into a settings text box, which depends on the system clipboard there and fails on some runs. CI runs Chromium only. |
