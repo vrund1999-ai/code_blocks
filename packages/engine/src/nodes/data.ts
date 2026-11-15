@@ -3,6 +3,55 @@ import type { NodeDef } from '../types';
 
 const pick = (name: string | undefined, fallback: string) => (name ? `“${name}”` : fallback);
 
+const MATH_SENTENCES: Record<string, string> = {
+  '+': 'A + B',
+  '-': 'A − B',
+  '*': 'A × B',
+  '/': 'A ÷ B',
+  '%': 'Remainder of A ÷ B',
+  min: 'Smaller of A and B',
+  max: 'Bigger of A and B',
+};
+
+/** The *Math* block's operations. Dividing by zero gives 0, as does its remainder. */
+export function calculate(op: string, a: number, b: number): number {
+  switch (op) {
+    case '-':
+      return a - b;
+    case '*':
+      return a * b;
+    case '/':
+      return b === 0 ? 0 : a / b;
+    case '%':
+      return b === 0 ? 0 : a % b;
+    case 'min':
+      return Math.min(a, b);
+    case 'max':
+      return Math.max(a, b);
+    default:
+      return a + b;
+  }
+}
+
+/** The most decimal places *Round number* keeps. */
+export const MAX_PLACES = 10;
+
+/**
+ * Rounds to whole numbers or to `places` decimal places (0 to MAX_PLACES).
+ * Halves round away from zero, as people expect (2.5 → 3, −2.5 → −3), and
+ * numbers like 1.005 round as written (to 1.01), not as stored.
+ */
+export function roundNumber(value: number, places: number, mode: 'nearest' | 'down' | 'up'): number {
+  if (!Number.isFinite(value)) return value;
+  const p = Math.min(MAX_PLACES, Math.max(0, Math.round(places) || 0));
+  const fn = mode === 'down' ? Math.floor : mode === 'up' ? Math.ceil : (x: number) => Math.sign(x) * Math.round(Math.abs(x));
+  // Shifting the decimal point in the number's text avoids errors like 1.005 × 100 = 100.49999…
+  // Very large or small numbers are already written with an exponent, so they're shifted by multiplying.
+  let result = Number(`${fn(Number(`${value}e${p}`))}e-${p}`);
+  if (!Number.isFinite(result)) result = fn(value * 10 ** p) / 10 ** p;
+  return Object.is(result, -0) ? 0 : result;
+}
+
 export const dataNodes: NodeDef[] = [
   {
     type: 'data.text',
@@ -83,7 +132,7 @@ export const dataNodes: NodeDef[] = [
     type: 'data.math',
     category: 'data',
     label: 'Math',
-    description: 'Adds, subtracts, multiplies or divides two numbers.',
+    description: 'Adds, subtracts, multiplies or divides two numbers, or gives the remainder, the smaller or the bigger of them.',
     inputs: [
       { id: 'a', label: 'A', kind: 'data', valueType: 'number', inline: { type: 'number', default: 0 } },
       { id: 'b', label: 'B', kind: 'data', valueType: 'number', inline: { type: 'number', default: 0 } },
@@ -100,23 +149,47 @@ export const dataNodes: NodeDef[] = [
           { value: '-', label: '− subtract' },
           { value: '*', label: '× multiply' },
           { value: '/', label: '÷ divide' },
+          { value: '%', label: 'remainder of A ÷ B' },
+          { value: 'min', label: 'smaller of A and B' },
+          { value: 'max', label: 'bigger of A and B' },
         ],
       },
     ],
-    sentence: (c) => `A ${({ '+': '+', '-': '−', '*': '×', '/': '÷' } as Record<string, string>)[String(c.op ?? '+')]} B`,
+    sentence: (c) => MATH_SENTENCES[String(c.op ?? '+')] ?? 'A + B',
     async evaluate(ctx) {
       const a = toNumber(await ctx.input('a'));
       const b = toNumber(await ctx.input('b'));
-      switch (ctx.config.op ?? '+') {
-        case '-':
-          return { value: a - b };
-        case '*':
-          return { value: a * b };
-        case '/':
-          return { value: b === 0 ? 0 : a / b };
-        default:
-          return { value: a + b };
-      }
+      return { value: calculate(String(ctx.config.op ?? '+'), a, b) };
+    },
+  },
+  {
+    type: 'data.round',
+    category: 'data',
+    label: 'Round number',
+    description: 'Rounds a number to a whole number, or to some decimal places: to the nearest, down or up.',
+    inputs: [
+      { id: 'a', label: 'Number', kind: 'data', valueType: 'number', inline: { type: 'number', default: 0 } },
+      { id: 'places', label: 'Decimal places', kind: 'data', valueType: 'number', inline: { type: 'number', default: 0 } },
+    ],
+    outputs: [{ id: 'value', label: 'Result', kind: 'data', valueType: 'number' }],
+    configFields: [
+      {
+        key: 'mode',
+        label: 'Round',
+        type: 'select',
+        default: 'nearest',
+        options: [
+          { value: 'nearest', label: 'to the nearest' },
+          { value: 'down', label: 'down' },
+          { value: 'up', label: 'up' },
+        ],
+      },
+    ],
+    sentence: (c) => ({ down: 'Round down', up: 'Round up' } as Record<string, string>)[String(c.mode)] ?? 'Round to the nearest',
+    async evaluate(ctx) {
+      const a = toNumber(await ctx.input('a'));
+      const places = toNumber(await ctx.input('places'));
+      return { value: roundNumber(a, places, ctx.config.mode === 'down' || ctx.config.mode === 'up' ? ctx.config.mode : 'nearest') };
     },
   },
   {
