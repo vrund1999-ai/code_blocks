@@ -116,6 +116,13 @@ describe('checking projects', () => {
     expect(problem(root)).toBe('In screen “Home”: A screen’s outermost element must be a container.');
   });
 
+  it('keeps what visitors of the published app may do with a table, and refuses other settings', () => {
+    const shared = { ...project(), tables: [{ ...project().tables[0], visitors: 'add' }] };
+    expect(parseProject(shared).tables[0].visitors).toBe('add');
+    expect(parseProject(project()).tables[0]).not.toHaveProperty('visitors');
+    expect(problem({ ...project(), tables: [{ ...project().tables[0], visitors: 'delete' }] })).toMatch(/visitors/);
+  });
+
   it('names lists that are the wrong kind', () => {
     expect(problem({ ...project(), variables: {} })).toBe('“variables” should be a list.');
     expect(problem({ ...project(), graph: { nodes: [] } })).toBe('“edges” is missing.');

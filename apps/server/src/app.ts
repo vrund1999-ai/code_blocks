@@ -75,6 +75,7 @@ export function createApp(opts: AppOptions = {}) {
   app.use('/run', csrf(), requireUser);
   app.use('/fetch', csrf(), requireUser);
   app.use('/projects', requireUser);
+  app.use('/published/*', csrf());
   const limits = opts.limits;
   const addressOf = (c: Parameters<typeof clientAddress>[0]) => clientAddress(c, !!opts.trustProxy);
   if (limits) {
@@ -113,7 +114,7 @@ export function createApp(opts: AppOptions = {}) {
   app.route('/projects', workflowRoutes(workflows));
   app.route('/projects', secretRoutes(secrets));
   app.route('/hooks', hookRoutes(workflows));
-  app.route('/published', publishedRoutes(publications, rows));
+  app.route('/published', publishedRoutes(publications, rows, limits && new RateLimiter(limits.visitorRows)));
   app.route('/fetch', fetchRoutes());
 
   app.get('/health', (c) => c.json({ ok: true }));

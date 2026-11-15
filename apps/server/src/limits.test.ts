@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createApp, TOO_MANY_CALLS, TOO_MANY_REQUESTS } from './app';
 import { TOO_MANY_SIGN_INS, TOO_MANY_SIGN_UPS } from './authRoutes';
+import { TOO_MANY_ROWS } from './publishRoutes';
 import { DEFAULT_LIMITS, RateLimiter, waitText, type Limits } from './limits';
 import { signedIn } from './testAuth';
 
@@ -101,6 +102,34 @@ describe('limits on a hosted server', () => {
     expect(blocked.status).toBe(429);
     expect(await errorOf(blocked)).toBe(`${TOO_MANY_CALLS} Try again in a minute.`);
     expect((await app.request('/api/hooks/p2/hello')).status).toBe(404);
+  });
+
+  it('limit rows added by visitors of a published app, per project', async () => {
+    const app = createApp({ limits: limits({ visitorRows: { count: 2, seconds: 60 } }) });
+    const ada = await signedIn(app);
+    const publish = async (id: string) => {
+      const project = {
+        version: 2,
+        id,
+        name: 'Sign-ups',
+        screens: [{ id: 's1', name: 'Home', root: { id: 'r1', type: 'container', name: 'Screen', props: {}, children: [] } }],
+        variables: [],
+        tables: [{ id: 't1', name: 'People', columns: [{ id: 'c1', name: 'Name', type: 'text' }], visitors: 'add' }],
+        graph: { nodes: [], edges: [] },
+      };
+      const res = await ada(`/api/projects/${id}/publication`, { ...json({ project, fingerprint: 'a' }), method: 'PUT' });
+      return `/api/published/${((await res.json()) as { slug: string }).slug}/tables/t1/rows`;
+    };
+    const [p1, p2] = [await publish('p1'), await publish('p2')];
+
+    // A refused row doesn't count.
+    expect((await app.request(p1, json({ values: [] }))).status).toBe(400);
+    expect((await app.request(p1, json({ values: { c1: 'Ada' } }))).status).toBe(201);
+    expect((await app.request(p1, json({ values: { c1: 'Bo' } }))).status).toBe(201);
+    const blocked = await app.request(p1, json({ values: { c1: 'Cy' } }));
+    expect(blocked.status).toBe(429);
+    expect(await errorOf(blocked)).toBe(`${TOO_MANY_ROWS} Try again in a minute.`);
+    expect((await app.request(p2, json({ values: { c1: 'Cy' } }))).status).toBe(201);
   });
 
   it('are off unless asked for', async () => {

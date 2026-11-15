@@ -1,16 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app';
 import { NOT_YOURS, SIGN_IN_NEEDED } from './authRoutes';
-import { NO_SUCH_TABLE, NOT_PUBLISHED } from './publishRoutes';
+import { NO_ADDING, NO_SUCH_TABLE, NOT_PUBLISHED, ROWS_HIDDEN } from './publishRoutes';
 import { signedIn } from './testAuth';
 
-const project = (id: string, name = 'Guest list') => ({
+const project = (id: string, name = 'Guest list', visitors?: string) => ({
   version: 2,
   id,
   name,
   screens: [{ id: 's1', name: 'Home', root: { id: 'r1', type: 'container', name: 'Screen', props: {}, children: [] } }],
   variables: [],
-  tables: [{ id: 't1', name: 'Guests', columns: [{ id: 'c1', name: 'Name', type: 'text' }] }],
+  tables: [
+    {
+      id: 't1',
+      name: 'Guests',
+      columns: [
+        { id: 'c1', name: 'Name', type: 'text' },
+        { id: 'c2', name: 'Guests', type: 'number' },
+      ],
+      visitors,
+    },
+  ],
   graph: { nodes: [], edges: [] },
 });
 
@@ -66,6 +76,9 @@ describe('published apps', () => {
     expect(other.status).toBe(404);
     expect(await errorOf(other)).toBe(NO_SUCH_TABLE);
 
+    const refused = await app.request(`/api/published/${slug}/tables/t1/rows`, send('POST', { values: { c1: 'Bo' } }));
+    expect(refused.status).toBe(403);
+    expect(await errorOf(refused)).toBe(NO_ADDING);
     // Changing rows still needs the owner's account.
     for (const [path, init] of [
       [`/api/published/${slug}/tables/t1/rows`, send('POST', { values: { c1: 'Bo' } })],
@@ -77,6 +90,44 @@ describe('published apps', () => {
       expect(res.status, path).not.toBe(201);
     }
     expect(((await (await app.request(`/api/published/${slug}/tables/t1/rows`)).json()) as { total: number }).total).toBe(1);
+  });
+
+  it('let visitors add rows to tables that allow it, with only its columns', async () => {
+    const app = createApp();
+    const ada = await signedIn(app);
+    const publish = async (visitors: string) =>
+      ((await (await ada('/api/projects/p1/publication', send('PUT', { project: project('p1', 'Guests', visitors), fingerprint: visitors }))).json()) as Info).slug;
+    const rowsUrl = (slug: string) => `/api/published/${slug}/tables/t1/rows`;
+
+    // A guestbook: visitors see the rows and add their own.
+    const slug = await publish('read-add');
+    const added = await app.request(rowsUrl(slug), send('POST', { values: { c1: 'Bo', c2: '3', other: 'x', id: 7 } }));
+    expect(added.status).toBe(201);
+    // Cells are kept as their column's kind; ids that aren't columns are left out.
+    expect(await added.json()).toEqual({ id: 1, values: { c1: 'Bo', c2: 3 } });
+    expect(await (await app.request(rowsUrl(slug))).json()).toEqual({ rows: [{ id: 1, values: { c1: 'Bo', c2: 3 } }], total: 1 });
+    const bad = await app.request(rowsUrl(slug), send('POST', { values: [] }));
+    expect(bad.status).toBe(400);
+    // Visitors still can't change or delete rows.
+    const del = { method: 'DELETE', headers: { origin: 'http://localhost' } };
+    expect((await app.request(`${rowsUrl(slug)}/1`, del)).status).toBe(404);
+    expect((await app.request('/api/projects/p1/tables/t1/rows/1', del)).status).toBe(401);
+
+    // A sign-up list: visitors add rows but can't read them; the owner can.
+    expect(await publish('add')).toBe(slug);
+    expect((await app.request(rowsUrl(slug), send('POST', { values: { c1: 'Cy' } }))).status).toBe(201);
+    const hidden = await app.request(rowsUrl(slug));
+    expect(hidden.status).toBe(403);
+    expect(await errorOf(hidden)).toBe(ROWS_HIDDEN);
+    expect(((await (await ada('/api/projects/p1/tables/t1/rows')).json()) as { total: number }).total).toBe(2);
+
+    // Another site's page can't send visitors' browsers' forms here.
+    const form = await app.request(rowsUrl(slug), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', origin: 'https://elsewhere.example' },
+      body: 'values=x',
+    });
+    expect(form.status).toBe(403);
   });
 
   it('are published only by the project’s account, and checked first', async () => {
