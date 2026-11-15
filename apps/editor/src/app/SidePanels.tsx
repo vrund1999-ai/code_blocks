@@ -118,7 +118,7 @@ export function VariablesPanel() {
 
   return (
     <div className="panel-section">
-      <h3>Variables</h3>
+      <h2 className="panel-title">Variables</h2>
       <p className="hint">Boxes that remember a value while your app runs.</p>
       {variables.map((v) => (
         <div key={v.id} className="var-item">
@@ -192,7 +192,7 @@ export function ScreensPanel() {
 
   return (
     <div className="panel-section">
-      <h3>Screens</h3>
+      <h2 className="panel-title">Screens</h2>
       {screens.map((s, i) => (
         <div key={s.id} className={`screen-item ${s.id === active ? 'active' : ''}`} onClick={() => setActiveScreen(s.id)}>
           {editing === s.id ? (
@@ -214,6 +214,7 @@ export function ScreensPanel() {
             <button
               className="icon-btn"
               title="Delete screen"
+              aria-label={`Delete screen “${s.name}”`}
               onClick={(e) => {
                 e.stopPropagation();
                 deleteScreen(s.id);

@@ -33,7 +33,7 @@ export function ConfigFieldInput({
       const opts = elements.filter((e) => !field.elementTypes || field.elementTypes.includes(e.type));
       const multiScreen = project.screens.length > 1;
       return (
-        <select className={cls} value={String(value ?? '')} onChange={(e) => onChange(e.target.value || undefined)}>
+        <select className={cls} aria-label={field.label} value={String(value ?? '')} onChange={(e) => onChange(e.target.value || undefined)}>
           <option value="">{opts.length ? 'Pick…' : `(add a ${field.elementTypes?.map((t) => ELEMENT_DEFS[t].label).join(' / ') ?? 'element'} first)`}</option>
           {opts.map((e) => (
             <option key={e.id} value={e.id}>
@@ -47,7 +47,7 @@ export function ConfigFieldInput({
     case 'variable': {
       const opts = project.variables.filter((v) => !field.variableTypes || field.variableTypes.includes(v.type));
       return (
-        <select className={cls} value={String(value ?? '')} onChange={(e) => onChange(e.target.value || undefined)}>
+        <select className={cls} aria-label={field.label} value={String(value ?? '')} onChange={(e) => onChange(e.target.value || undefined)}>
           <option value="">{opts.length ? 'Pick…' : '(create a variable first)'}</option>
           {opts.map((v) => (
             <option key={v.id} value={v.id}>
@@ -59,7 +59,7 @@ export function ConfigFieldInput({
     }
     case 'screen':
       return (
-        <select className={cls} value={String(value ?? '')} onChange={(e) => onChange(e.target.value || undefined)}>
+        <select className={cls} aria-label={field.label} value={String(value ?? '')} onChange={(e) => onChange(e.target.value || undefined)}>
           <option value="">Pick…</option>
           {project.screens.map((s) => (
             <option key={s.id} value={s.id}>
@@ -70,7 +70,7 @@ export function ConfigFieldInput({
       );
     case 'table':
       return (
-        <select className={cls} value={String(value ?? '')} onChange={(e) => onChange(e.target.value || undefined)}>
+        <select className={cls} aria-label={field.label} value={String(value ?? '')} onChange={(e) => onChange(e.target.value || undefined)}>
           <option value="">{project.tables.length ? 'Pick…' : '(add a table in the Data tab first)'}</option>
           {project.tables.map((t) => (
             <option key={t.id} value={t.id}>
@@ -81,7 +81,7 @@ export function ConfigFieldInput({
       );
     case 'select':
       return (
-        <select className={cls} value={String(value ?? field.default ?? '')} onChange={(e) => onChange(e.target.value)}>
+        <select className={cls} aria-label={field.label} value={String(value ?? field.default ?? '')} onChange={(e) => onChange(e.target.value)}>
           {field.options?.map((o) => (
             <option key={o.value} value={o.value}>
               {o.label}
@@ -93,7 +93,7 @@ export function ConfigFieldInput({
       return (
         <input
           type="checkbox"
-          className={cls}
+          className={cls} aria-label={field.label}
           checked={Boolean(value ?? field.default)}
           onChange={(e) => onChange(e.target.checked)}
         />
@@ -102,7 +102,7 @@ export function ConfigFieldInput({
       return (
         <input
           type="number"
-          className={cls}
+          className={cls} aria-label={field.label}
           value={value === undefined || value === null ? '' : String(value)}
           onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.value))}
         />
@@ -111,7 +111,7 @@ export function ConfigFieldInput({
       return (
         <input
           type="text"
-          className={cls}
+          className={cls} aria-label={field.label}
           value={String(value ?? '')}
           onChange={(e) => onChange(e.target.value)}
         />
@@ -169,15 +169,19 @@ export function InlineValueInput({
   type,
   value,
   onChange,
+  label,
 }: {
   type: 'text' | 'number' | 'boolean';
   value: unknown;
   onChange(v: unknown): void;
+  /** The input's name, for screen readers. */
+  label: string;
 }) {
   if (type === 'boolean') {
     return (
       <select
         className="field-input nodrag nowheel compact inline"
+        aria-label={label}
         value={value ? 'true' : 'false'}
         onChange={(e) => onChange(e.target.value === 'true')}
       >
@@ -189,6 +193,7 @@ export function InlineValueInput({
   return (
     <input
       className="field-input nodrag nowheel compact inline"
+      aria-label={label}
       type={type === 'number' ? 'number' : 'text'}
       value={value === undefined || value === null ? '' : String(value)}
       placeholder={type === 'number' ? '0' : 'text…'}

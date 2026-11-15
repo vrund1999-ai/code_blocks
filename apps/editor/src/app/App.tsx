@@ -110,7 +110,7 @@ function GlobalToasts() {
   const toasts = useRuntimeStore((s) => s.toasts);
   if (running || toasts.length === 0) return null;
   return (
-    <div className="global-toasts">
+    <div className="global-toasts" role="region" aria-label="Notifications" aria-live="polite">
       {toasts.map((t) => (
         <div key={t.id} className={`toast ${t.kind}`}>
           {t.message}
@@ -142,7 +142,7 @@ export function App() {
       {tab === 'design' ? (
         <DesignDnd>
           <main className="workspace">
-            <aside className="sidebar">
+            <aside className="sidebar" aria-label="Elements, screens and variables">
               <ComponentPalette />
               <ScreensPanel />
               <LayersPanel />

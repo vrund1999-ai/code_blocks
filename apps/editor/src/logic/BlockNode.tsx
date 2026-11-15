@@ -131,6 +131,7 @@ function BlockNodeInner({ id, selected }: NodeProps) {
           {p.inline && !connectedIn.has(p.id) && (
             <InlineValueInput
               type={p.inline.type}
+              label={p.label}
               value={config[p.id] ?? p.inline.default}
               onChange={(v) => updateNodeConfig(id, { [p.id]: v })}
             />

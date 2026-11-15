@@ -20,7 +20,7 @@ export function NodePalette() {
 
   return (
     <div className="panel-section node-palette">
-      <h3>Blocks</h3>
+      <h2 className="panel-title">Blocks</h2>
       <input className="field-input search" placeholder="Search blocks…" value={query} onChange={(e) => setQuery(e.target.value)} />
       {CATEGORIES.map((cat) => {
         const defs = nodesInCategory(cat.id).filter(
@@ -29,7 +29,7 @@ export function NodePalette() {
         if (!defs.length) return null;
         return (
           <div key={cat.id} className="node-cat">
-            <div className="node-cat-title" style={{ color: cat.color }}>
+            <div className="node-cat-title" style={{ ['--cat' as string]: cat.color }}>
               {cat.label} <span className="hint">{cat.hint}</span>
             </div>
             {defs.map((d) => (

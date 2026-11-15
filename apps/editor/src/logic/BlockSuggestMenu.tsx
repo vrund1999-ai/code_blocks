@@ -94,7 +94,7 @@ export function BlockSuggestMenu({
           if (!items.length) return null;
           return (
             <div key={cat.id} className="suggest-cat" role="group" aria-label={cat.label}>
-              <div className="node-cat-title" style={{ color: cat.color }}>
+              <div className="node-cat-title" style={{ ['--cat' as string]: cat.color }}>
                 {cat.label}
               </div>
               {items.map((s) => (

@@ -281,11 +281,17 @@ export function LogicCanvas() {
         <div className="logic-empty">
           <h2>Make your app do things</h2>
           <p>
-            1. Drag a <b style={{ color: CATEGORIES[0].color }}>When…</b> block from the left (for example “When button
-            clicked”).
+            1. Drag a{' '}
+            <b className="cat-word" style={{ ['--cat' as string]: CATEGORIES[0].color }}>
+              When…
+            </b>{' '}
+            block from the left (for example “When button clicked”).
             <br />
-            2. Add a <b style={{ color: CATEGORIES[1].color }}>Do…</b> block and connect the arrow from the first block
-            into it.
+            2. Add a{' '}
+            <b className="cat-word" style={{ ['--cat' as string]: CATEGORIES[1].color }}>
+              Do…
+            </b>{' '}
+            block and connect the arrow from the first block into it.
             <br />
             3. Press <b>▶ Run</b> and try it out in the preview.
           </p>

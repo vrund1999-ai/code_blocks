@@ -82,7 +82,7 @@ export function LayersPanel() {
 
   return (
     <div className="panel-section layers-panel">
-      <h3>Layers</h3>
+      <h2 className="panel-title">Layers</h2>
       <div
         ref={treeRef}
         className="layers"
@@ -106,7 +106,8 @@ export function LayersPanel() {
               aria-level={depth + 1}
               aria-selected={selected}
               aria-expanded={hasKids ? open : undefined}
-              aria-label={isRoot ? `${screen.name} (screen)` : el.name}
+              // Other rows are named by the text they show, so speech input can use it.
+              aria-label={isRoot ? `${screen.name} (screen)` : undefined}
               tabIndex={selected || (!selectedId && isRoot) ? 0 : -1}
               style={{ paddingLeft: 4 + depth * 14 }}
               onClick={() => pick(el.id)}

@@ -57,7 +57,7 @@ function PaletteItem({ type }: { type: ElementType }) {
 export function ComponentPalette() {
   return (
     <div className="panel-section">
-      <h3>Elements</h3>
+      <h2 className="panel-title">Elements</h2>
       <p className="hint">Drag onto your screen, or click to add.</p>
       <div className="palette-grid">
         {ELEMENT_ORDER.map((t) => (
