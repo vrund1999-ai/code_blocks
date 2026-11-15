@@ -28,7 +28,7 @@ With no P1 items left, the fourth wave turns to the P2 items for people building
 1. ✅ **RT-5:** a *Go back* block, which returns to the screen shown before. The browser's own Back button in published apps moved to **RT-7**.
 2. ✅ **LB-4:** math extras: round, min / max and remainder.
 3. ✅ **EL-3**, then ✅ **EL-5:** number boxes and sliders, then links, dividers and spacers.
-4. **UX-8:** "Where is this used?" for elements and variables.
+4. ✅ **UX-8:** "Where is this used?" for elements and variables.
 5. **QE-13:** connecting and moving blocks without a mouse.
 6. **QE-9:** more unit tests for the runtime controller, persistence and the model tree.
 
@@ -79,7 +79,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | UX-5 | Multi-select in the design canvas | P2 | |
 | UX-6 | Comments and group frames in the logic graph | P2 | |
 | UX-7 | Auto-arrange (tidy) the logic graph | P2 | |
-| UX-8 | "Where is this used?" for elements and variables | P2 | |
+| UX-8 | "Where is this used?" for elements and variables | P2 | Shipped: a *Used by* list in the Settings panel for an element (the blocks that point at it) and in the Variables panel for a variable (its blocks, then the element settings 🔗 linked to it). Blocks are described by their sentences; clicking one opens it in the Logic tab, and clicking a setting selects the element on its screen. Data tables could get the same list later |
 | UX-9 | Guided onboarding tutorial for first-time users | P2 | |
 | UX-10 | Freely resizable preview (beyond phone/tablet/desktop) | P3 | |
 | UX-11 | Touch / tablet support for the editor | P3 | |

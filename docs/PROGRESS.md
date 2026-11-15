@@ -48,6 +48,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Math extras | 2026-11-15 | [#41](https://github.com/vrund1999-ai/code_blocks/pull/41) | See below |
 | Number box and slider | 2026-11-15 | [#42](https://github.com/vrund1999-ai/code_blocks/pull/42) | See below |
 | Link, divider and spacer | 2026-11-15 | [#43](https://github.com/vrund1999-ai/code_blocks/pull/43) | See below |
+| Where is this used? | 2026-11-15 | [#44](https://github.com/vrund1999-ai/code_blocks/pull/44) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -302,6 +303,12 @@ Link, divider and spacer included:
 - **A *Spacer* element:** empty space of a set size, striped while designing so it can be found and selected.
 - **Tests:** 3 new unit tests for link addresses, and a new end-to-end spec (`e2e/link-divider-spacer.spec.ts`) for the designer, a running app and a published one.
 
+Where is this used? included:
+- **For elements:** a *Used by* list in the Settings panel, with each block that points at the element, described by its sentence (such as *When “Save” is clicked*).
+- **For variables:** the same list in the Variables panel, with the blocks that read or change the variable, then the element settings linked to it, on any screen (such as *“Score”: Text*).
+- **Each entry opens where it is:** a block is selected and zoomed to in the Logic tab; a setting selects its element on its screen in the Design tab.
+- **Tests:** 4 new unit tests (`model/usage.test.ts`), and a new end-to-end spec (`e2e/where-used.spec.ts`).
+
 ---
 
 ## Roadmap status
@@ -347,7 +354,7 @@ Link, divider and spacer included:
 | UX-5 | Multi-select in design | ⬜ | | |
 | UX-6 | Graph comments / groups | ⬜ | | |
 | UX-7 | Auto-arrange graph | ⬜ | | |
-| UX-8 | "Where is this used?" | ⬜ | | |
+| UX-8 | "Where is this used?" | ✅ | 2026-11-15 | [#44](https://github.com/vrund1999-ai/code_blocks/pull/44) |
 | UX-9 | Onboarding tutorial | ⬜ | | |
 | UX-10 | Resizable preview | ⬜ | | |
 | UX-11 | Touch support | ⬜ | | |
@@ -421,4 +428,4 @@ Link, divider and spacer included:
 
 ---
 
-**Totals:** 39 / 81 done · 0 in progress
+**Totals:** 40 / 81 done · 0 in progress
