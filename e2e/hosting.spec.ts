@@ -38,11 +38,20 @@ test.describe('signed in', () => {
     // The server answers the published app's address with the app, also on reload.
     const visitorContext = await browser.newContext();
     const visitor = await visitorContext.newPage();
+    const scripts: string[] = [];
+    visitor.on('response', (r) => void (r.request().resourceType() === 'script' && scripts.push(new URL(r.url()).pathname)));
     await visitor.goto(url);
     await expect(visitor.locator('.published-app .list-row .el-text')).toHaveText(['Ada']);
+    // Visitors download the app, not the editor (QE-3).
+    expect(scripts.some((s) => s.startsWith('/assets/PublishedApp-'))).toBe(true);
+    expect(scripts.filter((s) => /^\/assets\/(App|LogicWorkspace)-/.test(s))).toEqual([]);
     await visitor.reload();
     await expect(visitor.locator('.published-app .list-row .el-text')).toHaveText(['Ada']);
     await visitorContext.close();
+
+    // The Logic tab, loaded on its own, opens in the built editor too.
+    await app.tab('Logic');
+    await expect(app.page.locator('.react-flow__node').first()).toBeVisible();
   });
 
   test('requests sent from the server can’t reach its own network', async ({ appNoBoot: app, seed, consoleErrors }) => {

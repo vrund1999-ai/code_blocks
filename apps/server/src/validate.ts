@@ -4,7 +4,7 @@ import type { LogicGraph } from '@code-blocks/engine/graph';
 import { describeIssues, graphSchema, tableSchema, variableSchema } from '@code-blocks/engine/project';
 import { getNodeDef } from '@code-blocks/engine/registry';
 import type { DataTable } from '@code-blocks/engine/tables';
-import { z } from 'zod';
+import * as z from 'zod/mini';
 import type { ServerVariable } from './host';
 import type { RunRequest } from './run';
 
@@ -16,8 +16,8 @@ const isString = (v: unknown): v is string => typeof v === 'string';
 // sent to run don't need their names.
 const partsSchema = z.object({
   graph: graphSchema,
-  variables: z.array(variableSchema.omit({ name: true })).default([]),
-  tables: z.array(tableSchema).default([]),
+  variables: z._default(z.array(z.omit(variableSchema, { name: true })), []),
+  tables: z._default(z.array(tableSchema), []),
 });
 
 /** What the server needs of a project to run its blocks. */

@@ -1,4 +1,3 @@
-import { useReactFlow } from '@xyflow/react';
 import { CATEGORIES, getNodeDef, inputPins } from '@code-blocks/engine/registry';
 import { ELEMENT_DEFS, type PropField } from '../model/elements';
 import { useProjectStore } from '../model/projectStore';
@@ -10,6 +9,7 @@ import type { ElementType, Project, PropValue, UIElement, ValueType } from '../m
 import { ConfigFieldInput, InlineValueInput } from './fields';
 import { TryPanel } from './TryPanel';
 import { TRYABLE } from '../data/tryApi';
+import { focusBlock } from '../logic/focus';
 
 const EVENT_FOR: Partial<Record<ElementType, { type: string; label: string }>> = {
   button: { type: 'event.click', label: 'When clicked…' },
@@ -195,7 +195,6 @@ function ElementInspector({ el, isRoot }: { el: UIElement; isRoot: boolean }) {
   const event = EVENT_FOR[el.type];
   const fields = def.fields.filter((f) => !(isRoot && f.notOnRoot));
   const styleFields = fields.filter((f) => f.group === 'style');
-  const rf = useReactFlow();
 
   const addLogic = () => {
     if (!event) return;
@@ -203,7 +202,7 @@ function ElementInspector({ el, isRoot }: { el: UIElement; isRoot: boolean }) {
     const y = nodes.length ? Math.max(...nodes.map((n) => n.position.y)) + 220 : 40;
     const id = addNode(event.type, { x: 40, y }, { element: el.id });
     setTab('logic');
-    setTimeout(() => rf.fitView({ nodes: [{ id }], duration: 300, maxZoom: 1 }), 50);
+    focusBlock(id);
   };
 
   return (

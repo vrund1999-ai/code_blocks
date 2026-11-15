@@ -1,4 +1,3 @@
-import { useReactFlow } from '@xyflow/react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '../data/authStore';
 import { deleteSaved, listSaved, type SavedProjectMeta } from '../data/projectsApi';
@@ -19,6 +18,7 @@ import { AccountMenu } from './AccountMenu';
 import { PublishMenu } from './PublishMenu';
 import { ServerMenu } from './ServerMenu';
 import type { Project } from '../model/types';
+import { focusBlock } from '../logic/focus';
 
 /** Opens a project; `replace` saves it over the account's copy, for imported files. */
 function openProject(p: Project, replace = false) {
@@ -220,13 +220,12 @@ export function Toolbar() {
   const error = useRuntimeStore((s) => s.error);
   const [menu, setMenu] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const rf = useReactFlow();
 
   const showErrorBlock = () => {
     if (!error) return;
     setTab('logic');
     select({ kind: 'node', id: error.nodeId });
-    setTimeout(() => rf.fitView({ nodes: [{ id: error.nodeId }], duration: 300, maxZoom: 1 }), 50);
+    focusBlock(error.nodeId);
   };
 
   return (

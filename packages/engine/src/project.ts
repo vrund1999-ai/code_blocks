@@ -2,7 +2,8 @@
 // and the check every project goes through before it's opened or stored.
 // Shared by the editor (saved and imported projects) and the server.
 
-import { z } from 'zod';
+// zod/mini, the smaller build: this check is part of every published app.
+import * as z from 'zod/mini';
 import type { ElementType, GraphEdge, GraphNode, LogicGraph, ValueType } from './graph';
 import { COLUMN_TYPES, type DataTable } from './tables';
 
@@ -111,10 +112,10 @@ export function migrateProject(data: unknown): Json {
 
 // ── The check ──────────────────────────────────────────────────────────────
 
-const id = z.string().min(1);
+const id = z.string().check(z.minLength(1));
 
 const propValueSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('static'), value: z.unknown().optional() }),
+  z.object({ kind: z.literal('static'), value: z.optional(z.unknown()) }),
   z.object({ kind: z.literal('variable'), variableId: z.string() }),
   z.object({ kind: z.literal('item'), field: z.string() }),
 ]);
@@ -131,7 +132,7 @@ const elementSchema = z.object({
 
 const screenSchema = z.object({ id, name: z.string(), root: elementSchema });
 
-export const variableSchema = z.object({ id, name: z.string(), type: z.enum(VARIABLE_TYPES), initial: z.unknown().default(null) });
+export const variableSchema = z.object({ id, name: z.string(), type: z.enum(VARIABLE_TYPES), initial: z._default(z.unknown(), null) });
 
 export const tableSchema = z.object({
   id,
@@ -143,8 +144,8 @@ const nodeSchema = z.object({
   id,
   type: id,
   // Blocks without a place or settings get the defaults, rather than being refused.
-  position: z.object({ x: z.number(), y: z.number() }).default({ x: 0, y: 0 }),
-  config: z.record(z.string(), z.unknown()).default({}),
+  position: z._default(z.object({ x: z.number(), y: z.number() }), { x: 0, y: 0 }),
+  config: z._default(z.record(z.string(), z.unknown()), {}),
 });
 
 const edgeSchema = z.object({
@@ -157,7 +158,7 @@ const edgeSchema = z.object({
 });
 
 /** Ids that appear more than once, with a message for the first one. */
-function duplicates(ctx: z.RefinementCtx, items: { id: string }[], path: (string | number)[], what: string) {
+function duplicates(ctx: z.core.$RefinementCtx, items: { id: string }[], path: (string | number)[], what: string) {
   const seen = new Set<string>();
   items.forEach((item, i) => {
     if (seen.has(item.id)) ctx.addIssue({ code: 'custom', path: [...path, i, 'id'], message: `Another ${what} has the same id “${item.id}”.` });
@@ -169,16 +170,18 @@ function duplicates(ctx: z.RefinementCtx, items: { id: string }[], path: (string
  * A logic graph. Wires to blocks that aren't there are left out, since
  * nothing can run them; they're harmless leftovers, not a broken file.
  */
-export const graphSchema = z
-  .object({ nodes: z.array(nodeSchema), edges: z.array(edgeSchema) })
-  .superRefine((g, ctx) => {
-    duplicates(ctx, g.nodes, ['nodes'], 'block');
-    duplicates(ctx, g.edges, ['edges'], 'wire');
-  })
-  .transform((g): LogicGraph => {
+export const graphSchema = z.pipe(
+  z.object({ nodes: z.array(nodeSchema), edges: z.array(edgeSchema) }).check(
+    z.superRefine((g, ctx) => {
+      duplicates(ctx, g.nodes, ['nodes'], 'block');
+      duplicates(ctx, g.edges, ['edges'], 'wire');
+    }),
+  ),
+  z.transform((g): LogicGraph => {
     const ids = new Set(g.nodes.map((n) => n.id));
     return { nodes: g.nodes, edges: g.edges.filter((e) => ids.has(e.source) && ids.has(e.target)) };
-  });
+  }),
+);
 
 function allElements(root: UIElement): UIElement[] {
   return [root, ...root.children.flatMap(allElements)];
@@ -189,28 +192,30 @@ export const projectSchema = z
     id,
     name: z.string(),
     version: z.literal(PROJECT_VERSION),
-    screens: z.array(screenSchema).min(1, 'A project needs at least one screen.'),
+    screens: z.array(screenSchema).check(z.minLength(1, 'A project needs at least one screen.')),
     variables: z.array(variableSchema),
     tables: z.array(tableSchema),
     graph: graphSchema,
   })
-  .superRefine((p, ctx) => {
-    duplicates(ctx, p.screens, ['screens'], 'screen');
-    duplicates(ctx, p.variables, ['variables'], 'variable');
-    duplicates(ctx, p.tables, ['tables'], 'table');
-    const seen = new Set<string>();
-    p.screens.forEach((s, i) => {
-      if (s.root.type !== 'container') {
-        ctx.addIssue({ code: 'custom', path: ['screens', i, 'root', 'type'], message: 'A screen’s outermost element must be a container.' });
-      }
-      for (const el of allElements(s.root)) {
-        if (seen.has(el.id)) {
-          ctx.addIssue({ code: 'custom', path: ['screens', i], message: `Two elements have the same id “${el.id}”.` });
+  .check(
+    z.superRefine((p, ctx) => {
+      duplicates(ctx, p.screens, ['screens'], 'screen');
+      duplicates(ctx, p.variables, ['variables'], 'variable');
+      duplicates(ctx, p.tables, ['tables'], 'table');
+      const seen = new Set<string>();
+      p.screens.forEach((s, i) => {
+        if (s.root.type !== 'container') {
+          ctx.addIssue({ code: 'custom', path: ['screens', i, 'root', 'type'], message: 'A screen’s outermost element must be a container.' });
         }
-        seen.add(el.id);
-      }
-    });
-  });
+        for (const el of allElements(s.root)) {
+          if (seen.has(el.id)) {
+            ctx.addIssue({ code: 'custom', path: ['screens', i], message: `Two elements have the same id “${el.id}”.` });
+          }
+          seen.add(el.id);
+        }
+      });
+    }),
+  );
 
 // Fails to compile if the check and the types above disagree.
 const checkedIsProject: Project = {} as z.output<typeof projectSchema>;

@@ -17,7 +17,7 @@ All of the first P1 wave (v1 follow-ups, data tables and server workflows) is do
 The third wave puts first what matters once real people sign up and visitors open published apps:
 
 1. ✅ **QE-12:** signing out waits for saves, so the last change before signing out isn't lost.
-2. **QE-3:** split the bundle, so published apps don't load the whole editor.
+2. ✅ **QE-3:** the bundle is split, so published apps don't load the editor, and the editor loads the Logic tab on its own.
 3. **PL-8:** visitors can add rows to published apps (sign-up lists, guestbooks).
 4. **PL-7:** password reset and account settings. It needs an email service, which **BE-9** (*Send email*) can share.
 5. **QE-5:** an accessibility pass, for the editor and published apps.
@@ -127,7 +127,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | --- | --- | --- | --- |
 | QE-1 | Add the browser end-to-end tests (Playwright) to the repo | P1 | `e2e/`, covering every v1 feature |
 | QE-2 | GitHub Actions CI: test, type-check, build | P1 | |
-| QE-3 | Code-split the bundle (it is currently over 500 kB) | P2 | Lazy-load React Flow / the Logic tab. Published apps (`/app/:slug`) load the whole editor bundle too; they only need the renderer and the engine. zod (QE-4) added about 27 kB gzipped; `zod/mini` would be smaller |
+| QE-3 | Code-split the bundle (it is currently over 500 kB) | P2 | Shipped: the editor and published apps are loaded separately (`main.tsx`), and the Logic tab with React Flow (`LogicWorkspace.tsx`) is loaded on its own, fetched once the editor is open. The project check uses `zod/mini`. A published app now downloads 349 kB (108 kB gzipped) instead of 727 kB (222 kB); the editor 463 kB before the Logic tab. No chunk is over 500 kB |
 | QE-4 | Validate the project file format (e.g. zod) and test migrations | P1 | Shipped: `packages/engine/src/project.ts` holds the format, its version (now 2) with step-by-step upgrades in `MIGRATIONS`, and a zod check with plain messages. The editor checks imported and saved projects; the server checks the graph, variables and tables it runs and deploys. When the format changes, bump `PROJECT_VERSION` and add a step |
 | QE-5 | Accessibility pass (keyboard, screen readers, contrast) | P2 | Includes icon-only buttons (✕) that have a `title` but no `aria-label`, such as *Delete screen* |
 | QE-6 | Performance with large graphs and screens | P3 | |
