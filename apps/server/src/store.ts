@@ -8,6 +8,8 @@ import type { DatabaseSync } from 'node:sqlite';
 export interface KeyValueStore {
   get(projectId: string, key: string): unknown;
   set(projectId: string, key: string, value: unknown): void;
+  /** Forgets all of the project's values. */
+  removeProject(projectId: string): void;
 }
 
 /** Keeps values only while the server runs. Used by tests. */
@@ -21,6 +23,10 @@ export class MemoryStore implements KeyValueStore {
 
   set(projectId: string, key: string, value: unknown): void {
     this.data.set(`${projectId}\u0000${key}`, JSON.stringify(value ?? null));
+  }
+
+  removeProject(projectId: string): void {
+    for (const k of [...this.data.keys()]) if (k.startsWith(`${projectId}\u0000`)) this.data.delete(k);
   }
 }
 
@@ -50,5 +56,9 @@ export class SqliteStore implements KeyValueStore {
          ON CONFLICT (project_id, key) DO UPDATE SET value = excluded.value`,
       )
       .run(projectId, key, JSON.stringify(value ?? null));
+  }
+
+  removeProject(projectId: string): void {
+    this.db.prepare('DELETE FROM saved_values WHERE project_id = ?').run(projectId);
   }
 }

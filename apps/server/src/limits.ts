@@ -18,6 +18,8 @@ export interface Limits {
   signIn: Limit;
   /** New accounts, per address. */
   signUp: Limit;
+  /** Password reset emails, per email. */
+  reset: Limit;
   /** Requests sent through the server (POST /api/fetch), per account. */
   fetch: Limit;
   /** Test runs from the editor (POST /api/run), per account. */
@@ -31,6 +33,7 @@ export interface Limits {
 export const DEFAULT_LIMITS: Limits = {
   signIn: { count: 10, seconds: 15 * 60 },
   signUp: { count: 5, seconds: 60 * 60 },
+  reset: { count: 3, seconds: 60 * 60 },
   fetch: { count: 60, seconds: 60 },
   run: { count: 60, seconds: 60 },
   workflow: { count: 120, seconds: 60 },

@@ -18,6 +18,8 @@ export interface User {
 
 /** How long a sign-in lasts. */
 export const SESSION_DAYS = 30;
+/** How long a password reset link works. */
+export const RESET_MINUTES = 60;
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 200;
 
@@ -75,7 +77,91 @@ export class SqliteUsers {
         user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
         claimed_at TEXT NOT NULL
       ) STRICT;
+      CREATE TABLE IF NOT EXISTS password_resets (
+        token_hash TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        expires_at INTEGER NOT NULL
+      ) STRICT;
     `);
+  }
+
+  /** The account with this email, if there is one. */
+  findByEmail(email: string): User | null {
+    const row = this.db.prepare('SELECT id, email FROM users WHERE email = ?').get(normalizeEmail(email)) as User | undefined;
+    return row ? { id: row.id, email: row.email } : null;
+  }
+
+  /** Whether the password is the account's. */
+  async checkPassword(userId: string, password: string): Promise<boolean> {
+    const row = this.db.prepare('SELECT password_hash FROM users WHERE id = ?').get(userId) as { password_hash: string } | undefined;
+    const ok = await checkPassword(password, row?.password_hash ?? DUMMY_HASH);
+    return !!row && ok;
+  }
+
+  /**
+   * Changes the password, and signs the account out everywhere except the
+   * session `keep` (the one that changed it). Reset links stop working.
+   */
+  async setPassword(userId: string, password: string, keep?: string) {
+    const hash = await hashPassword(password);
+    this.db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, userId);
+    this.db.prepare('DELETE FROM sessions WHERE user_id = ? AND token_hash != ?').run(userId, keep ? sha256(keep) : '');
+    this.db.prepare('DELETE FROM password_resets WHERE user_id = ?').run(userId);
+  }
+
+  /** The account with its new email, or null when another account has it. Reset links sent before stop working. */
+  setEmail(userId: string, email: string): User | null {
+    const user = { id: userId, email: normalizeEmail(email) };
+    try {
+      this.db.prepare('UPDATE users SET email = ? WHERE id = ?').run(user.email, userId);
+    } catch (err) {
+      if (String(err).includes('UNIQUE')) return null;
+      throw err;
+    }
+    this.db.prepare('DELETE FROM password_resets WHERE user_id = ?').run(userId);
+    return user;
+  }
+
+  /** Starts a password reset and returns its token, for the link. Links sent before stop working. */
+  startReset(userId: string, now = Date.now()): string {
+    const token = randomBytes(32).toString('base64url');
+    this.db.prepare('DELETE FROM password_resets WHERE user_id = ? OR expires_at <= ?').run(userId, now);
+    this.db
+      .prepare('INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, ?)')
+      .run(sha256(token), userId, now + RESET_MINUTES * 60 * 1000);
+    return token;
+  }
+
+  /**
+   * Sets a new password with a reset link's token, which then stops working,
+   * and signs the account out everywhere. Null when the token isn't valid.
+   */
+  async finishReset(token: string, password: string, now = Date.now()): Promise<User | null> {
+    const row = this.db
+      .prepare(
+        'SELECT users.id, users.email, password_resets.expires_at FROM password_resets JOIN users ON users.id = password_resets.user_id WHERE token_hash = ?',
+      )
+      .get(sha256(token)) as { id: string; email: string; expires_at: number } | undefined;
+    if (!row || row.expires_at <= now) return null;
+    // Used up first, so the same link can't set two passwords.
+    const used = this.db.prepare('DELETE FROM password_resets WHERE token_hash = ?').run(sha256(token));
+    if (Number(used.changes) === 0) return null;
+    await this.setPassword(row.id, password);
+    return { id: row.id, email: row.email };
+  }
+
+  /** The projects the account owns. */
+  projectsOf(userId: string): string[] {
+    const rows = this.db.prepare('SELECT project_id FROM project_owners WHERE user_id = ?').all(userId) as { project_id: string }[];
+    return rows.map((r) => r.project_id);
+  }
+
+  /** Deletes the account, its sessions and reset links, and which projects were its. */
+  remove(userId: string) {
+    this.db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
+    this.db.prepare('DELETE FROM password_resets WHERE user_id = ?').run(userId);
+    this.db.prepare('DELETE FROM project_owners WHERE user_id = ?').run(userId);
+    this.db.prepare('DELETE FROM users WHERE id = ?').run(userId);
   }
 
   /** The new account, or null when the email already has one. */
