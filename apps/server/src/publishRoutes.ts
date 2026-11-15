@@ -4,17 +4,26 @@
 //   DELETE /api/projects/:projectId/publication   takes the app off its link
 // and what anyone with the link may ask, without signing in:
 //   GET    /api/published/:slug                       { project, publishedAt }
-//   GET    /api/published/:slug/tables/:tableId/rows  the table's rows, read only
+//   GET    /api/published/:slug/tables/:tableId/rows  the table's rows, unless only adding is allowed
+//   POST   /api/published/:slug/tables/:tableId/rows  { values }: adds a row, if the table allows it
+// What each table allows is its `visitors` setting in the published copy.
 
 import { parseProject, ProjectFormatError } from '@code-blocks/engine/project';
-import { Hono } from 'hono';
+import { cellValue, visitorsCanAdd, visitorsCanRead, type CellValue, type DataTable } from '@code-blocks/engine/tables';
+import { Hono, type Context } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
+import { tooMany, type RateLimiter } from './limits';
 import { MAX_PROJECT_BYTES } from './projectRoutes';
+import type { Publication } from './publications';
 import type { SqlitePublications } from './publications';
+import { MAX_ROW_BYTES, parseValues } from './rowRoutes';
 import type { RowStore } from './rows';
 
 export const NOT_PUBLISHED = 'This app isn’t published. Check the link, or ask whoever shared it.';
 export const NO_SUCH_TABLE = 'This app has no such table.';
+export const ROWS_HIDDEN = 'Visitors can add rows to this table, but not see them.';
+export const NO_ADDING = 'Visitors can’t add rows to this table. Its owner can allow it in the Data tab.';
+export const TOO_MANY_ROWS = 'Visitors added too many rows to this app.';
 
 const problem = (message: string) => ({ error: { message } });
 const ID = /^[\w-]{1,64}$/;
@@ -61,8 +70,19 @@ export function publishRoutes(publications: SqlitePublications) {
   return app;
 }
 
-/** Routes for visitors of a published app. Its table rows can be read, not changed. */
-export function publishedRoutes(publications: SqlitePublications, rows: RowStore) {
+/** The cells a visitor's row sets: only the table's columns, each as its column's kind. */
+function visitorValues(table: DataTable, values: Record<string, CellValue>): Record<string, CellValue> {
+  const out: Record<string, CellValue> = {};
+  for (const col of table.columns) if (col.id in values) out[col.id] = cellValue(col.type, values[col.id]);
+  return out;
+}
+
+/**
+ * Routes for visitors of a published app. Each table says whether they may
+ * read its rows, add rows, or both; changing and deleting rows is for its
+ * owner. `adds` limits how many rows visitors add, per project.
+ */
+export function publishedRoutes(publications: SqlitePublications, rows: RowStore, adds?: RateLimiter) {
   const app = new Hono();
 
   app.get('/:slug', (c) => {
@@ -71,18 +91,48 @@ export function publishedRoutes(publications: SqlitePublications, rows: RowStore
     return c.json({ project: pub.project, publishedAt: pub.publishedAt });
   });
 
-  app.get('/:slug/tables/:tableId/rows', (c) => {
-    const pub = publications.get(c.req.param('slug'));
+  /** The published app and one of its tables, or the answer saying why not. */
+  const tableOf = (c: Context): { pub: Publication; table: DataTable } | Response => {
+    const pub = publications.get(c.req.param('slug') ?? '');
     if (!pub) return c.json(problem(NOT_PUBLISHED), 404);
-    const tableId = c.req.param('tableId');
+    const tableId = c.req.param('tableId') ?? '';
     // Only the tables of the published copy.
-    if (!ID.test(tableId) || !pub.project.tables.some((t) => t.id === tableId)) return c.json(problem(NO_SUCH_TABLE), 404);
+    const table = ID.test(tableId) ? pub.project.tables.find((t) => t.id === tableId) : undefined;
+    return table ? { pub, table } : c.json(problem(NO_SUCH_TABLE), 404);
+  };
+
+  app.get('/:slug/tables/:tableId/rows', (c) => {
+    const found = tableOf(c);
+    if (found instanceof Response) return found;
+    if (!visitorsCanRead(found.table)) return c.json(problem(ROWS_HIDDEN), 403);
     const num = (name: string) => {
       const raw = c.req.query(name);
       return raw === undefined || raw === '' ? undefined : Math.floor(Number(raw)) || 0;
     };
-    return c.json(rows.list(pub.projectId, tableId, { limit: num('limit'), offset: num('offset') }));
+    return c.json(rows.list(found.pub.projectId, found.table.id, { limit: num('limit'), offset: num('offset') }));
   });
+
+  app.post(
+    '/:slug/tables/:tableId/rows',
+    bodyLimit({ maxSize: MAX_ROW_BYTES, onError: (c) => c.json(problem('The row is too big (over 64 KB).'), 413) }),
+    async (c) => {
+      const found = tableOf(c);
+      if (found instanceof Response) return found;
+      const { pub, table } = found;
+      if (!visitorsCanAdd(table)) return c.json(problem(NO_ADDING), 403);
+      let values;
+      try {
+        values = parseValues(await c.req.json());
+      } catch {
+        values = 'The request body must be JSON.';
+      }
+      if (typeof values === 'string') return c.json(problem(values), 400);
+      // Counted per project, like its web addresses and forms, after the checks above.
+      const wait = adds?.take(pub.projectId);
+      if (wait) return tooMany(c, wait, TOO_MANY_ROWS);
+      return c.json(rows.add(pub.projectId, table.id, visitorValues(table, values)), 201);
+    },
+  );
 
   return app;
 }

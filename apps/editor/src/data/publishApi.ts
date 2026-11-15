@@ -1,9 +1,10 @@
 // Publishing a project to a link anyone can open, and what a published app
 // asks the server for (apps/server/src/publishRoutes.ts).
 
+import type { CellValue } from '@code-blocks/engine/tables';
 import type { Project } from '../model/types';
 import { call } from './api';
-import type { RowPage } from './rowsApi';
+import type { Row, RowPage } from './rowsApi';
 import { hashOf, SERVER_OFFLINE } from './serverApi';
 
 export interface PublicationInfo {
@@ -46,9 +47,12 @@ export const PUBLISHED_OFFLINE = 'Can’t reach the Code Blocks server, so this 
 export const openPublished = (slug: string) =>
   call<{ project: Project; publishedAt: string }>(`/api/published/${encodeURIComponent(slug)}`, {}, PUBLISHED_OFFLINE);
 
+const publishedRowsUrl = (slug: string, tableId: string) =>
+  `/api/published/${encodeURIComponent(slug)}/tables/${encodeURIComponent(tableId)}/rows`;
+
 export const listPublishedRows = (slug: string, tableId: string, offset: number, limit: number) =>
-  call<RowPage>(
-    `/api/published/${encodeURIComponent(slug)}/tables/${encodeURIComponent(tableId)}/rows?limit=${limit}&offset=${offset}`,
-    {},
-    PUBLISHED_OFFLINE,
-  );
+  call<RowPage>(`${publishedRowsUrl(slug, tableId)}?limit=${limit}&offset=${offset}`, {}, PUBLISHED_OFFLINE);
+
+/** Adds a visitor's row, for tables whose owner allows it. */
+export const addPublishedRow = (slug: string, tableId: string, values: Record<string, CellValue>) =>
+  call<Row>(publishedRowsUrl(slug, tableId), { method: 'POST', body: JSON.stringify({ values }) }, PUBLISHED_OFFLINE);

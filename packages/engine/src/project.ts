@@ -5,7 +5,7 @@
 // zod/mini, the smaller build: this check is part of every published app.
 import * as z from 'zod/mini';
 import type { ElementType, GraphEdge, GraphNode, LogicGraph, ValueType } from './graph';
-import { COLUMN_TYPES, type DataTable } from './tables';
+import { COLUMN_TYPES, VISITOR_ACCESS, type DataTable } from './tables';
 
 /**
  * The current format. Bump it when the format changes, and add a step to
@@ -138,6 +138,7 @@ export const tableSchema = z.object({
   id,
   name: z.string(),
   columns: z.array(z.object({ id, name: z.string(), type: z.enum(COLUMN_TYPES as ['text', 'number', 'boolean']) })),
+  visitors: z.optional(z.enum(VISITOR_ACCESS as ['read', 'read-add', 'add'])),
 });
 
 const nodeSchema = z.object({

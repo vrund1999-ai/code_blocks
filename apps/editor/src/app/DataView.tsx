@@ -2,7 +2,15 @@
 // header row of a simple spreadsheet.
 
 import { useState } from 'react';
-import { cellValue, COLUMN_TYPES, columnProblem, tableProblem, type CellValue } from '@code-blocks/engine/tables';
+import {
+  cellValue,
+  COLUMN_TYPES,
+  columnProblem,
+  tableProblem,
+  VISITOR_ACCESS,
+  type CellValue,
+  type VisitorAccess,
+} from '@code-blocks/engine/tables';
 import { openAccountMenu } from '../data/authStore';
 import { useTableRows, type TableRows } from '../data/useTableRows';
 import type { Row } from '../data/rowsApi';
@@ -204,6 +212,43 @@ function RowsFooter({ data }: { data: TableRows }) {
   );
 }
 
+const VISITOR_LABELS: Record<VisitorAccess, string> = {
+  read: 'See the rows',
+  'read-add': 'See the rows and add new ones',
+  add: 'Add new rows, without seeing any',
+};
+
+const VISITOR_HINTS: Record<VisitorAccess, string> = {
+  read: 'For a menu, a price list or a list of events.',
+  'read-add': 'For a guestbook or a wall of comments: everyone sees what others added.',
+  add: 'For a sign-up list or a contact form: only you see the rows.',
+};
+
+/** What visitors of the published app may do with the table's rows. Only the owner changes or deletes rows. */
+function VisitorAccessField({ table }: { table: DataTable }) {
+  const visitors = table.visitors ?? 'read';
+  return (
+    <div className="visitor-access">
+      <label className="field-label" htmlFor={`visitors-${table.id}`}>
+        Visitors of the published app can
+      </label>
+      <select
+        id={`visitors-${table.id}`}
+        className="field-input"
+        value={visitors}
+        onChange={(e) => useProjectStore.getState().setTableVisitors(table.id, e.target.value as VisitorAccess)}
+      >
+        {VISITOR_ACCESS.map((v) => (
+          <option key={v} value={v}>
+            {VISITOR_LABELS[v]}
+          </option>
+        ))}
+      </select>
+      <p className="hint">{VISITOR_HINTS[visitors]} Only you can change or delete rows.</p>
+    </div>
+  );
+}
+
 function TableEditor({ table }: { table: DataTable }) {
   const tables = useProjectStore((s) => s.project.tables);
   const projectId = useProjectStore((s) => s.project.id);
@@ -323,6 +368,7 @@ function TableEditor({ table }: { table: DataTable }) {
           </button>
         ))}
       </div>
+      <VisitorAccessField table={table} />
     </div>
   );
 }

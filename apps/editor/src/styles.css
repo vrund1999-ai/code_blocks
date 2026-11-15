@@ -1555,6 +1555,17 @@ textarea.field-input {
 .field-input[aria-invalid='true'] {
   border-color: var(--danger);
 }
+.visitor-access {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 360px;
+  margin-top: 20px;
+}
+.visitor-access .field-label {
+  font-size: 12px;
+  font-weight: 600;
+}
 .schema-scroll {
   width: fit-content;
   max-width: 100%;

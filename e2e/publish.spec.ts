@@ -37,7 +37,7 @@ test.describe('signed in', () => {
     await expect(view.getByText('1', { exact: true })).toBeVisible();
     await view.getByRole('textbox').fill('Bo');
     await view.getByRole('button', { name: 'Add guest' }).click();
-    await expect(view.locator('.toast')).toHaveText(['This app can only read its tables. Only its owner can add, change or delete rows.']);
+    await expect(view.locator('.toast')).toHaveText(['Visitors can’t add rows to this table. Its owner can allow it in the Data tab.']);
 
     // Changes reach visitors once published again, at the same link.
     await app.projectName.fill('Party guests');
@@ -54,6 +54,65 @@ test.describe('signed in', () => {
     await expect(menu.getByRole('status')).toHaveText(/^Not published/);
     await visitor.reload();
     await expect(visitor.getByRole('alert')).toHaveText('⚠ This app isn’t published. Check the link, or ask whoever shared it.');
+    await visitorContext.close();
+  });
+
+  test('the owner lets visitors add rows to a table, or only add them', async ({ appNoBoot: app, seed, page, browser }) => {
+    const b = guestList();
+    await seed(b.project);
+    await app.goto();
+    const guests = b.project.tables[0];
+    await page.request.post(`/api/projects/${b.project.id}/tables/${guests.id}/rows`, {
+      data: { values: { [guests.columns[0].id]: 'Ada' } },
+    });
+    const button = page.locator('button[aria-expanded]', { hasText: '🔗 Publish' });
+    const menu = page.getByRole('dialog', { name: 'Publish' });
+    await button.click();
+    await menu.getByRole('button', { name: '🔗 Publish' }).click();
+    const url = (await menu.locator('.publish-link code').textContent())!;
+    await button.click();
+
+    // A guestbook: visitors see everyone's rows and add their own.
+    await app.tab('Data');
+    const access = app.dataArea.getByLabel('Visitors of the published app can');
+    await expect(access).toHaveValue('read');
+    await access.selectOption({ label: 'See the rows and add new ones' });
+    await expect(app.dataArea.getByText(/everyone sees what others added/)).toBeVisible();
+    await expect(button).toContainText('● Changes not published');
+    await button.click();
+    await menu.getByRole('button', { name: '🔗 Publish changes' }).click();
+    await expect(button).toContainText('● Live');
+
+    const visitorContext = await browser.newContext();
+    const visitor = await visitorContext.newPage();
+    await visitor.goto(url);
+    const view = visitor.locator('.published-app');
+    await expect(view.locator('.list-row .el-text')).toHaveText(['Ada']);
+    await view.getByRole('textbox').fill('Bo');
+    await view.getByRole('button', { name: 'Add guest' }).click();
+    await expect(view.locator('.list-row .el-text')).toHaveText(['Ada', 'Bo']);
+    await expect(view.getByText('2', { exact: true })).toBeVisible();
+
+    // The owner sees the visitor's row in the Data tab.
+    await app.waitForSave();
+    await app.reload();
+    await app.tab('Data');
+    await expect(app.dataArea.getByLabel('Row 2 Name')).toHaveValue('Bo');
+
+    // A sign-up list: visitors add rows without seeing anyone's.
+    await app.dataArea.getByLabel('Visitors of the published app can').selectOption({ label: 'Add new rows, without seeing any' });
+    await button.click();
+    await menu.getByRole('button', { name: '🔗 Publish changes' }).click();
+    await expect(button).toContainText('● Live');
+    await visitor.reload();
+    await expect(view.locator('.toast').first()).toHaveText('Visitors can add rows to this table, but not see them.');
+    await expect(view.locator('.list-row')).toHaveCount(0);
+    await view.getByRole('textbox').fill('Cy');
+    await view.getByRole('button', { name: 'Add guest' }).click();
+    await expect.poll(async () => {
+      const res = await page.request.get(`/api/projects/${b.project.id}/tables/${guests.id}/rows`);
+      return ((await res.json()) as { rows: { values: Record<string, unknown> }[] }).rows.map((r) => r.values[guests.columns[0].id]);
+    }).toEqual(['Ada', 'Bo', 'Cy']);
     await visitorContext.close();
   });
 });

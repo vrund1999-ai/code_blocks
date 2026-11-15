@@ -24,6 +24,8 @@ export interface Limits {
   run: Limit;
   /** Calls to a project's web addresses and forms, per project. */
   workflow: Limit;
+  /** Rows added by visitors of a published app, per project. */
+  visitorRows: Limit;
 }
 
 export const DEFAULT_LIMITS: Limits = {
@@ -32,6 +34,7 @@ export const DEFAULT_LIMITS: Limits = {
   fetch: { count: 60, seconds: 60 },
   run: { count: 60, seconds: 60 },
   workflow: { count: 120, seconds: 60 },
+  visitorRows: { count: 30, seconds: 60 },
 };
 
 /** Counts up to `limit.count` per key in each window of `limit.seconds`. */

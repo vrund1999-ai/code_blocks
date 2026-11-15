@@ -5,7 +5,7 @@ import { Interpreter } from '@code-blocks/engine/interpreter';
 import type { StoredRow } from '@code-blocks/engine/tables';
 import { HostError, type GraphError, type HostApi, type TablesApi } from '@code-blocks/engine/types';
 import { addRow, ApiError, deleteRow, listRows, updateRow } from '../data/rowsApi';
-import { listPublishedRows } from '../data/publishApi';
+import { addPublishedRow, listPublishedRows } from '../data/publishApi';
 import { fetchViaServer, sendForm } from '../data/serverApi';
 import { appStoragePrefix } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
@@ -22,12 +22,15 @@ let host: HostApi | null = null;
 /** Set while running a published app for its visitors (app/PublishedApp.tsx): the slug of its link. */
 let publishedSlug: string | null = null;
 
-/** Runs apps as published ones: rows are read through the app's link, and can't be changed. */
+/**
+ * Runs apps as published ones: rows are read and added through the app's
+ * link, as each table allows, and can't be changed or deleted.
+ */
 export function runAsPublished(slug: string | null) {
   publishedSlug = slug;
 }
 
-export const READ_ONLY_TABLES = 'This app can only read its tables. Only its owner can add, change or delete rows.';
+export const READ_ONLY_TABLES = 'Visitors can’t change or delete rows. Only the app’s owner can.';
 export const NO_SERVER_REQUESTS = 'Published apps can’t send requests from the server yet. Its owner can set “Send from” to “The app”.';
 
 const project = () => useProjectStore.getState().project;
@@ -111,7 +114,8 @@ function makeTables(alive: () => boolean): TablesApi {
             if (page.rows.length === 0 || all.length >= page.total) return all;
           }
         }),
-      add: readOnly,
+      // The server checks that the table allows it.
+      add: (tableId, values) => call(() => addPublishedRow(slug, tableId, values)),
       update: readOnly,
       remove: readOnly,
     };

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { defaultConfig, getNodeDef, inputPins } from '@code-blocks/engine/registry';
+import type { VisitorAccess } from '@code-blocks/engine/tables';
 import { cloneElements, cloneNodes, PASTE_OFFSET, type Clip } from './clipboard';
 import { ELEMENT_DEFS } from './elements';
 import { defaultInitial, makeElement, makeProject, makeScreen, newId, nextElementName, nextName } from './factory';
@@ -52,6 +53,8 @@ interface Actions {
   addTable(): string;
   renameTable(id: string, name: string): void;
   deleteTable(id: string): void;
+  /** What visitors of the published app may do with the table's rows. */
+  setTableVisitors(id: string, visitors: VisitorAccess): void;
   addColumn(tableId: string, type: ColumnType): string;
   updateColumn(tableId: string, columnId: string, patch: Partial<Omit<TableColumn, 'id'>>): void;
   /** Moves a column one place left (-1) or right (1). */
@@ -314,6 +317,14 @@ export const useProjectStore = create<ProjectStore>()(
           const t = p.tables.find((x) => x.id === id);
           if (t) t.name = name;
         }, `table:${id}:name`),
+      setTableVisitors: (id, visitors) =>
+        mutate((p) => {
+          const t = p.tables.find((x) => x.id === id);
+          if (!t) return;
+          // Seeing the rows is the default, left out of the file.
+          if (visitors === 'read') delete t.visitors;
+          else t.visitors = visitors;
+        }),
       deleteTable: (id) =>
         mutate((p) => {
           p.tables = p.tables.filter((t) => t.id !== id);

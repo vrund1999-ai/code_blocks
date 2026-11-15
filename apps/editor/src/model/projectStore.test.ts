@@ -185,6 +185,16 @@ describe('addWiredNode', () => {
     expect(store().project.tables[0].name).toBe('My table');
   });
 
+  it('sets what visitors of the published app may do with a table, leaving out the default', () => {
+    const t = store().addTable();
+    store().setTableVisitors(t, 'add');
+    expect(store().project.tables[0].visitors).toBe('add');
+    store().setTableVisitors(t, 'read');
+    expect(store().project.tables[0]).not.toHaveProperty('visitors');
+    store().undo();
+    expect(store().project.tables[0].visitors).toBe('add');
+  });
+
   it('adds, changes, moves and removes columns', () => {
     const t = store().addTable();
     const cols = () => store().project.tables[0].columns.map((c) => `${c.name}:${c.type}`);

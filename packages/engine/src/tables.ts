@@ -13,11 +13,29 @@ export interface TableColumn {
   type: ColumnType;
 }
 
+/**
+ * What visitors of the published app may do with a table's rows: see them,
+ * see them and add new ones (a guestbook), or only add new ones (a sign-up
+ * list, whose rows visitors shouldn't see). Changing and deleting rows is
+ * always for the project's owner.
+ */
+export type VisitorAccess = 'read' | 'read-add' | 'add';
+
+export const VISITOR_ACCESS: VisitorAccess[] = ['read', 'read-add', 'add'];
+
 export interface DataTable {
   id: string;
   name: string;
   columns: TableColumn[];
+  /** Left out: 'read'. */
+  visitors?: VisitorAccess;
 }
+
+/** Whether visitors of the published app may see the table's rows. */
+export const visitorsCanRead = (t: DataTable) => (t.visitors ?? 'read') !== 'add';
+
+/** Whether visitors of the published app may add rows to the table. */
+export const visitorsCanAdd = (t: DataTable) => (t.visitors ?? 'read') !== 'read';
 
 /** The automatic row number every table has. Columns can't use this name. */
 export const ROW_ID = 'id';
