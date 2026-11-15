@@ -8,6 +8,7 @@ import { enclosingListInProject, findInProject } from '../model/tree';
 import type { ElementType, Project, PropValue, UIElement, ValueType } from '../model/types';
 import { ConfigFieldInput, InlineValueInput } from './fields';
 import { TryPanel } from './TryPanel';
+import { UsedBy } from './UsedBy';
 import { TRYABLE } from '../data/tryApi';
 import { focusBlock } from '../logic/focus';
 
@@ -257,6 +258,7 @@ function ElementInspector({ el, isRoot }: { el: UIElement; isRoot: boolean }) {
           </div>
         </section>
       )}
+      {!isRoot && <UsedBy element={el.id} />}
       <div className="inspector-actions">
         {event && (
           <button className="btn primary" onClick={addLogic}>

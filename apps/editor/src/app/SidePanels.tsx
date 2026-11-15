@@ -4,6 +4,7 @@ import { nextName } from '../model/factory';
 import { useProjectStore } from '../model/projectStore';
 import type { Variable } from '../model/types';
 import { useRuntimeStore } from '../runtime/runtimeStore';
+import { UsedBy } from './UsedBy';
 
 const TYPE_LABELS: Record<Variable['type'], string> = {
   text: 'Text',
@@ -159,6 +160,7 @@ export function VariablesPanel() {
                   <InitialEditor v={v} />
                 </label>
               )}
+              <UsedBy variable={v.id} />
               <button className="btn danger small" onClick={() => deleteVariable(v.id)}>
                 Delete variable
               </button>
