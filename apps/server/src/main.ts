@@ -9,6 +9,11 @@
 //   STATIC_DIR      serve the editor's built files from here (--serve-editor: ../editor/dist).
 //   TRUST_PROXY=1   behind a proxy: read the visitor's address and https from X-Forwarded-*.
 //   RATE_LIMITS=off turn off the limits on sign-ins, sign-ups and requests (limits.ts).
+//   SMTP_HOST, SMTP_PORT (587), SMTP_USER, SMTP_PASSWORD, MAIL_FROM
+//                   the SMTP server that sends password reset emails. Without SMTP_HOST,
+//                   emails are written to the log (and to MAIL_LOG_FILE, when set).
+//   PUBLIC_URL      where people open the editor, like https://blocks.example.com, for the
+//                   links in emails. Needed with SMTP_HOST.
 //   ALLOW_PRIVATE_ADDRESSES=1, or --allow-private-addresses: let projects send requests to
 //                   this computer and its network (localhost, 192.168.…). Blocked by default,
 //                   since a hosted server must not let projects reach its own network.
@@ -21,6 +26,7 @@ import { openDatabase } from './db';
 import { SqliteDeployments } from './deployments';
 import { allowPrivateAddresses } from './http';
 import { DEFAULT_LIMITS } from './limits';
+import { LogMailer, smtpFromEnv, SmtpMailer } from './mailer';
 import { SqliteProjects } from './projects';
 import { SqlitePublications } from './publications';
 import { SqliteRowStore } from './rows';
@@ -42,6 +48,10 @@ const trustProxy = yes(env.TRUST_PROXY);
 const limits = env.RATE_LIMITS?.toLowerCase() === 'off' ? undefined : DEFAULT_LIMITS;
 const allowPrivate = yes(env.ALLOW_PRIVATE_ADDRESSES) || flag('allow-private-addresses');
 allowPrivateAddresses(allowPrivate);
+const smtp = smtpFromEnv(env);
+const publicUrl = env.PUBLIC_URL || undefined;
+if (smtp && !publicUrl) throw new Error('Set PUBLIC_URL, where people open the editor, so emails can link to it.');
+const mailer = smtp ? new SmtpMailer(smtp) : new LogMailer(env.MAIL_LOG_FILE || undefined);
 
 if (dbFile !== ':memory:') mkdirSync(dirname(dbFile), { recursive: true });
 const db = openDatabase(dbFile);
@@ -55,7 +65,7 @@ const publications = new SqlitePublications(db);
 const workflows = new Workflows({ deployments, store, rows, secrets });
 workflows.start();
 
-const api = createApp({ rows, store, secrets, workflows, users, projects, publications, limits, trustProxy });
+const api = createApp({ rows, store, secrets, workflows, users, projects, publications, limits, trustProxy, mailer, publicUrl });
 const app = staticDir ? createSite(api, staticDir) : api;
 
 serve({ fetch: app.fetch, port, hostname }, (info) => {
@@ -65,4 +75,5 @@ serve({ fetch: app.fetch, port, hostname }, (info) => {
   console.log(`Data: ${dbFile === ':memory:' ? 'in memory' : dbFile}`);
   console.log(`Deployed projects: ${deployments.all().length}`);
   console.log(`Rate limits: ${limits ? 'on' : 'off'} · Requests to private addresses: ${allowPrivate ? 'allowed' : 'blocked'}`);
+  console.log(smtp ? `Email: sent through ${smtp.host}:${smtp.port}` : 'Email: not sent, written to this log (set SMTP_HOST to send it)');
 });

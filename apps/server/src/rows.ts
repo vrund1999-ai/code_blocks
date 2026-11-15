@@ -29,6 +29,8 @@ export interface RowStore {
   update(projectId: string, tableId: string, rowId: number, values: Record<string, CellValue>): Row | null;
   /** False when there was no such row. */
   remove(projectId: string, tableId: string, rowId: number): boolean;
+  /** Deletes the rows of all the project's tables, and their numbering. */
+  removeProject(projectId: string): void;
 }
 
 export const DEFAULT_PAGE = 100;
@@ -132,6 +134,13 @@ export class SqliteRowStore implements RowStore {
       .prepare('DELETE FROM table_rows WHERE project_id = ? AND table_id = ? AND row_id = ?')
       .run(projectId, tableId, rowId);
     return Number(changes) > 0;
+  }
+
+  removeProject(projectId: string): void {
+    this.transaction(() => {
+      this.db.prepare('DELETE FROM table_rows WHERE project_id = ?').run(projectId);
+      this.db.prepare('DELETE FROM table_sequences WHERE project_id = ?').run(projectId);
+    });
   }
 
   private transaction<T>(fn: () => T): T {

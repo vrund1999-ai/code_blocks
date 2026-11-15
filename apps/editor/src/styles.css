@@ -1786,6 +1786,24 @@ textarea.field-input {
 .account-form .link-btn {
   align-self: flex-start;
 }
+.account-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+.account-warning {
+  margin: 0;
+  font-size: 13px;
+  color: var(--danger);
+}
+.account-sent {
+  margin: 0;
+  padding: 8px;
+  border-radius: 6px;
+  background: #ebfbee;
+  font-size: 12px;
+}
 .server-sign-in {
   display: flex;
   flex-direction: column;

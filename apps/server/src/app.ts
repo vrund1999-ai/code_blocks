@@ -8,6 +8,7 @@ import { HTTPException } from 'hono/http-exception';
 import { authRoutes, canUseProject, loadUser, requireUser, type AuthEnv } from './authRoutes';
 import { fetchRoutes } from './fetchRoutes';
 import { clientAddress, rateLimit, RateLimiter, type Limits } from './limits';
+import type { Mailer } from './mailer';
 import { projectRoutes } from './projectRoutes';
 import { SqliteProjects } from './projects';
 import { SqlitePublications } from './publications';
@@ -47,6 +48,10 @@ export interface AppOptions {
   limits?: Limits;
   /** Read where requests come from from X-Forwarded-For, for a server behind a proxy. */
   trustProxy?: boolean;
+  /** Sends password reset links. Left out, nothing is sent. */
+  mailer?: Mailer;
+  /** Where the editor is, for links in emails (PUBLIC_URL). */
+  publicUrl?: string;
 }
 
 export const TOO_MANY_REQUESTS = 'Your account sent too many requests through the server.';
@@ -101,11 +106,32 @@ export function createApp(opts: AppOptions = {}) {
     await next();
   });
 
+  /** Everything kept for an account's projects, for when the account is deleted. */
+  const deleteProjects = (userId: string) => {
+    const ids = new Set([...users.projectsOf(userId), ...projects.list(userId).map((p) => p.id)]);
+    for (const id of ids) {
+      workflows.undeploy(id);
+      publications.unpublish(id);
+      projects.remove(id);
+      rows.removeProject(id);
+      secrets.removeProject(id);
+      store.removeProject(id);
+    }
+  };
+
   app.route(
     '/auth',
     authRoutes(users, {
-      limits: limits && { signIn: new RateLimiter(limits.signIn), signUp: new RateLimiter(limits.signUp), addressOf },
+      limits: limits && {
+        signIn: new RateLimiter(limits.signIn),
+        signUp: new RateLimiter(limits.signUp),
+        reset: new RateLimiter(limits.reset),
+        addressOf,
+      },
       trustProxy: opts.trustProxy,
+      mailer: opts.mailer,
+      publicUrl: opts.publicUrl,
+      deleteProjects,
     }),
   );
   app.route('/projects', projectRoutes(projects, workflows, publications));

@@ -41,6 +41,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Ready to host | 2026-11-14 | [#33](https://github.com/vrund1999-ai/code_blocks/pull/33) | See below |
 | Smaller downloads | 2026-11-14 | [#35](https://github.com/vrund1999-ai/code_blocks/pull/35) | See below |
 | Visitors add rows | 2026-11-14 | [#36](https://github.com/vrund1999-ai/code_blocks/pull/36) | See below |
+| Account settings | 2026-11-14 | [#37](https://github.com/vrund1999-ai/code_blocks/pull/37) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -249,6 +250,14 @@ Visitors add rows included:
 - **Requests sent from the server** for visitors moved to a new item, PL-9.
 - **Tests:** 4 new unit tests and 1 new end-to-end test, where the owner turns on each setting and a visitor adds rows.
 
+Account settings included:
+- **Forgot your password?** in the 👤 menu emails a link that opens the editor asking for a new password. The link works once, for an hour, and asking again replaces it. Saving the new password signs in and signs out the account's other browsers. The answer is the same whether or not the email has an account.
+- **Email through SMTP:** `SMTP_HOST`, `SMTP_PORT` (587), `SMTP_USER`, `SMTP_PASSWORD` and `MAIL_FROM`, with `PUBLIC_URL` for the links (`mailer.ts`). Without `SMTP_HOST` the email is written to the server's log, and the editor says the link is there.
+- **Account settings** in the 👤 menu: change the password (other browsers are signed out), change the email (the old address is told), and delete the account. Each asks for the current password, and wrong passwords count like failed sign-ins.
+- **Deleting an account** deletes its projects' saved copies, table rows, secrets, saved values, deployed workflows and published apps. The project open in the editor stays in that browser.
+- **Limits:** 3 reset emails an hour per email.
+- **Tests:** 11 new unit tests, and 3 new end-to-end tests that read the test server's emails from a file (`MAIL_LOG_FILE`). The reset test found that a link opened in a tab where the editor was already open wasn't noticed, since only the address's `#` changed; the editor now watches for that.
+
 ---
 
 ## Roadmap status
@@ -280,7 +289,7 @@ Visitors add rows included:
 | PL-4 | Sharing / collaboration | ⬜ | | |
 | PL-5 | Version history | ⬜ | | |
 | PL-6 | Project gallery | ⬜ | | |
-| PL-7 | Password reset and account settings | ⬜ | | |
+| PL-7 | Password reset and account settings | ✅ | 2026-11-14 | [#37](https://github.com/vrund1999-ai/code_blocks/pull/37) |
 | PL-8 | Visitor access for published apps | ✅ | 2026-11-14 | [#36](https://github.com/vrund1999-ai/code_blocks/pull/36) |
 | PL-9 | Server requests from published apps | ⬜ | | |
 
@@ -365,4 +374,4 @@ Visitors add rows included:
 
 ---
 
-**Totals:** 32 / 78 done · 0 in progress
+**Totals:** 33 / 78 done · 0 in progress

@@ -1,7 +1,8 @@
 // Who is signed in (apps/server/src/authRoutes.ts). Signing in is optional:
 // guests can build and run apps in the browser, and the server features
 // (deploying, secrets, data table rows, requests sent from the server) ask
-// them to sign in.
+// them to sign in. Also resetting a forgotten password, and the account's
+// settings.
 
 import { create } from 'zustand';
 import { pushToast } from '../runtime/runtimeStore';
@@ -19,9 +20,33 @@ interface AuthState {
   user: User | null;
   /** The account menu in the toolbar is open. */
   menuOpen: boolean;
+  /** From a password reset link (/#reset=…): the account menu asks for a new password. */
+  resetToken: string | null;
 }
 
-export const useAuthStore = create<AuthState>()(() => ({ status: 'checking', user: null, menuOpen: false }));
+/**
+ * The token of a password reset link the editor was opened with. It's taken
+ * out of the address, so it isn't left in the browser's history.
+ */
+function takeResetToken(): string | null {
+  if (typeof location === 'undefined') return null;
+  const token = /^#reset=([\w-]+)$/.exec(location.hash)?.[1] ?? null;
+  if (token) history.replaceState(null, '', location.pathname + location.search);
+  return token;
+}
+
+const resetToken = takeResetToken();
+
+export const useAuthStore = create<AuthState>()(() => ({ status: 'checking', user: null, menuOpen: !!resetToken, resetToken }));
+
+// A link opened in a tab where the editor is already open only changes the
+// address's #, without loading the page again.
+if (typeof window !== 'undefined') {
+  window.addEventListener('hashchange', () => {
+    const token = takeResetToken();
+    if (token) useAuthStore.setState({ resetToken: token, menuOpen: true });
+  });
+}
 
 export const AUTH_OFFLINE = 'Can’t reach the Code Blocks server, so you can’t sign in. Start it with “npm run dev:server”.';
 
@@ -69,3 +94,45 @@ export async function signOut() {
 }
 
 export const openAccountMenu = (open = true) => useAuthStore.setState({ menuOpen: open });
+
+const post = <T>(path: string, body: unknown, method = 'POST') =>
+  call<T>(`/api/auth/${path}`, { method, body: JSON.stringify(body) }, AUTH_OFFLINE);
+
+/** Asks for a password reset link by email. Resolves with the message to show. */
+export async function requestReset(email: string): Promise<string> {
+  return (await post<{ message: string }>('reset', { email })).message;
+}
+
+/** Sets a new password with the reset link the editor was opened with, and signs in. */
+export async function finishReset(password: string) {
+  const token = useAuthStore.getState().resetToken;
+  const { user } = await post<{ user: User }>('reset/finish', { token, password });
+  signedIn(user);
+  useAuthStore.setState({ menuOpen: false, resetToken: null });
+  pushToast(`Your new password is saved. You’re signed in as ${user.email}.`);
+}
+
+/** Leaves the reset link's form. */
+export const cancelReset = () => useAuthStore.setState({ resetToken: null });
+
+/** Your other browsers are signed out. */
+export async function changePassword(password: string, newPassword: string) {
+  await post('password', { password, newPassword });
+  pushToast('Your password was changed. Other browsers were signed out.');
+}
+
+export async function changeEmail(password: string, email: string) {
+  const { user } = await post<{ user: User }>('email', { password, email });
+  signedIn(user);
+  pushToast(`Your email is now ${user.email}.`);
+}
+
+/** Deletes the account, with its projects on the server and their rows, secrets and published apps. */
+export async function deleteAccount(password: string) {
+  // A save under way is answered first, so it can't save a project after its account is gone.
+  await requestsSettled();
+  await post('account', { password }, 'DELETE');
+  signedIn(null);
+  useAuthStore.setState({ menuOpen: false });
+  pushToast('Your account was deleted.');
+}

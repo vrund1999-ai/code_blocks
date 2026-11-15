@@ -25,6 +25,8 @@ export interface SecretStore {
   set(projectId: string, name: string, value: string): SecretInfo;
   /** False when there was no such secret. */
   remove(projectId: string, name: string): boolean;
+  /** Deletes all of the project's secrets. */
+  removeProject(projectId: string): void;
 }
 
 /** Marks an encrypted value. Values saved before encryption have no mark. */
@@ -128,6 +130,10 @@ export class SqliteSecrets implements SecretStore {
 
   remove(projectId: string, name: string): boolean {
     return Number(this.db.prepare('DELETE FROM secrets WHERE project_id = ? AND name = ?').run(projectId, name).changes) > 0;
+  }
+
+  removeProject(projectId: string): void {
+    this.db.prepare('DELETE FROM secrets WHERE project_id = ?').run(projectId);
   }
 }
 
