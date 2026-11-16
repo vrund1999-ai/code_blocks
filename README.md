@@ -75,6 +75,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
   - Drop elements inside a **List** to design a card that repeats for every item. Inside a card, 🔗 *link* can show *a field of this card's item*, such as a contact's name.
   - Set a Box's *Arrange items* to **In a grid** to lay its items out in equal columns, or set a List's *Cards per row* to show its cards side by side, like a gallery.
 - **⚡ Logic tab:** a node graph.
+  - ✨ *Tidy up* lines every block up neatly, left to right; Undo puts them back.
   - **When…** blocks start things, for example *When button clicked*, *When key pressed*, *When list item clicked* or *When mouse over*.
   - White arrows decide what happens next: **Do…** blocks, and **Decide & repeat** blocks such as *If*, *Repeat* and *For each*.
   - Coloured dotted wires carry **Values** into blocks, such as numbers, maths and comparisons.

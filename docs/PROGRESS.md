@@ -55,6 +55,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Date picker | 2026-11-15 | [#50](https://github.com/vrund1999-ai/code_blocks/pull/50) | See below |
 | Grids and galleries | 2026-11-16 | [#51](https://github.com/vrund1999-ai/code_blocks/pull/51) | See below |
 | More events | 2026-11-16 | [#52](https://github.com/vrund1999-ai/code_blocks/pull/52) | See below |
+| Tidy up | 2026-11-16 | [#53](https://github.com/vrund1999-ai/code_blocks/pull/53) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -358,6 +359,12 @@ More events included:
 - ***When mouse over*:** when the mouse moves onto an element, or off it. Inside a List's cards it gives the card's item, like *When button clicked*.
 - **Tests:** `packages/engine/src/events.test.ts`, unit tests in `runtime/controller.test.ts`, and `e2e/more-events.spec.ts`.
 
+
+Tidy up included:
+- **A ✨ *Tidy up* button on the logic graph** puts every block in a neat place, with one click, and zooms to show them all. Undo puts the blocks back.
+- **How blocks are placed:** blocks wired together form a group, and groups are stacked top to bottom in the order they were in. In a group, the white arrows read left to right from the *When…* block, and a chain of arrows stays on one row. A value block goes in the column left of the block it feeds, under the blocks there. Blocks are spaced by their real size, so none overlap.
+- **Tests:** `logic/tidy.test.ts` and `e2e/tidy.spec.ts`.
+
 ---
 
 ## Roadmap status
@@ -402,7 +409,7 @@ More events included:
 | UX-4 | Context menus | ⬜ | | |
 | UX-5 | Multi-select in design | ⬜ | | |
 | UX-6 | Graph comments / groups | ⬜ | | |
-| UX-7 | Auto-arrange graph | ⬜ | | |
+| UX-7 | Auto-arrange graph | ✅ | 2026-11-16 | [#53](https://github.com/vrund1999-ai/code_blocks/pull/53) |
 | UX-8 | "Where is this used?" | ✅ | 2026-11-15 | [#44](https://github.com/vrund1999-ai/code_blocks/pull/44) |
 | UX-9 | Onboarding tutorial | ⬜ | | |
 | UX-10 | Resizable preview | ⬜ | | |
@@ -479,4 +486,4 @@ More events included:
 
 ---
 
-**Totals:** 48 / 83 done · 0 in progress
+**Totals:** 49 / 83 done · 0 in progress
