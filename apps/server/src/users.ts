@@ -23,7 +23,19 @@ export const RESET_MINUTES = 60;
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 200;
 
-const COST = { N: 16384, r: 8, p: 1 };
+/** How hard scrypt works on each password. */
+export const PASSWORD_COST = { N: 16384, r: 8, p: 1 };
+let COST = PASSWORD_COST;
+/** The cheaper cost the server's tests use. */
+export const TEST_PASSWORD_COST = { N: 1024, r: 8, p: 1 };
+/**
+ * For the server's own tests only (see `testSetup.ts`): a cheaper cost, so
+ * tests that sign in many times stay fast. Stored hashes keep the cost they
+ * were made with, so they are always checked correctly.
+ */
+export function usePasswordCost(cost: typeof PASSWORD_COST) {
+  COST = cost;
+}
 const KEY_LENGTH = 64;
 
 /** A password as stored: `scrypt$N$r$p$salt$hash`. */
@@ -94,7 +106,7 @@ export class SqliteUsers {
   /** Whether the password is the account's. */
   async checkPassword(userId: string, password: string): Promise<boolean> {
     const row = this.db.prepare('SELECT password_hash FROM users WHERE id = ?').get(userId) as { password_hash: string } | undefined;
-    const ok = await checkPassword(password, row?.password_hash ?? DUMMY_HASH);
+    const ok = await checkPassword(password, row?.password_hash ?? dummyHash());
     return !!row && ok;
   }
 
@@ -185,7 +197,7 @@ export class SqliteUsers {
       | { id: string; email: string; password_hash: string }
       | undefined;
     // Hash anyway when there's no such account, so the answer takes as long either way.
-    const ok = await checkPassword(password, row?.password_hash ?? DUMMY_HASH);
+    const ok = await checkPassword(password, row?.password_hash ?? dummyHash());
     return row && ok ? { id: row.id, email: row.email } : null;
   }
 
@@ -227,5 +239,8 @@ export class SqliteUsers {
   }
 }
 
-// A hash of a random password, checked against when an email has no account.
-const DUMMY_HASH = `scrypt$${COST.N}$${COST.r}$${COST.p}$${randomBytes(16).toString('base64')}$${randomBytes(KEY_LENGTH).toString('base64')}`;
+// A hash of a random password, checked against when an email has no account,
+// so that takes as long as a wrong password. Made at today's cost.
+const DUMMY_SALT = randomBytes(16).toString('base64');
+const DUMMY_KEY = randomBytes(KEY_LENGTH).toString('base64');
+const dummyHash = () => `scrypt$${COST.N}$${COST.r}$${COST.p}$${DUMMY_SALT}$${DUMMY_KEY}`;

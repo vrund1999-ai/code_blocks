@@ -1,9 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { createApp } from './app';
 import { NOT_YOURS, SIGN_IN_NEEDED } from './authRoutes';
 import { openDatabase } from './db';
 import { signedIn } from './testAuth';
-import { checkPassword, hashPassword, SESSION_DAYS, SqliteUsers } from './users';
+import {
+  checkPassword,
+  hashPassword,
+  PASSWORD_COST,
+  SESSION_DAYS,
+  SqliteUsers,
+  TEST_PASSWORD_COST,
+  usePasswordCost,
+} from './users';
 
 const json = (body: unknown, headers: Record<string, string> = {}) => ({
   method: 'POST',
@@ -14,7 +22,11 @@ const json = (body: unknown, headers: Record<string, string> = {}) => ({
 const errorOf = async (res: Response) => ((await res.json()) as { error: { message: string } }).error.message;
 
 describe('passwords', () => {
+  // The other tests use a cheaper cost (testSetup.ts); these check the real one.
+  afterEach(() => usePasswordCost(TEST_PASSWORD_COST));
+
   it('are stored hashed with a salt, and checked', async () => {
+    usePasswordCost(PASSWORD_COST);
     const a = await hashPassword('correct horse');
     const b = await hashPassword('correct horse');
     expect(a).toMatch(/^scrypt\$16384\$8\$1\$/);
@@ -23,6 +35,14 @@ describe('passwords', () => {
     expect(await checkPassword('correct horse', a)).toBe(true);
     expect(await checkPassword('wrong horse', a)).toBe(false);
     expect(await checkPassword('correct horse', 'nonsense')).toBe(false);
+  });
+
+  it('are checked at the cost they were stored with', async () => {
+    const cheap = await hashPassword('correct horse');
+    expect(cheap).toMatch(/^scrypt\$1024\$8\$1\$/);
+    usePasswordCost(PASSWORD_COST);
+    expect(await checkPassword('correct horse', cheap)).toBe(true);
+    expect(await checkPassword('wrong horse', cheap)).toBe(false);
   });
 });
 
