@@ -56,6 +56,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Grids and galleries | 2026-11-16 | [#51](https://github.com/vrund1999-ai/code_blocks/pull/51) | See below |
 | More events | 2026-11-16 | [#52](https://github.com/vrund1999-ai/code_blocks/pull/52) | See below |
 | Tidy up | 2026-11-16 | [#53](https://github.com/vrund1999-ai/code_blocks/pull/53) | See below |
+| Tutorial (fifth wave done) | 2026-11-16 | [#54](https://github.com/vrund1999-ai/code_blocks/pull/54) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -365,6 +366,14 @@ Tidy up included:
 - **How blocks are placed:** blocks wired together form a group, and groups are stacked top to bottom in the order they were in. In a group, the white arrows read left to right from the *When…* block, and a chain of arrows stays on one row. A value block goes in the column left of the block it feeds, under the blocks there. Blocks are spaced by their real size, so none overlap.
 - **Tests:** `logic/tidy.test.ts` and `e2e/tidy.spec.ts`.
 
+
+Tutorial included:
+- **A guided tutorial for first-time users:** a small card in the bottom-left corner that walks through building an app with a button that says hello. It covers adding a button, giving it a label, the Logic tab, *When button clicked*, wiring in *Show message*, and running it.
+- **Each step moves on by itself** once it's been done, and points at the part of the editor to use (the Button in *Elements*, the *Logic* tab, a block, *▶ Run*). It never goes backwards.
+- **Offered once, on a first visit** (when there's no project yet). It starts a new project, *My first app*, so the starter one is left as it was. *No thanks* or ✕ closes it; *Projects* → *🎓 Tutorial* starts it again.
+- **Tests:** `app/tutorialSteps.test.ts` and `e2e/tutorial.spec.ts`. Other end-to-end tests start with the tutorial already seen; `test.use({ tutorial: true })` turns it back on.
+- **The fifth wave is done.**
+
 ---
 
 ## Roadmap status
@@ -411,7 +420,7 @@ Tidy up included:
 | UX-6 | Graph comments / groups | ⬜ | | |
 | UX-7 | Auto-arrange graph | ✅ | 2026-11-16 | [#53](https://github.com/vrund1999-ai/code_blocks/pull/53) |
 | UX-8 | "Where is this used?" | ✅ | 2026-11-15 | [#44](https://github.com/vrund1999-ai/code_blocks/pull/44) |
-| UX-9 | Onboarding tutorial | ⬜ | | |
+| UX-9 | Onboarding tutorial | ✅ | 2026-11-16 | [#54](https://github.com/vrund1999-ai/code_blocks/pull/54) |
 | UX-10 | Resizable preview | ⬜ | | |
 | UX-11 | Touch support | ⬜ | | |
 | UX-12 | Projects menu click-outside | ✅ | 2026-11-15 | [#47](https://github.com/vrund1999-ai/code_blocks/pull/47) |
@@ -486,4 +495,4 @@ Tidy up included:
 
 ---
 
-**Totals:** 49 / 83 done · 0 in progress
+**Totals:** 50 / 83 done · 0 in progress

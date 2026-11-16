@@ -12,6 +12,11 @@ interface Options {
    * Set it for a whole file with `test.use({ signedIn: true })`.
    */
   signedIn: boolean;
+  /**
+   * Let the tutorial offer itself on a first visit. Off by default, so its
+   * card doesn't cover the editor in other tests.
+   */
+  tutorial: boolean;
 }
 
 interface Fixtures {
@@ -29,10 +34,22 @@ interface Fixtures {
   app: AppPage;
   /** The editor page object without opening the page (use with `seed`). */
   appNoBoot: AppPage;
+  /** Marks the tutorial as seen before the page loads, unless `tutorial` is set. */
+  tutorialSeen: void;
 }
 
 export const test = base.extend<Options & Fixtures>({
   signedIn: [false, { option: true }],
+  tutorial: [false, { option: true }],
+
+  tutorialSeen: [
+    async ({ page, tutorial }, use) => {
+      // Same key as markTutorialSeen() in apps/editor/src/app/tutorialSteps.ts.
+      if (!tutorial) await page.addInitScript(() => localStorage.setItem('cb.tutorial', 'seen'));
+      await use();
+    },
+    { auto: true },
+  ],
 
   account: async ({ page, signedIn }, use) => {
     if (!signedIn) return use(null);

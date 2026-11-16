@@ -43,6 +43,7 @@ function PaletteItem({ type }: { type: ElementType }) {
     <button
       ref={setNodeRef}
       className="palette-item"
+      data-type={type}
       title={`${def.description}\nDrag onto the screen, or click to add.`}
       onClick={addByClick}
       {...listeners}

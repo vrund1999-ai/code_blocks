@@ -54,6 +54,7 @@ How the end-to-end tests are organised:
   - Every test fails if the page logs a console error.
   - `seed()` stores a project in localStorage before the app starts.
   - `test.use({ signedIn: true })` starts each test of a file signed in to a new account, for tests of the server features.
+  - Tests start with the first-visit tutorial already seen, so its card doesn't cover the editor; `test.use({ tutorial: true })` turns it back on.
 - **`e2e/support/projects.ts`:** builds test projects with the app's own model code.
 - **`e2e/support/api.ts`:** `fakeApi()` answers web requests from a fake API, so tests never use the real internet.
 - **`e2e/support/AppPage.ts`:** a page object with helpers for dragging, connecting blocks, running the app and so on.
@@ -69,6 +70,8 @@ How the end-to-end tests are organised:
 The Playwright report and coverage are uploaded as artifacts. To also run Firefox and WebKit, start the workflow by hand with **all_browsers**.
 
 ## How it works
+
+On a first visit, a short **tutorial** walks through building an app with a button that says hello. Start it again any time from *Projects* → *🎓 Tutorial*.
 
 - **🎨 Design tab:** drag Boxes, Text, Buttons, Text Boxes, Checkboxes, Dropdowns, Number Boxes, Sliders, Date Pickers, Images, Links, Dividers, Spacers and Lists onto a screen. Click any element to change it in the Settings panel. Use 🔗 *link* to tie a setting to a variable, so it updates live. The *Style* section sets an element's size, space around it, rounded corners, shadow and font.
   - The **Layers** panel shows the screen as a tree. Click a row to select an element, even one deep inside boxes, and double-click to rename it. Alt+arrow keys move the selected element.

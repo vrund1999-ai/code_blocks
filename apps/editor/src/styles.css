@@ -1168,6 +1168,66 @@ textarea.field-input {
   position: relative;
   min-width: 0;
 }
+/* The tutorial's card, in the bottom-left corner, and what it points at. */
+.tutorial {
+  position: fixed;
+  left: 10px;
+  bottom: 10px;
+  z-index: 50;
+  width: 232px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.16);
+  padding: 10px 12px 12px;
+  font-size: 13px;
+}
+.tutorial h2 {
+  font-size: 15px;
+  margin: 2px 0 6px;
+}
+.tutorial p {
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+.tutorial-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 18px;
+}
+.tutorial-close {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: #6c757d;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+.tutorial-close:hover {
+  background: #f1f3f5;
+}
+.tutorial-actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.tour-target {
+  outline: 3px solid var(--accent) !important;
+  outline-offset: 2px;
+  animation: tour-pulse 1.4s ease-in-out infinite;
+}
+@keyframes tour-pulse {
+  50% {
+    outline-color: var(--accent-soft);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour-target {
+    animation: none;
+  }
+}
 .logic-tools {
   position: absolute;
   top: 10px;

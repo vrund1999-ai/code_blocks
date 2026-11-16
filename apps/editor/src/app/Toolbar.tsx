@@ -19,6 +19,7 @@ import { PublishMenu } from './PublishMenu';
 import { ServerMenu } from './ServerMenu';
 import type { Project } from '../model/types';
 import { focusBlock } from '../logic/focus';
+import { openTutorial } from './Tutorial';
 
 /** Opens a project; `replace` saves it over the account's copy, for imported files. */
 function openProject(p: Project, replace = false) {
@@ -111,6 +112,16 @@ function ProjectsMenu({ onClose }: { onClose(): void }) {
           <span className="hint">{t.description}</span>
         </button>
       ))}
+      <button
+        className="menu-item"
+        onClick={() => {
+          openTutorial();
+          onClose();
+        }}
+      >
+        <b>🎓 Tutorial</b>
+        <span className="hint">Build your first app, step by step.</span>
+      </button>
       {signedIn ? (
         <>
           <div className="menu-title">On your account</div>
@@ -274,7 +285,7 @@ export function Toolbar() {
         <button className={`tab ${tab === 'design' ? 'active' : ''}`} onClick={() => setTab('design')}>
           🎨 Design
         </button>
-        <button className={`tab ${tab === 'logic' ? 'active' : ''}`} onClick={() => setTab('logic')}>
+        <button className={`tab ${tab === 'logic' ? 'active' : ''}`} data-tour="logic-tab" onClick={() => setTab('logic')}>
           ⚡ Logic
         </button>
         <button className={`tab ${tab === 'data' ? 'active' : ''}`} onClick={() => setTab('data')}>
@@ -330,7 +341,7 @@ export function Toolbar() {
           ■ Stop
         </button>
       ) : (
-        <button className="btn run" onClick={startApp}>
+        <button className="btn run" data-tour="run" onClick={startApp}>
           ▶ Run
         </button>
       )}
