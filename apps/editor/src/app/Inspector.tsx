@@ -20,6 +20,7 @@ const EVENT_FOR: Partial<Record<ElementType, { type: string; label: string }>> =
   dropdown: { type: 'event.inputChange', label: 'When a choice is picked…' },
   number: { type: 'event.inputChange', label: 'When a number is typed…' },
   slider: { type: 'event.inputChange', label: 'When slid…' },
+  date: { type: 'event.inputChange', label: 'When a date is picked…' },
   list: { type: 'event.listDelete', label: 'When item deleted…' },
 };
 
@@ -174,6 +175,7 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
           <input
             className="field-input"
             aria-label={field.label}
+            placeholder={field.placeholder}
             value={String(value ?? '')}
             onChange={(e) => set({ kind: 'static', value: e.target.value })}
           />

@@ -66,6 +66,7 @@ export const ELEMENT_TYPES = [
   'dropdown',
   'number',
   'slider',
+  'date',
   'link',
   'divider',
   'spacer',

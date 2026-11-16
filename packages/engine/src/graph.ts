@@ -15,6 +15,7 @@ export type ElementType =
   | 'dropdown'
   | 'number'
   | 'slider'
+  | 'date'
   | 'link'
   | 'divider'
   | 'spacer'

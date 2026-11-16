@@ -228,6 +228,28 @@ describe('events and elements', () => {
     expect(rt().elements[slider.id]).toEqual({ value: 10 });
   });
 
+  it('reads a date picker as blocks write dates, and sets it the same way', async () => {
+    const a = app();
+    const picker = a.el('date', 'Arrival', { value: '2026-12-01', min: '2026-11-15', withTime: false });
+    const btn = a.el('button', 'Go');
+    const before = a.variable('before', 'text', '');
+    const after = a.variable('after', 'text', '');
+    const click = a.node('event.click', { element: btn.id });
+    const keepBefore = a.node('action.setVariable', { variable: before });
+    // Before the earliest date, and with a time it doesn't pick.
+    const set = a.node('action.setInputValue', { element: picker.id, value: '2026-01-01 10:00' });
+    const keepAfter = a.node('action.setVariable', { variable: after });
+    a.chain(click, keepBefore, set, keepAfter);
+    a.data(a.node('data.getInputValue', { element: picker.id }), 'value', keepBefore, 'value');
+    a.data(a.node('data.getInputValue', { element: picker.id }), 'value', keepAfter, 'value');
+    a.start();
+
+    fireClick(btn.id);
+    await vi.waitFor(() => expect(rt().vars[after]).toBe('2026-11-15'));
+    expect(rt().vars[before]).toBe('2026-12-01');
+    expect(rt().elements[picker.id]).toEqual({ value: '2026-11-15' });
+  });
+
   it('runs a List’s delete event with the item and where it was', async () => {
     const a = app();
     const list = a.el('list', 'People');

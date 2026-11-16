@@ -1,5 +1,15 @@
-import { describe, expect, it } from 'vitest';
-import { defaultProps, dropdownChoices, fitNumber, linkHref, numberLimits } from './elements';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  dateInputValue,
+  dateLimits,
+  defaultProps,
+  dropdownChoices,
+  fitDate,
+  fitNumber,
+  linkHref,
+  numberLimits,
+  pickerDate,
+} from './elements';
 import { makeElement, makeProject } from './factory';
 import { canPlaceInside } from './tree';
 
@@ -97,5 +107,54 @@ describe('link addresses', () => {
     expect(linkHref('')).toBeUndefined();
     expect(linkHref(undefined)).toBeUndefined();
     expect(linkHref('two words')).toBeUndefined();
+  });
+});
+
+describe('date pickers', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 10, 15, 14, 30));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it('keep a date, with a time only when they pick one', () => {
+    expect(pickerDate('2026-1-5', false)).toBe('2026-01-05');
+    expect(pickerDate('2026-11-15 14:30', false)).toBe('2026-11-15');
+    expect(pickerDate('2026-11-15', true)).toBe('2026-11-15 00:00');
+    // What the browser's date and time input gives.
+    expect(pickerDate('2026-11-15T14:30', true)).toBe('2026-11-15 14:30');
+    expect(pickerDate('15/11/2026', false)).toBe('');
+    expect(pickerDate('', false)).toBe('');
+  });
+
+  it('read “today” as the day the app runs', () => {
+    expect(pickerDate('today', false)).toBe('2026-11-15');
+    expect(pickerDate(' Today ', true)).toBe('2026-11-15 00:00');
+  });
+
+  it('keep a date between the earliest and latest, set either way round', () => {
+    const limits = dateLimits({ min: '2026-12-31', max: 'today' });
+    expect(limits).toEqual({ withTime: false, min: '2026-11-15', max: '2026-12-31' });
+    expect(fitDate('2026-11-01', limits)).toBe('2026-11-15');
+    expect(fitDate('2027-01-01', limits)).toBe('2026-12-31');
+    expect(fitDate('2026-12-01', limits)).toBe('2026-12-01');
+    expect(fitDate('', limits)).toBe('');
+    const timed = dateLimits({ withTime: true, min: 'today' });
+    expect(fitDate('2026-11-14 23:00', timed)).toBe('2026-11-15 00:00');
+    expect(fitDate('2026-11-15 09:00', timed)).toBe('2026-11-15 09:00');
+  });
+
+  it('give the browser’s input its own form', () => {
+    expect(dateInputValue('2026-11-15 14:30')).toBe('2026-11-15T14:30');
+    expect(dateInputValue('2026-11-15')).toBe('2026-11-15');
+  });
+
+  it('start with nothing picked, and stay out of List cards', () => {
+    expect(defaultProps('date').value).toEqual({ kind: 'static', value: '' });
+    expect(defaultProps('date').withTime).toEqual({ kind: 'static', value: false });
+    const project = makeProject();
+    const list = makeElement('list', 'People');
+    project.screens[0].root.children.push(list);
+    expect(canPlaceInside(project.screens[0].root, list.id, 'date')).toBe(false);
   });
 });
