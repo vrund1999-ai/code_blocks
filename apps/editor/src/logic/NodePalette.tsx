@@ -36,6 +36,7 @@ export function NodePalette() {
               <button
                 key={d.type}
                 className="node-item"
+                data-type={d.type}
                 style={{ ['--cat' as string]: cat.color }}
                 draggable
                 onDragStart={(e) => {

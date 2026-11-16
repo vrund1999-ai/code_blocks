@@ -54,6 +54,8 @@ let lastSaved: Project | null = null;
 let queued: { project: Project; replace: boolean } | null = null;
 /** The open project is the starter one opened on boot, not changed yet, so it isn't kept anywhere. */
 let starter = false;
+/** Did boot open the starter project, as on a first visit? */
+export const openedStarter = () => starter;
 let pushing = false;
 
 const signedIn = () => useAuthStore.getState().status === 'signed-in';

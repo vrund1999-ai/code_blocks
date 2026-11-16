@@ -5,12 +5,13 @@ import { DesignDnd } from '../designer/DesignDnd';
 import { LayersPanel } from '../designer/LayersPanel';
 import { useProjectStore } from '../model/projectStore';
 import { stopApp } from '../runtime/controller';
-import { boot, markChanged, saveBeforeClosing, saveCurrent, useSaveStore } from '../data/projectSync';
+import { boot, markChanged, openedStarter, saveBeforeClosing, saveCurrent, useSaveStore } from '../data/projectSync';
 import { pushToast, useRuntimeStore } from '../runtime/runtimeStore';
 import { DataView } from './DataView';
 import { Inspector } from './Inspector';
 import { ScreensPanel, VariablesPanel } from './SidePanels';
 import { Toolbar } from './Toolbar';
+import { offerTutorialOnce, Tutorial } from './Tutorial';
 
 // The Logic tab, with React Flow, is loaded on its own: once the editor is
 // open, or right away when it's opened first.
@@ -126,7 +127,10 @@ export function App() {
   const tab = useProjectStore((s) => s.tab);
   const ready = useSaveStore((s) => s.ready);
   useEffect(() => {
-    if (ready) void loadLogic();
+    if (!ready) return;
+    void loadLogic();
+    // A first visit offers the tutorial, once.
+    if (openedStarter()) offerTutorialOnce();
   }, [ready]);
 
   if (!ready) {
@@ -160,6 +164,7 @@ export function App() {
         </Suspense>
       )}
       <GlobalToasts />
+      <Tutorial />
     </div>
   );
 }
