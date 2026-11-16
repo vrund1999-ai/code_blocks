@@ -441,8 +441,8 @@ More unit tests included:
 | QE-12 | Stray 401 after signing out in an accounts test | ✅ | 2026-11-14 | [#34](https://github.com/vrund1999-ai/code_blocks/pull/34) |
 | QE-13 | Connect and move blocks without a mouse | ✅ | 2026-11-15 | [#45](https://github.com/vrund1999-ai/code_blocks/pull/45) |
 | QE-14 | Accessibility checks for built apps | ⬜ | | |
-| QE-15 | Speed up the server's sign-in limit test | ⬜ | | |
+| QE-15 | Speed up the server's sign-in limit test | ✅ | 2026-11-15 | [#48](https://github.com/vrund1999-ai/code_blocks/pull/48) |
 
 ---
 
-**Totals:** 43 / 82 done · 0 in progress
+**Totals:** 44 / 82 done · 0 in progress

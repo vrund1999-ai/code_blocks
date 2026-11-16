@@ -32,7 +32,7 @@ With no P1 items left, the fourth wave turns to the P2 items for people building
 5. ✅ **QE-13:** connecting and moving blocks without a mouse.
 6. ✅ **QE-9:** more unit tests for the runtime controller, persistence and the model tree.
 
-Smaller P3 fixes, such as ✅ **UX-12** (the Projects menu closing on mouse-leave), can be picked up between these.
+Smaller P3 fixes, such as ✅ **UX-12** (the Projects menu closing on mouse-leave) and ✅ **QE-15** (a slow server test), can be picked up between these.
 
 ---
 
@@ -150,4 +150,4 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | QE-14 | Accessibility checks for the apps people build | P3 | Warn in the editor when an image has no description, a text box has no label, or chosen colours are hard to read, and let images have a description |
 | QE-12 | Find the stray 401 in *a project used by one account is kept from others* | P1 | Shipped: signing out first sends a change still waiting for autosave, then waits for requests already sent (up to 5 seconds) before ending the session. Before, a change made less than a moment before signing out was saved nowhere, and a request answered after the session ended logged the 401 that failed the test |
 | QE-11 | Make the end-to-end tests reliable in Firefox and WebKit | P3 | Drag tests are marked `test.fixme` there: pointer drags hang in Firefox automation, and some drops don't register in WebKit. Local headless Firefox on Windows also hit graphics-process crashes and timeouts under parallel load. In WebKit, Ctrl+click selects only one block in the Logic tab, so that copy test is marked `test.fixme` there too, as is pasting into a settings text box, which depends on the system clipboard there and fails on some runs. CI runs Chromium only. |
-| QE-15 | Speed up the server's sign-in limit test | P3 | `limits.test.ts` (*stop guessing passwords for an email*) hashes several passwords and can pass its 5-second limit on a busy machine, as it did once while coverage ran for QE-9. Use cheaper hashing in tests, or a longer limit for that test |
+| QE-15 | Speed up the server's sign-in limit test | P3 | Shipped: the unit tests hash passwords at a cheaper scrypt cost (N = 1024 instead of 16384), set in `apps/server/src/testSetup.ts`. `auth.test.ts` still checks the real cost, and that a password is checked at the cost it was stored with. The sign-in limit test went from about 1.3 s to 0.16 s, and the server's unit tests from about 45 s to 15 s. The server itself, and the end-to-end tests, use the real cost |
