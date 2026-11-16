@@ -6,7 +6,18 @@ import { ApiError } from '../data/api';
 import { addPublishedRow, listPublishedRows } from '../data/publishApi';
 import { addRow, deleteRow, listRows, updateRow } from '../data/rowsApi';
 import { fetchViaServer, sendForm } from '../data/serverApi';
-import { fireChange, fireClick, fireListDelete, READ_ONLY_TABLES, runAsPublished, startApp, stopApp } from './controller';
+import {
+  fireCardClick,
+  fireChange,
+  fireClick,
+  fireHover,
+  fireListDelete,
+  keyIsForApp,
+  READ_ONLY_TABLES,
+  runAsPublished,
+  startApp,
+  stopApp,
+} from './controller';
 import { useRuntimeStore } from './runtimeStore';
 
 vi.mock('../data/rowsApi', async (original) => ({
@@ -524,5 +535,97 @@ describe('the server', () => {
     fireClick(btn.id);
     await vi.waitFor(() => expect(toasts()).toContain('Failed'));
     expect(fetchViaServer).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('more events', () => {
+  it('runs a List’s item-clicked event with the item and where it is', async () => {
+    const a = app();
+    const list = a.el('list', 'People');
+    const picked = a.variable('picked', 'text', '');
+    const click = a.node('event.cardClick', { element: list.id });
+    const set = a.node('action.setVariable', { variable: picked });
+    a.exec(click, set);
+    a.data(click, 'item', set, 'value');
+    a.start();
+    fireCardClick(list.id, 2, 'Bo');
+    await vi.waitFor(() => expect(rt().vars[picked]).toBe('Bo'));
+  });
+
+  it('runs mouse-over blocks for moving onto or off an element, with a card’s item', async () => {
+    const a = app();
+    const text = a.el('text', 'Help');
+    a.chain(a.node('event.hover', { element: text.id, action: 'enter' }), a.node('action.toast', { message: 'onto' }));
+    a.chain(a.node('event.hover', { element: text.id, action: 'leave' }), a.node('action.toast', { message: 'off' }));
+    const seen = a.variable('seen', 'text', '');
+    // A block with no choice listens to the mouse moving onto the element.
+    const hover = a.node('event.hover', { element: text.id });
+    const set = a.node('action.setVariable', { variable: seen });
+    a.exec(hover, set);
+    a.data(hover, 'item', set, 'value');
+    a.start();
+
+    fireHover(text.id, 'enter', { item: 'Ada', index: 1 });
+    await vi.waitFor(() => expect(toasts()).toEqual(['onto']));
+    await vi.waitFor(() => expect(rt().vars[seen]).toBe('Ada'));
+    fireHover(text.id, 'leave');
+    await vi.waitFor(() => expect(toasts()).toEqual(['onto', 'off']));
+    fireHover('someone-else', 'enter');
+    await settle();
+    expect(toasts()).toEqual(['onto', 'off']);
+  });
+
+  it('listens to keys while the app runs, and stops listening when it stops', async () => {
+    const listeners = new Map<string, (e: unknown) => void>();
+    const body = {};
+    vi.stubGlobal('document', {
+      body,
+      documentElement: {},
+      addEventListener: (type: string, fn: (e: unknown) => void) => listeners.set(type, fn),
+      removeEventListener: (type: string) => listeners.delete(type),
+    });
+    const a = app();
+    const last = a.variable('last', 'text', '');
+    const any = a.node('event.keyPress', { key: 'any' });
+    const set = a.node('action.setVariable', { variable: last });
+    a.exec(any, set);
+    a.data(any, 'key', set, 'value');
+    a.chain(a.node('event.keyPress', { key: 'Space' }), a.node('action.toast', { message: 'jump' }));
+    a.start();
+
+    const press = (key: string, extra: Record<string, unknown> = {}) =>
+      listeners.get('keydown')?.({ key, target: body, ...extra });
+    press(' ');
+    await vi.waitFor(() => expect(toasts()).toEqual(['jump']));
+    expect(rt().vars[last]).toBe('Space');
+    press('A');
+    await vi.waitFor(() => expect(rt().vars[last]).toBe('a'));
+    // Shortcuts aren't for the app.
+    press('b', { ctrlKey: true });
+    await settle();
+    expect(rt().vars[last]).toBe('a');
+
+    stopApp();
+    expect(listeners.has('keydown')).toBe(false);
+  });
+
+  it('only takes keys pressed in the running app, and only Enter and Escape from a text box', () => {
+    const el = (opts: { inApp: boolean; editable: boolean }) =>
+      ({
+        closest: (sel: string) => (sel === '.app-view.mode-run' && opts.inApp ? {} : null),
+        matches: () => opts.editable,
+      }) as unknown as EventTarget;
+    vi.stubGlobal('document', { body: {}, documentElement: {} });
+    const key = (k: string, target: EventTarget | null) =>
+      keyIsForApp({ key: k, ctrlKey: false, metaKey: false, altKey: false, target });
+
+    expect(key('a', null)).toBe(true);
+    expect(key('Shift', null)).toBe(false);
+    expect(key('a', el({ inApp: true, editable: false }))).toBe(true);
+    expect(key('a', el({ inApp: false, editable: false }))).toBe(false);
+    expect(key('a', el({ inApp: true, editable: true }))).toBe(false);
+    expect(key('Enter', el({ inApp: true, editable: true }))).toBe(true);
+    expect(key('Escape', el({ inApp: true, editable: true }))).toBe(true);
+    expect(key('Enter', el({ inApp: false, editable: true }))).toBe(false);
   });
 });

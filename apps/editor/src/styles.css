@@ -983,6 +983,17 @@ textarea.field-input {
 .list-row:last-child {
   border-bottom: none;
 }
+/* Items a *When list item clicked* block listens to. */
+.list-row.clickable {
+  cursor: pointer;
+}
+.list-row.clickable:hover {
+  background: #f8f9fa;
+}
+.list-row.clickable:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
 /* Cards side by side, like a gallery: each card has its own border. */
 .el-list.grid {
   display: grid;
