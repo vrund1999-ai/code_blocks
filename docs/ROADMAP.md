@@ -41,7 +41,9 @@ The fifth wave carries on with P2 items for people building apps, starting with 
 3. ✅ **EL-4:** grid and column layouts.
 4. ✅ **LB-9:** more events: a key pressed, a List card clicked, the mouse over an element.
 5. ✅ **UX-7:** tidy up the logic graph with one click.
-6. **UX-9:** a guided tutorial for first-time users, once the blocks above have settled.
+6. ✅ **UX-9:** a guided tutorial for first-time users, once the blocks above have settled.
+
+The fifth wave is done.
 
 ---
 
@@ -89,7 +91,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | UX-6 | Comments and group frames in the logic graph | P2 | |
 | UX-7 | Auto-arrange (tidy) the logic graph | P2 | Shipped: a ✨ *Tidy up* button on the logic graph, which Undo takes back. Groups of wired blocks are stacked top to bottom in their old order; in each, the white arrows read left to right from the *When…* block on one row, and value blocks sit in the column left of the block they feed. Blocks are spaced by their real size |
 | UX-8 | "Where is this used?" for elements and variables | P2 | Shipped: a *Used by* list in the Settings panel for an element (the blocks that point at it) and in the Variables panel for a variable (its blocks, then the element settings 🔗 linked to it). Blocks are described by their sentences, and an event block also names the block it runs first; clicking one opens it in the Logic tab, and clicking a setting selects the element on its screen. Data tables could get the same list later |
-| UX-9 | Guided onboarding tutorial for first-time users | P2 | |
+| UX-9 | Guided onboarding tutorial for first-time users | P2 | Shipped: a card in the corner walks through building a button that says hello (add a button, label it, *When button clicked*, wire in *Show message*, run it). Each step moves on by itself once done and points at the part of the editor to use. It's offered once, on a first visit, in a new project *My first app*; *Projects* → *🎓 Tutorial* starts it again |
 | UX-10 | Freely resizable preview (beyond phone/tablet/desktop) | P3 | |
 | UX-11 | Touch / tablet support for the editor | P3 | |
 | UX-12 | Projects menu: close on click-outside instead of mouse-leave | P3 | Shipped: the menu no longer closes when the mouse leaves it, so it stays open when deleting a project makes it shorter. It closes on a click elsewhere, on Escape, or when a project is opened. `persistence.spec.ts` no longer reopens the menu after deleting, which made *lists, switches between and deletes projects* flaky in CI (seen on #27) |
