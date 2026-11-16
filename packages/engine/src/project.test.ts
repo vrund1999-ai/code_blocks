@@ -89,7 +89,7 @@ describe('checking projects', () => {
     const r = project();
     (r.screens[0].root.children[0] as { type: string }).type = 'video';
     expect(problem(r)).toBe(
-      'In screen “Home” → element “Out”: “type” is “video”, which should be one of container, text, button, input, image, checkbox, dropdown, number, slider, link, divider, spacer, list.',
+      'In screen “Home” → element “Out”: “type” is “video”, which should be one of container, text, button, input, image, checkbox, dropdown, number, slider, date, link, divider, spacer, list.',
     );
   });
 

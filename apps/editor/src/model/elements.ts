@@ -1,4 +1,5 @@
 import { isRecord, toList, toNumber, toText } from '@code-blocks/engine/convert';
+import { now, parseDate, writeDate } from '@code-blocks/engine/nodes/dates';
 import type { ElementType, PropValue, ValueType } from './types';
 
 /** Describes one editable property of a UI element, used by the Inspector. */
@@ -303,6 +304,27 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
     defaults: { size: 24, visible: true },
     fields: [{ key: 'size', label: 'Size', type: 'number', help: 'How much space, across and down.' }, visibleField],
   },
+  date: {
+    type: 'date',
+    label: 'Date Picker',
+    icon: '📅',
+    description: 'Lets people pick a date, and a time if you like.',
+    canHaveChildren: false,
+    defaults: { withTime: false, value: '', min: '', max: '', visible: true },
+    fields: [
+      { key: 'withTime', label: 'Pick a time too', type: 'boolean' },
+      {
+        key: 'value',
+        label: 'Starting date',
+        type: 'text',
+        placeholder: 'Nothing picked',
+        help: 'Like 2026-11-15, or 2026-11-15 14:30 with a time. Type “today” for the day the app runs.',
+      },
+      { key: 'min', label: 'Earliest', type: 'text', placeholder: 'No limit', help: 'Type “today” so days before it can’t be picked.' },
+      { key: 'max', label: 'Latest', type: 'text', placeholder: 'No limit' },
+      visibleField,
+    ],
+  },
   list: {
     type: 'list',
     label: 'List',
@@ -352,6 +374,7 @@ export const ELEMENT_ORDER: ElementType[] = [
   'dropdown',
   'number',
   'slider',
+  'date',
   'image',
   'link',
   'divider',
@@ -450,3 +473,40 @@ export function linkHref(url: unknown): string | undefined {
   if (!scheme) return /\s/.test(text) ? undefined : `https://${text.replace(/^\/\//, '')}`;
   return ['http', 'https', 'mailto', 'tel'].includes(scheme) ? text : undefined;
 }
+
+/**
+ * A date as a Date Picker keeps it: 2026-11-15, or 2026-11-15 14:30 when it
+ * picks a time too (a date alone is then at 00:00, and a time is dropped
+ * otherwise). “today” is the day the app runs. Empty when it isn't a date.
+ */
+export function pickerDate(value: unknown, withTime: boolean): string {
+  const text = toText(value).trim();
+  if (text.toLowerCase() === 'today') return writeDate({ ...now(false), hasTime: withTime });
+  const d = parseDate(text);
+  if (!d) return '';
+  return writeDate(withTime ? { ...d, hasTime: true } : { ...d, hour: 0, minute: 0, second: 0, hasTime: false });
+}
+
+/** A Date Picker's settings: whether it picks a time, and its earliest and latest dates. */
+export function dateLimits(props: Record<string, unknown>): { withTime: boolean; min: string; max: string } {
+  const withTime = Boolean(props.withTime);
+  let min = pickerDate(props.min, withTime);
+  let max = pickerDate(props.max, withTime);
+  if (min && max && min > max) [min, max] = [max, min];
+  return { withTime, min, max };
+}
+
+/**
+ * The date blocks read from a Date Picker, kept between its earliest and
+ * latest dates. Dates written this way sort as text, so they compare as text.
+ */
+export function fitDate(value: unknown, limits: ReturnType<typeof dateLimits>): string {
+  const date = pickerDate(value, limits.withTime);
+  if (!date) return '';
+  if (limits.min && date < limits.min) return limits.min;
+  if (limits.max && date > limits.max) return limits.max;
+  return date;
+}
+
+/** The browser's date input writes 2026-11-15T14:30 where blocks write 2026-11-15 14:30. */
+export const dateInputValue = (date: string) => date.replace(' ', 'T');

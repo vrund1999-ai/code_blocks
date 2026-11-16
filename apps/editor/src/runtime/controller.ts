@@ -9,7 +9,7 @@ import { addPublishedRow, listPublishedRows } from '../data/publishApi';
 import { fetchViaServer, sendForm } from '../data/serverApi';
 import { appStoragePrefix } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
-import { fitNumber, numberLimits } from '../model/elements';
+import { dateLimits, fitDate, fitNumber, numberLimits } from '../model/elements';
 import { findInProject } from '../model/tree';
 import { popScreen, pushScreen } from './history';
 import { clearRunLog, logError, logInput, logStep } from './runLog';
@@ -196,6 +196,10 @@ function makeHost(gen: number): HostApi {
         const raw = 'value' in state ? state.value : staticProps(el).value;
         return fitNumber(raw, numberLimits(staticProps(el), el.type === 'slider'), el.type === 'slider');
       }
+      if (el.type === 'date') {
+        const raw = 'value' in state ? state.value : staticProps(el).value;
+        return fitDate(raw, dateLimits(staticProps(el)));
+      }
       if ('value' in state) return state.value;
       const p = el.props.value;
       return p?.kind === 'static' ? toText(p.value) : '';
@@ -210,6 +214,8 @@ function makeHost(gen: number): HostApi {
         // Number boxes and sliders show the number blocks will read back.
         value = fitNumber(value, numberLimits(staticProps(el), el.type === 'slider'), el.type === 'slider');
       }
+      // A date picker shows the date blocks will read back, or nothing for text that isn't a date.
+      if (key === 'value' && el.type === 'date') value = fitDate(value, dateLimits(staticProps(el)));
       setElementState(id, { [key]: value });
     },
     toast: (message) => alive() && pushToast(message),

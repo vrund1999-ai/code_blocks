@@ -1,7 +1,7 @@
 import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
 import { toBool, toList, toNumber, toText } from '@code-blocks/engine/convert';
 import { cardValue, type CardItem } from './cards';
-import { dropdownChoices, fitNumber, linkHref, numberLimits } from '../model/elements';
+import { dateInputValue, dateLimits, dropdownChoices, fitDate, fitNumber, linkHref, numberLimits } from '../model/elements';
 import { elementStyle, hasFixedWidth } from '../model/style';
 import { useProjectStore } from '../model/projectStore';
 import type { UIElement } from '../model/types';
@@ -264,6 +264,33 @@ export function ElementView({
           />
           {toBool(p.showValue) && <output className="slider-value">{value}</output>}
         </div>
+      );
+      break;
+    }
+    case 'date': {
+      const limits = dateLimits(p);
+      const value = fitDate(p.value, limits);
+      content = (
+        <input
+          className="el el-input el-date"
+          style={box}
+          type={limits.withTime ? 'datetime-local' : 'date'}
+          aria-label={el.name}
+          value={dateInputValue(value)}
+          min={limits.min ? dateInputValue(limits.min) : undefined}
+          max={limits.max ? dateInputValue(limits.max) : undefined}
+          readOnly={!run}
+          tabIndex={run ? 0 : -1}
+          onChange={
+            run
+              ? (e) => {
+                  const picked = fitDate(e.target.value, limits);
+                  setElementState(el.id, { value: picked });
+                  fireChange(el.id, picked);
+                }
+              : undefined
+          }
+        />
       );
       break;
     }
