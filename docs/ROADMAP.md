@@ -34,6 +34,15 @@ With no P1 items left, the fourth wave turns to the P2 items for people building
 
 Smaller P3 fixes, such as ✅ **UX-12** (the Projects menu closing on mouse-leave) and ✅ **QE-15** (a slow server test), can be picked up between these.
 
+The fifth wave carries on with P2 items for people building apps, starting with what everyday apps need most:
+
+1. ✅ **LB-5:** date and time blocks: today, showing, adding, counting between and comparing dates.
+2. **EL-6:** a date picker, raised to P2 since date blocks can now use what it gives.
+3. **EL-4:** grid and column layouts.
+4. **LB-9:** more events: a key pressed, a List card clicked, the mouse over an element.
+5. **UX-7:** tidy up the logic graph with one click.
+6. **UX-9:** a guided tutorial for first-time users, once the blocks above have settled.
+
 ---
 
 ## 1. Backend (phase 2)
@@ -95,7 +104,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | EL-3 | Number input / slider | P2 | Shipped as a *Number Box* and a *Slider*, with smallest and biggest numbers, a step and a starting value (a slider can show its number). Blocks read them as numbers kept within their ends, and a slider's on a step; *Get / Set text box value* and *When value changes* work with both. Like text boxes, they stay out of List cards |
 | EL-4 | Grid / columns layout | P2 | |
 | EL-5 | Link, divider and spacer elements | P2 | Shipped: a *Link* opens a web page, an email (`mailto:`) or a phone number (`tel:`); other kinds of address, such as `javascript:`, are refused. Published apps open it in the same tab or a new one, as set; the editor's preview always uses a new tab. *Set text* changes its text. A *Divider* is a line (upright side by side), and a *Spacer* is empty space, striped while designing |
-| EL-6 | Date picker | P3 | |
+| EL-6 | Date picker | P2 | Raised from P3 for the fifth wave: the date blocks (LB-5) read the `2026-11-15` form a date input gives |
 | EL-7 | Icon element | P3 | |
 | EL-8 | More styling: width/height, margins, corner radius, shadow, fonts | P1 | Shipped: a Style section on every element (width, height, space around, rounded corners, shadow, font); sizes in pixels, empty means automatic; the screen's font applies to the whole screen |
 | EL-9 | App-wide themes (colours, fonts) | P2 | |
@@ -108,7 +117,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | LB-2 | List blocks: insert at, find, sort, filter, update item | P1 | Shipped: *Find in list*, *Sort list*, *Filter list*, *Join list into text*, *Insert into list*, *Change item in list*. Find, sort, filter and join take an optional record field |
 | LB-3 | Records (objects with named fields) as a value type | P1 | Needed for tables and cards. Shipped: the record type, record variables, *Make record*, *Get field*, *Change field* and *Set field of variable* |
 | LB-4 | Math extras: round, min/max, remainder | P2 | Shipped: *Math* can also give the remainder of A ÷ B, and the smaller or bigger of two numbers. A new *Round number* block rounds to the nearest, down or up, to whole numbers or up to 10 decimal places. Halves round away from zero, and numbers like 1.005 round as written |
-| LB-5 | Date and time blocks | P2 | |
+| LB-5 | Date and time blocks | P2 | Shipped: a *Dates & times* group with *Today / now*, *Show date* (such as 15 November 2026, 15/11/2026 or 2:30 PM), *Add to date* (minutes to years; a minus number takes away), *Time between dates* (whole units, minus when the second date comes first), *Compare dates* (before, after, same day) and *Part of date* (year, month, day of the week…). Dates are text, like `2026-11-15` or `2026-11-15 14:30`, so they can be typed, kept in variables and tables, and sorted. They have no time zone: *now* is the clock of the device or server running the app. An empty date means today. A date written another way stops the block with a message saying how to write it. Months and years keep the day, or use the month's last day (31 January + 1 month = 28 February) |
 | LB-6 | Custom reusable blocks (functions) | P2 | |
 | LB-7 | Local variables scoped to a single run | P3 | |
 | LB-8 | *Repeat while* loop and *Stop loop* | P3 | |

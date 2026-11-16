@@ -132,6 +132,7 @@ function BlockNodeInner({ id, selected }: NodeProps) {
             <InlineValueInput
               type={p.inline.type}
               label={p.label}
+              placeholder={p.inline.placeholder}
               value={config[p.id] ?? p.inline.default}
               onChange={(v) => updateNodeConfig(id, { [p.id]: v })}
             />

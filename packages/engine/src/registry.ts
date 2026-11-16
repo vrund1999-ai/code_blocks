@@ -1,5 +1,6 @@
 import { actionNodes } from './nodes/actions';
 import { dataNodes } from './nodes/data';
+import { dateNodes } from './nodes/dates';
 import { eventNodes } from './nodes/events';
 import { flowNodes } from './nodes/flow';
 import { listNodes } from './nodes/lists';
@@ -10,7 +11,7 @@ import { textNodes } from './nodes/text';
 import { webNodes } from './nodes/web';
 import type { NameLookup, NodeCategory, NodeDef, Pin } from './types';
 
-const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...textNodes, ...listNodes, ...recordNodes, ...webNodes, ...tableNodes, ...serverNodes];
+const ALL: NodeDef[] = [...eventNodes, ...actionNodes, ...flowNodes, ...dataNodes, ...textNodes, ...dateNodes, ...listNodes, ...recordNodes, ...webNodes, ...tableNodes, ...serverNodes];
 
 export const NODE_DEFS: Record<string, NodeDef> = Object.fromEntries(ALL.map((d) => [d.type, d]));
 
@@ -21,6 +22,7 @@ export const CATEGORIES: { id: NodeCategory; label: string; color: string; hint:
   { id: 'flow', label: 'Decide & repeat', color: '#9c36b5', hint: 'Choices and loops' },
   { id: 'data', label: 'Values', color: '#237d36', hint: 'Numbers, maths and comparisons' },
   { id: 'text', label: 'Text', color: '#0b7285', hint: 'Join, change and search text' },
+  { id: 'dates', label: 'Dates & times', color: '#495057', hint: 'Today’s date, and adding, comparing and showing dates' },
   { id: 'lists', label: 'Lists & records', color: '#d6336c', hint: 'Find, sort and filter items' },
   { id: 'tables', label: 'Tables', color: '#8f6400', hint: 'Read and change the rows of your data tables' },
   { id: 'server', label: 'On the server', color: '#5f3dc4', hint: 'Web addresses, forms and schedules that run once you deploy' },

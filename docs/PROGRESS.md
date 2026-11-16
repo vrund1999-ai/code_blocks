@@ -51,6 +51,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Where is this used? | 2026-11-15 | [#44](https://github.com/vrund1999-ai/code_blocks/pull/44) | See below |
 | No mouse needed | 2026-11-15 | [#45](https://github.com/vrund1999-ai/code_blocks/pull/45) | See below |
 | More unit tests | 2026-11-15 | [#46](https://github.com/vrund1999-ai/code_blocks/pull/46) | See below |
+| Dates and times | 2026-11-15 | [#49](https://github.com/vrund1999-ai/code_blocks/pull/49) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -325,6 +326,14 @@ More unit tests included:
 - **A floor in CI:** coverage below lines 60%, statements 58%, functions 52% or branches 46% fails the check (`vitest.config.ts`).
 - **Follow-up:** a slow server test that can time out on a busy machine (QE-15).
 
+Dates and times included:
+- **A *Dates & times* group of blocks:** *Today / now*, *Show date*, *Add to date*, *Time between dates*, *Compare dates* and *Part of date* (`packages/engine/src/nodes/dates.ts`).
+- **Dates are text,** like `2026-11-15` or `2026-11-15 14:30`, with no time zone. An empty date means today; its box says so. A date written another way stops the block with a message saying how to write it.
+- **Calendar sums:** months and years keep the day, or use the month's last day; whole units are counted, minus when the second date comes first; daylight saving doesn't change the count.
+- **Inline values can show a placeholder** (`Pin.inline.placeholder`), used for "today".
+- **Tests:** `packages/engine/src/dates.test.ts` (unit tests) and `e2e/dates.spec.ts`.
+- **The fifth wave** is planned in the roadmap: EL-6 (date picker, raised to P2), EL-4, LB-9, UX-7 and UX-9.
+
 ---
 
 ## Roadmap status
@@ -399,7 +408,7 @@ More unit tests included:
 | LB-2 | List blocks | ✅ | 2026-11-11 | [#7](https://github.com/vrund1999-ai/code_blocks/pull/7) |
 | LB-3 | Records value type | ✅ | 2026-11-10 | [#4](https://github.com/vrund1999-ai/code_blocks/pull/4) |
 | LB-4 | Math extras | ✅ | 2026-11-15 | [#41](https://github.com/vrund1999-ai/code_blocks/pull/41) |
-| LB-5 | Date and time blocks | ⬜ | | |
+| LB-5 | Date and time blocks | ✅ | 2026-11-15 | [#49](https://github.com/vrund1999-ai/code_blocks/pull/49) |
 | LB-6 | Custom reusable blocks | ⬜ | | |
 | LB-7 | Local variables | ⬜ | | |
 | LB-8 | Repeat while / stop loop | ⬜ | | |
@@ -445,4 +454,4 @@ More unit tests included:
 
 ---
 
-**Totals:** 44 / 82 done · 0 in progress
+**Totals:** 45 / 82 done · 0 in progress
