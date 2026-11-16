@@ -57,6 +57,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | More events | 2026-11-16 | [#52](https://github.com/vrund1999-ai/code_blocks/pull/52) | See below |
 | Tidy up | 2026-11-16 | [#53](https://github.com/vrund1999-ai/code_blocks/pull/53) | See below |
 | Tutorial (fifth wave done) | 2026-11-16 | [#54](https://github.com/vrund1999-ai/code_blocks/pull/54) | See below |
+| Themes | 2026-11-16 | [#55](https://github.com/vrund1999-ai/code_blocks/pull/55) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -374,6 +375,15 @@ Tutorial included:
 - **Tests:** `app/tutorialSteps.test.ts` and `e2e/tutorial.spec.ts`. Other end-to-end tests start with the tutorial already seen; `test.use({ tutorial: true })` turns it back on.
 - **The fifth wave is done.**
 
+
+Themes included:
+- **App-wide themes:** *App theme* in the Settings panel, shown while nothing is selected, sets the main colour (buttons, links, sliders, checkboxes), the background, the text colour, the font and the corners for every screen. Six ready-made themes: Classic, Ocean, Forest, Sunset, Night and Paper.
+- **Readable by default:** a button's label is white or near-black, whichever reads better on the main colour. Every ready-made theme passes WCAG AA (4.5:1) for text, button labels and links, and the panel warns when the chosen text colour is hard to read on the background. Fields, cards and lines get lighter on a dark background.
+- **Follows the theme:** new Texts have no colour of their own and new Boxes no background, so they follow the theme. A Text's *Color* shows *Theme colour*, with *↺ Use theme colour* to go back to it; a Box's *Background* has *✕ No colour*.
+- **Format version 3:** older files are upgraded by taking the old default grey off Texts and the default white off Boxes, which looks the same. A theme is kept in the project as `theme`, and checked like the rest.
+- **Fix:** a change undone before autosave (such as undo, then redo) left *Saving…* showing for good; it now shows as saved again.
+- **Tests:** `model/theme.test.ts`, upgrade and check tests in `project.test.ts`, a save status test in `projectSync.test.ts`, and `e2e/theme.spec.ts`.
+
 ---
 
 ## Roadmap status
@@ -438,9 +448,10 @@ Tutorial included:
 | EL-6 | Date picker | ✅ | 2026-11-15 | [#50](https://github.com/vrund1999-ai/code_blocks/pull/50) |
 | EL-7 | Icon | ⬜ | | |
 | EL-8 | More styling options | ✅ | 2026-11-12 | [#14](https://github.com/vrund1999-ai/code_blocks/pull/14) |
-| EL-9 | Themes | ⬜ | | |
+| EL-9 | Themes | ✅ | 2026-11-16 | [#55](https://github.com/vrund1999-ai/code_blocks/pull/55) |
 | EL-10 | Fill / % sizes and style blocks | ⬜ | | |
 | EL-11 | Fewer grid columns on narrow screens | ⬜ | | |
+| EL-12 | Reuse a theme in other projects | ⬜ | | |
 
 ### 5. Logic blocks
 | ID | Item | Status | Completed | PR |
@@ -495,4 +506,4 @@ Tutorial included:
 
 ---
 
-**Totals:** 50 / 83 done · 0 in progress
+**Totals:** 51 / 84 done · 0 in progress
