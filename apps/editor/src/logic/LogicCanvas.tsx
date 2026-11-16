@@ -21,6 +21,7 @@ import { makeNameLookup } from '../model/tree';
 import { BlockNode, TYPE_COLORS } from './BlockNode';
 import { BlockSuggestMenu, type SuggestRequest } from './BlockSuggestMenu';
 import { useFocusStore } from './focus';
+import { tidyGraph } from './tidy';
 import { ValueEdge } from './ValueEdge';
 
 export const NODE_DRAG_MIME = 'application/x-codeblocks-node';
@@ -74,6 +75,25 @@ export function LogicCanvas() {
     useFocusStore.setState({ blockId: null });
     void rf.fitView({ nodes: [{ id: focusId }], duration: 300, maxZoom: 1 });
   }, [focusId, started, rf]);
+
+  // ✨ Tidy up: every block to a neat place, as one step that Undo takes back,
+  // then the whole graph in view once the blocks have moved.
+  const fitAfterTidy = useRef(false);
+  const tidy = () => {
+    const { nodes: gn, edges: ge } = useProjectStore.getState().project.graph;
+    const measured = new Map(nodesRef.current.map((n) => [n.id, n.measured]));
+    const positions = tidyGraph(gn, ge, (id) => {
+      const m = measured.get(id);
+      return m?.width && m.height ? { width: m.width, height: m.height } : undefined;
+    });
+    fitAfterTidy.current = true;
+    moveNodes(positions);
+  };
+  useEffect(() => {
+    if (!fitAfterTidy.current) return;
+    fitAfterTidy.current = false;
+    requestAnimationFrame(() => void rf.fitView({ padding: 0.2, maxZoom: 1, duration: 300 }));
+  }, [nodes, rf]);
 
   const edges: Edge[] = useMemo(
     () =>
@@ -285,6 +305,13 @@ export function LogicCanvas() {
           }}
         />
       </ReactFlow>
+      {graph.nodes.length > 1 && (
+        <div className="logic-tools">
+          <button type="button" className="chip" onClick={tidy} title="Line up every block neatly, left to right. Undo puts them back.">
+            ✨ Tidy up
+          </button>
+        </div>
+      )}
       {suggest && <BlockSuggestMenu request={suggest} onPick={pickSuggestion} onClose={closeSuggest} />}
       {graph.nodes.length === 0 && (
         <div className="logic-empty">

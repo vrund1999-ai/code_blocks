@@ -1168,6 +1168,18 @@ textarea.field-input {
   position: relative;
   min-width: 0;
 }
+.logic-tools {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 5;
+  display: flex;
+  gap: 6px;
+}
+.logic-tools .chip {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
 .logic-empty {
   position: absolute;
   top: 40px;
