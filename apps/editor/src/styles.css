@@ -728,6 +728,38 @@ textarea.field-input {
 .el-container.bordered {
   border: 1px solid #e3e5e8;
 }
+/* A grid Box: its columns come from the element's settings. Items can shrink to fit a cell. */
+.el-container.cb-grid > * {
+  min-width: 0;
+}
+/*
+ * In a grid the drop bar would take a whole cell and push the items along, so
+ * it takes no room: the item it goes before (or, at the end, the last item)
+ * shows the bar beside it instead. An empty grid shows the bar itself.
+ */
+.cb-grid > .drop-bar:not(:only-child) {
+  display: none;
+}
+.cb-grid > .drop-bar:only-child {
+  justify-self: start;
+}
+.cb-grid > .drop-bar + .el-wrap::after,
+.cb-grid > .el-wrap:has(+ .drop-bar:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -6px;
+  width: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  pointer-events: none;
+}
+.cb-grid > .el-wrap:has(+ .drop-bar:last-child)::after {
+  left: auto;
+  right: -6px;
+}
 .el-container.root {
   border-radius: 0;
 }
@@ -950,6 +982,23 @@ textarea.field-input {
 }
 .list-row:last-child {
   border-bottom: none;
+}
+/* Cards side by side, like a gallery: each card has its own border. */
+.el-list.grid {
+  display: grid;
+  gap: 8px;
+  border: none;
+  overflow: visible;
+}
+.el-list.grid > .list-row,
+.el-list.grid > .list-row:last-child {
+  border: 1px solid #e3e5e8;
+  border-radius: 8px;
+  min-width: 0;
+}
+.el-list.grid > .list-hint,
+.el-list.grid > .list-empty {
+  grid-column: 1 / -1;
 }
 .list-delete {
   border: none;

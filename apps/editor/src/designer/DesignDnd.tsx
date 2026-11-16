@@ -15,6 +15,7 @@ import { ELEMENT_DEFS } from '../model/elements';
 import { useProjectStore } from '../model/projectStore';
 import { canPlaceInside, findElement, findInProject, findParent } from '../model/tree';
 import type { ElementType, UIElement } from '../model/types';
+import { gridIndex } from './gridIndex';
 
 export type DragData = { source: 'palette'; elementType: ElementType } | { source: 'element'; id: string };
 
@@ -40,10 +41,18 @@ const deepestUnderPointer: CollisionDetection = (args) => {
   return pointerWithin(args).sort((a, b) => area(a.id) - area(b.id));
 };
 
-/** Boxes lay out their children by `direction`; List cards by `cardDirection`. */
+/**
+ * Boxes lay out their children by `direction`; List cards by `cardDirection`.
+ * A grid fills its rows left to right, so it counts as a row here.
+ */
 function isRow(el: UIElement | null): boolean {
   const pv = el?.type === 'list' ? el.props.cardDirection : el?.props.direction;
-  return pv?.kind === 'static' && pv.value === 'row';
+  return pv?.kind === 'static' && (pv.value === 'row' || pv.value === 'grid');
+}
+
+function isGrid(el: UIElement | null): boolean {
+  const pv = el?.type === 'list' ? undefined : el?.props.direction;
+  return pv?.kind === 'static' && pv.value === 'grid';
 }
 
 const rectOf = (id: string) => document.querySelector(`[data-el-id="${id}"]`)?.getBoundingClientRect() ?? null;
@@ -67,6 +76,7 @@ function computeTarget(
   const beforeAfter = (): DropTarget | null => {
     if (!parent) return null;
     const i = parent.children.findIndex((c) => c.id === overId);
+    // In a grid, left or right of the middle; a row's items are side by side too.
     const after = parentRow ? x > rect.left + rect.width / 2 : y > rect.top + rect.height / 2;
     return { parentId: parent.id, index: after ? i + 1 : i };
   };
@@ -82,11 +92,15 @@ function computeTarget(
     } else {
       const row = isRow(over);
       let index = over.children.length;
-      for (let i = 0; i < over.children.length; i++) {
-        const r = rectOf(over.children[i].id);
-        if (r && (row ? x < r.left + r.width / 2 : y < r.top + r.height / 2)) {
-          index = i;
-          break;
+      if (isGrid(over)) {
+        index = gridIndex(over.children.map((c) => rectOf(c.id)), x, y);
+      } else {
+        for (let i = 0; i < over.children.length; i++) {
+          const r = rectOf(over.children[i].id);
+          if (r && (row ? x < r.left + r.width / 2 : y < r.top + r.height / 2)) {
+            index = i;
+            break;
+          }
         }
       }
       target = { parentId: over.id, index };
