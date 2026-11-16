@@ -56,15 +56,21 @@ test.describe('projects menu', () => {
     await expect
       .poll(() => page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('cb.project.')).length))
       .toBe(1);
-    if (!(await menu.isVisible())) menu = await app.openProjects();
+    // The menu stays open, now one project shorter.
+    await expect(menu).toBeVisible();
     await expect(menu.locator('.menu-item.project')).toHaveCount(1);
     await expect(menu.locator('.menu-item.project')).toContainText('Hello Name');
   });
 
-  test('closes when the mouse leaves', async ({ app, page }) => {
+  test('stays open when the mouse leaves, and closes on a click elsewhere', async ({ app, page }) => {
     const menu = await app.openProjects();
     await menu.locator('.menu-title').first().hover();
     await page.mouse.move(1400, 800);
+    await expect(menu).toBeVisible();
+    // A click inside the menu, on its heading, leaves it open.
+    await menu.locator('.menu-title').first().click();
+    await expect(menu).toBeVisible();
+    await page.mouse.click(1400, 800);
     await expect(menu).toBeHidden();
   });
 });
