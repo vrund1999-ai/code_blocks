@@ -170,12 +170,15 @@ export function InlineValueInput({
   value,
   onChange,
   label,
+  placeholder,
 }: {
   type: 'text' | 'number' | 'boolean';
   value: unknown;
   onChange(v: unknown): void;
   /** The input's name, for screen readers. */
   label: string;
+  /** Shown while it's empty, such as "today" for a date. */
+  placeholder?: string;
 }) {
   if (type === 'boolean') {
     return (
@@ -196,7 +199,7 @@ export function InlineValueInput({
       aria-label={label}
       type={type === 'number' ? 'number' : 'text'}
       value={value === undefined || value === null ? '' : String(value)}
-      placeholder={type === 'number' ? '0' : 'text…'}
+      placeholder={placeholder ?? (type === 'number' ? '0' : 'text…')}
       onChange={(e) =>
         onChange(type === 'number' ? (e.target.value === '' ? 0 : Number(e.target.value)) : e.target.value)
       }

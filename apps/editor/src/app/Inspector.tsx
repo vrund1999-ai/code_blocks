@@ -314,6 +314,7 @@ function NodeInspector({ nodeId }: { nodeId: string }) {
           <InlineValueInput
             type={p.inline!.type}
             label={p.label}
+            placeholder={p.inline!.placeholder}
             value={config[p.id] ?? p.inline!.default}
             onChange={(v) => updateNodeConfig(nodeId, { [p.id]: v })}
           />

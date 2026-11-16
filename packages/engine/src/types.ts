@@ -5,7 +5,7 @@
 import type { ElementType, GraphNode, ValueType } from './graph';
 import type { CellValue, DataTable, StoredRow } from './tables';
 
-export type NodeCategory = 'events' | 'actions' | 'flow' | 'data' | 'text' | 'lists' | 'tables' | 'server';
+export type NodeCategory = 'events' | 'actions' | 'flow' | 'data' | 'text' | 'dates' | 'lists' | 'tables' | 'server';
 
 export interface Pin {
   id: string;
@@ -13,7 +13,7 @@ export interface Pin {
   kind: 'exec' | 'data';
   valueType?: ValueType;
   /** For unconnected data inputs: show an inline editor and use this default. */
-  inline?: { type: 'text' | 'number' | 'boolean'; default: unknown };
+  inline?: { type: 'text' | 'number' | 'boolean'; default: unknown; /** Shown while it's empty. */ placeholder?: string };
 }
 
 export interface ConfigField {
