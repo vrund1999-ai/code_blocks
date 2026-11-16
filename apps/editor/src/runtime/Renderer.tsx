@@ -1,7 +1,7 @@
 import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
 import { toBool, toList, toNumber, toText } from '@code-blocks/engine/convert';
 import { cardValue, type CardItem } from './cards';
-import { dateInputValue, dateLimits, dropdownChoices, fitDate, fitNumber, linkHref, numberLimits } from '../model/elements';
+import { dateInputValue, dateLimits, dropdownChoices, fitDate, fitNumber, gridColumns, linkHref, numberLimits } from '../model/elements';
 import { elementStyle, hasFixedWidth } from '../model/style';
 import { useProjectStore } from '../model/projectStore';
 import type { UIElement } from '../model/types';
@@ -69,10 +69,20 @@ export function ElementView({
 
   switch (el.type) {
     case 'container': {
-      const row = p.direction === 'row';
+      const grid = p.direction === 'grid';
+      // A grid fills its rows left to right, so it places and drops like a row.
+      const row = p.direction === 'row' || grid;
+      const align = String(p.align ?? 'stretch');
       const style: CSSProperties = {
-        flexDirection: row ? 'row' : 'column',
-        alignItems: String(p.align ?? 'stretch'),
+        ...(grid
+          ? {
+              display: 'grid',
+              gridTemplateColumns: `repeat(${gridColumns(p.columns, 2)}, minmax(0, 1fr))`,
+              // In a grid, items line up within their cell, across and down.
+              justifyItems: align.replace('flex-', ''),
+              alignItems: align === 'stretch' ? 'stretch' : 'start',
+            }
+          : { flexDirection: row ? 'row' : 'column', alignItems: align }),
         gap: toNumber(p.gap),
         padding: toNumber(p.padding),
         background: toText(p.background) || undefined,
@@ -83,7 +93,7 @@ export function ElementView({
       const empty = el.children.length === 0 && mode === 'design';
       content = (
         <div
-          className={`el el-container ${row ? 'cb-row' : 'cb-col'} ${p.border ? 'bordered' : ''} ${isRoot ? 'root' : ''}`}
+          className={`el el-container ${grid ? 'cb-grid' : row ? 'cb-row' : 'cb-col'} ${p.border ? 'bordered' : ''} ${isRoot ? 'root' : ''}`}
           style={style}
         >
           {kids}
@@ -342,6 +352,10 @@ export function ElementView({
     case 'list': {
       const items = toList(p.items);
       const row = p.cardDirection === 'row';
+      const perRow = gridColumns(p.columns, 1);
+      // Cards side by side, like a gallery.
+      const listClass = `el el-list ${perRow > 1 ? 'grid' : ''}`;
+      const listStyle: CSSProperties = perRow > 1 ? { ...box, gridTemplateColumns: `repeat(${perRow}, minmax(0, 1fr))` } : box;
       const drop = design?.dropIndex(el.id) ?? null;
       const deleteButton = (item: unknown, i: number) =>
         toBool(p.showDelete) && (
@@ -361,7 +375,7 @@ export function ElementView({
       if (mode === 'design' && (el.children.length > 0 || drop !== null)) {
         // The designer shows the card once; it repeats for every item when the app runs.
         content = (
-          <div className="el el-list" style={box}>
+          <div className={listClass} style={listStyle}>
             <CardContext.Provider value={{ item: items[0], index: 1, sample: true }}>
               <div className="list-row card-row">
                 <div className={`${cardClass} template`}>{childViews(el, mode, design, row, drop)}</div>
@@ -373,7 +387,7 @@ export function ElementView({
         );
       } else if (el.children.length > 0) {
         content = (
-          <div className="el el-list" style={box}>
+          <div className={listClass} style={listStyle}>
             {items.length === 0 ? (
               <div className="list-empty">{toText(p.emptyText)}</div>
             ) : (
@@ -390,7 +404,7 @@ export function ElementView({
         );
       } else {
         content = (
-          <div className="el el-list" style={box}>
+          <div className={listClass} style={listStyle}>
             {items.length === 0 ? (
               <div className="list-empty">{toText(p.emptyText)}</div>
             ) : (

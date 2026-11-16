@@ -6,6 +6,7 @@ import {
   dropdownChoices,
   fitDate,
   fitNumber,
+  gridColumns,
   linkHref,
   numberLimits,
   pickerDate,
@@ -156,5 +157,23 @@ describe('date pickers', () => {
     const list = makeElement('list', 'People');
     project.screens[0].root.children.push(list);
     expect(canPlaceInside(project.screens[0].root, list.id, 'date')).toBe(false);
+  });
+});
+
+describe('grids', () => {
+  it('have 1 to 6 columns, whole numbers, or the fallback when not set', () => {
+    expect(gridColumns(3, 2)).toBe(3);
+    expect(gridColumns('4', 2)).toBe(4);
+    expect(gridColumns(2.6, 2)).toBe(3);
+    expect(gridColumns(0, 2)).toBe(2);
+    expect(gridColumns(-3, 2)).toBe(1);
+    expect(gridColumns(40, 2)).toBe(6);
+    expect(gridColumns('', 1)).toBe(1);
+    expect(gridColumns(undefined, 2)).toBe(2);
+  });
+
+  it('Boxes start with 2 columns, used once they’re set to a grid', () => {
+    expect(defaultProps('container').columns).toEqual({ kind: 'static', value: 2 });
+    expect(defaultProps('container').direction).toEqual({ kind: 'static', value: 'column' });
   });
 });

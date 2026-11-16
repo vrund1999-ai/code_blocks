@@ -2,6 +2,16 @@ import { isRecord, toList, toNumber, toText } from '@code-blocks/engine/convert'
 import { now, parseDate, writeDate } from '@code-blocks/engine/nodes/dates';
 import type { ElementType, PropValue, ValueType } from './types';
 
+/** The most columns a grid, or cards per row in a List, can have. */
+export const MAX_COLUMNS = 6;
+
+/** A grid's number of columns, kept from 1 to MAX_COLUMNS; `fallback` when it isn't set. */
+export function gridColumns(value: unknown, fallback: number): number {
+  if (value === '' || value === null || value === undefined) return fallback;
+  const n = Math.round(toNumber(value));
+  return Math.min(MAX_COLUMNS, Math.max(1, n || fallback));
+}
+
 /** Describes one editable property of a UI element, used by the Inspector. */
 export interface PropField {
   key: string;
@@ -22,6 +32,8 @@ export interface PropField {
   group?: 'style';
   /** Not offered for the screen itself. */
   notOnRoot?: boolean;
+  /** Only offered while another setting has this value, such as Columns for a grid. */
+  when?: { key: string; value: unknown };
 }
 
 export interface ElementDef {
@@ -84,10 +96,11 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
     type: 'container',
     label: 'Box',
     icon: '▭',
-    description: 'Groups other elements together in a row or column.',
+    description: 'Groups other elements together in a row, a column or a grid.',
     canHaveChildren: true,
     defaults: {
       direction: 'column',
+      columns: 2,
       gap: 8,
       padding: 12,
       align: 'stretch',
@@ -103,7 +116,17 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
         options: [
           { value: 'column', label: 'Top to bottom' },
           { value: 'row', label: 'Side by side' },
+          { value: 'grid', label: 'In a grid' },
         ],
+      },
+      {
+        key: 'columns',
+        label: 'Columns',
+        type: 'number',
+        optional: true,
+        placeholder: '2',
+        help: `How many items go side by side before the next row starts: 1 to ${MAX_COLUMNS}.`,
+        when: { key: 'direction', value: 'grid' },
       },
       {
         key: 'align',
@@ -343,6 +366,14 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
       },
       { key: 'emptyText', label: 'Text when empty', type: 'text' },
       { key: 'showDelete', label: 'Show delete buttons', type: 'boolean' },
+      {
+        key: 'columns',
+        label: 'Cards per row',
+        type: 'number',
+        optional: true,
+        placeholder: '1',
+        help: `Put cards side by side, like a gallery: 1 to ${MAX_COLUMNS}.`,
+      },
       {
         key: 'cardDirection',
         label: 'Arrange each card',

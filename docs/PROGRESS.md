@@ -53,6 +53,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | More unit tests | 2026-11-15 | [#46](https://github.com/vrund1999-ai/code_blocks/pull/46) | See below |
 | Dates and times | 2026-11-15 | [#49](https://github.com/vrund1999-ai/code_blocks/pull/49) | See below |
 | Date picker | 2026-11-15 | [#50](https://github.com/vrund1999-ai/code_blocks/pull/50) | See below |
+| Grids and galleries | 2026-11-16 | [#51](https://github.com/vrund1999-ai/code_blocks/pull/51) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -342,6 +343,13 @@ Date picker included:
 - **Text settings can show a placeholder** in the Settings panel, such as *Nothing picked* and *No limit*.
 - **Tests:** unit tests in `model/elements.test.ts` and `runtime/controller.test.ts`, and `e2e/date-picker.spec.ts`.
 
+Grids and galleries included:
+- **Boxes can arrange items *In a grid*,** with a *Columns* setting (2 to start, 1 to 6) that shows only for grids. Items fill each row left to right, every column the same width; *Align items* lines them up within their cells.
+- **Lists can show cards side by side** with *Cards per row* (1 to 6), like a gallery. Each card gets its own border.
+- **Dropping into a grid** goes where the pointer is, in reading order. The drop bar takes no cell, so nothing moves while dragging; it shows beside the item it goes before.
+- **Tests:** `designer/gridIndex.test.ts`, unit tests in `model/elements.test.ts`, and `e2e/grid.spec.ts`.
+- **Follow-up:** fewer columns on narrow screens such as phones (EL-11).
+
 ---
 
 ## Roadmap status
@@ -401,13 +409,14 @@ Date picker included:
 | EL-1 | Dropdown | ✅ | 2026-11-11 | [#13](https://github.com/vrund1999-ai/code_blocks/pull/13) |
 | EL-2 | List item templates (cards) | ✅ | 2026-11-10 | [#5](https://github.com/vrund1999-ai/code_blocks/pull/5) |
 | EL-3 | Number input / slider | ✅ | 2026-11-15 | [#42](https://github.com/vrund1999-ai/code_blocks/pull/42) |
-| EL-4 | Grid / columns layout | ⬜ | | |
+| EL-4 | Grid / columns layout | ✅ | 2026-11-16 | [#51](https://github.com/vrund1999-ai/code_blocks/pull/51) |
 | EL-5 | Link, divider, spacer | ✅ | 2026-11-15 | [#43](https://github.com/vrund1999-ai/code_blocks/pull/43) |
 | EL-6 | Date picker | ✅ | 2026-11-15 | [#50](https://github.com/vrund1999-ai/code_blocks/pull/50) |
 | EL-7 | Icon | ⬜ | | |
 | EL-8 | More styling options | ✅ | 2026-11-12 | [#14](https://github.com/vrund1999-ai/code_blocks/pull/14) |
 | EL-9 | Themes | ⬜ | | |
 | EL-10 | Fill / % sizes and style blocks | ⬜ | | |
+| EL-11 | Fewer grid columns on narrow screens | ⬜ | | |
 
 ### 5. Logic blocks
 | ID | Item | Status | Completed | PR |
@@ -462,4 +471,4 @@ Date picker included:
 
 ---
 
-**Totals:** 46 / 82 done · 0 in progress
+**Totals:** 47 / 83 done · 0 in progress

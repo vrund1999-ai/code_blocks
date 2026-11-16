@@ -208,7 +208,14 @@ function ElementInspector({ el, isRoot }: { el: UIElement; isRoot: boolean }) {
   const { renameElement, deleteElement, addNode, setTab, duplicateSelection } = useProjectStore.getState();
   const def = ELEMENT_DEFS[el.type];
   const event = EVENT_FOR[el.type];
-  const fields = def.fields.filter((f) => !(isRoot && f.notOnRoot));
+  // A setting that depends on another (Columns, for a grid) shows only when it applies.
+  const applies = (f: PropField) => {
+    if (!f.when) return true;
+    const pv = el.props[f.when.key];
+    const value = pv ? (pv.kind === 'static' ? pv.value : undefined) : def.defaults[f.when.key];
+    return value === f.when.value;
+  };
+  const fields = def.fields.filter((f) => !(isRoot && f.notOnRoot) && applies(f));
   const styleFields = fields.filter((f) => f.group === 'style');
 
   const addLogic = () => {
