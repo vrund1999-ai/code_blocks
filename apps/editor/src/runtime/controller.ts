@@ -2,6 +2,7 @@
 
 import { coerceTo, toBool, toNumber, toText } from '@code-blocks/engine/convert';
 import { Interpreter } from '@code-blocks/engine/interpreter';
+import { keyMatches, keyName } from '@code-blocks/engine/nodes/events';
 import type { StoredRow } from '@code-blocks/engine/tables';
 import { HostError, type GraphError, type HostApi, type TablesApi } from '@code-blocks/engine/types';
 import { addRow, ApiError, deleteRow, listRows, updateRow } from '../data/rowsApi';
@@ -326,10 +327,21 @@ export function startApp() {
     const seconds = Math.max(0.1, toNumber(n.config.seconds ?? 1));
     timers.push(setInterval(() => void interpreter()?.runEvent(n.id), seconds * 1000));
   }
+  if (it.eventNodes('key').length > 0 && typeof document !== 'undefined') {
+    document.addEventListener('keydown', onKeyDown);
+    removeKeyListener = () => document.removeEventListener('keydown', onKeyDown);
+    // Keys go to the app straight away, not to the Run button that was just pressed.
+    const focused = document.activeElement as HTMLElement | null;
+    if (focused && !focused.closest?.('.app-view.mode-run')) focused.blur?.();
+  }
   void it.trigger('screenLoad', (c) => c.screen === screenId);
 }
 
+let removeKeyListener: (() => void) | null = null;
+
 export function stopApp() {
+  removeKeyListener?.();
+  removeKeyListener = null;
   generation++;
   const waits = cancelWaits;
   cancelWaits = new Set();
@@ -352,4 +364,47 @@ export function fireChange(elementId: string, value: unknown) {
 
 export function fireListDelete(elementId: string, index: number, item: unknown) {
   void interpreter()?.trigger('listDelete', (c) => c.element === elementId, { index, item });
+}
+
+/** Does any block of this type listen to this element? Checked before making an interpreter. */
+export function listensTo(nodeType: string, elementId: string): boolean {
+  return project().graph.nodes.some((n) => n.type === nodeType && n.config.element === elementId);
+}
+
+export function fireCardClick(elementId: string, index: number, item: unknown) {
+  void interpreter()?.trigger('cardClick', (c) => c.element === elementId, { index, item });
+}
+
+/** `card` is set when the element is inside a List's card. */
+export function fireHover(elementId: string, action: 'enter' | 'leave', card?: { item: unknown; index: number }) {
+  if (!listensTo('event.hover', elementId)) return;
+  void interpreter()?.trigger(
+    'hover',
+    (c) => c.element === elementId && (c.action ?? 'enter') === action,
+    card ? { ...card } : {},
+  );
+}
+
+const EDITABLE = 'input, textarea, select, [contenteditable="true"]';
+/** Keys that only change other keys, so they aren't presses of their own. */
+const MODIFIERS = new Set(['Shift', 'Control', 'Alt', 'Meta', 'AltGraph', 'CapsLock', 'Fn']);
+
+/**
+ * Whether a key press is for the running app: pressed in it, or with nothing
+ * focused. Not shortcuts (Ctrl, Alt, ⌘) or Shift on its own, not keys pressed in the editor's own
+ * panels, and while typing in a text box, only Enter and Escape.
+ */
+export function keyIsForApp(e: Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'altKey' | 'target'>): boolean {
+  if (e.ctrlKey || e.metaKey || e.altKey || MODIFIERS.has(e.key)) return false;
+  const target = e.target as Element | null;
+  const inApp = !target || target === document.body || target === document.documentElement || Boolean(target.closest?.('.app-view.mode-run'));
+  if (!inApp) return false;
+  if (target?.matches?.(EDITABLE)) return e.key === 'Enter' || e.key === 'Escape';
+  return true;
+}
+
+function onKeyDown(e: KeyboardEvent) {
+  if (!keyIsForApp(e)) return;
+  const name = keyName(e.key);
+  void interpreter()?.trigger('key', (c) => keyMatches(c.key, name), { key: name });
 }

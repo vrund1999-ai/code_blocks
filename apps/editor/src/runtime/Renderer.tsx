@@ -1,11 +1,11 @@
-import { createContext, useContext, type CSSProperties, type ReactNode } from 'react';
+import { cloneElement, createContext, isValidElement, useContext, type CSSProperties, type KeyboardEvent, type MouseEvent, type ReactElement, type ReactNode } from 'react';
 import { toBool, toList, toNumber, toText } from '@code-blocks/engine/convert';
 import { cardValue, type CardItem } from './cards';
 import { dateInputValue, dateLimits, dropdownChoices, fitDate, fitNumber, gridColumns, linkHref, numberLimits } from '../model/elements';
 import { elementStyle, hasFixedWidth } from '../model/style';
 import { useProjectStore } from '../model/projectStore';
 import type { UIElement } from '../model/types';
-import { fireChange, fireClick, fireListDelete, isPublished } from './controller';
+import { fireCardClick, fireChange, fireClick, fireHover, fireListDelete, isPublished } from './controller';
 import { setElementState, useRuntimeStore } from './runtimeStore';
 
 /**
@@ -59,6 +59,10 @@ export function ElementView({
 }) {
   const card = useContext(CardContext);
   const p = useResolvedProps(el, mode, card);
+  // Lists with a *When list item clicked* block let their items be clicked.
+  const cardClickable = useProjectStore((s) =>
+    el.type === 'list' ? s.project.graph.nodes.some((n) => n.type === 'event.cardClick' && n.config.element === el.id) : false,
+  );
   const visible = toBool(p.visible ?? true);
   if (!visible && mode !== 'design') return null;
 
@@ -352,6 +356,23 @@ export function ElementView({
     case 'list': {
       const items = toList(p.items);
       const row = p.cardDirection === 'row';
+      // With a *When list item clicked* block, each item can be clicked, or picked with Enter or Space.
+      const clickable = run && cardClickable;
+      const itemProps = (item: unknown, i: number) =>
+        clickable
+          ? {
+              tabIndex: 0,
+              onClick: (e: MouseEvent<HTMLElement>) => {
+                if (!fromControl(e)) fireCardClick(el.id, i + 1, item);
+              },
+              onKeyDown: (e: KeyboardEvent<HTMLElement>) => {
+                if (e.target !== e.currentTarget || (e.key !== 'Enter' && e.key !== ' ')) return;
+                e.preventDefault();
+                fireCardClick(el.id, i + 1, item);
+              },
+            }
+          : {};
+      const rowClass = clickable ? ' clickable' : '';
       const perRow = gridColumns(p.columns, 1);
       // Cards side by side, like a gallery.
       const listClass = `el el-list ${perRow > 1 ? 'grid' : ''}`;
@@ -393,7 +414,7 @@ export function ElementView({
             ) : (
               items.map((item, i) => (
                 <CardContext.Provider key={i} value={{ item, index: i + 1, sample: false }}>
-                  <div className="list-row card-row">
+                  <div className={`list-row card-row${rowClass}`} {...itemProps(item, i)}>
                     <div className={cardClass}>{childViews(el, mode, undefined, row, null)}</div>
                     {deleteButton(item, i)}
                   </div>
@@ -409,7 +430,7 @@ export function ElementView({
               <div className="list-empty">{toText(p.emptyText)}</div>
             ) : (
               items.map((item, i) => (
-                <div className="list-row" key={i}>
+                <div className={`list-row${rowClass}`} key={i} {...itemProps(item, i)}>
                   <span>{toText(item)}</span>
                   {deleteButton(item, i)}
                 </div>
@@ -424,6 +445,14 @@ export function ElementView({
   }
 
   if (!visible) content = <div className="hidden-in-design">{content}</div>;
+  // *When mouse over* blocks: the element itself reports the mouse moving onto and off it.
+  if (run && isValidElement(content)) {
+    const cardInfo = card && !card.sample ? { item: card.item, index: card.index } : undefined;
+    content = cloneElement(content as ReactElement<{ onMouseEnter?: () => void; onMouseLeave?: () => void }>, {
+      onMouseEnter: () => fireHover(el.id, 'enter', cardInfo),
+      onMouseLeave: () => fireHover(el.id, 'leave', cardInfo),
+    });
+  }
   return <>{design ? design.wrap(el, isRoot, content, !isRoot && hasFixedWidth(p)) : content}</>;
 }
 
@@ -465,4 +494,10 @@ export function AppView({
       )}
     </div>
   );
+}
+
+/** Was this click on a button, link or input inside a list item, rather than on the item itself? */
+function fromControl(e: MouseEvent<HTMLElement>): boolean {
+  const control = (e.target as Element).closest('button, a, input, select, textarea, label');
+  return control !== null && e.currentTarget.contains(control);
 }
