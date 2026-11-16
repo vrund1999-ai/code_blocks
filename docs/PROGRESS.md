@@ -374,7 +374,7 @@ More unit tests included:
 | UX-9 | Onboarding tutorial | ⬜ | | |
 | UX-10 | Resizable preview | ⬜ | | |
 | UX-11 | Touch support | ⬜ | | |
-| UX-12 | Projects menu click-outside | ⬜ | | |
+| UX-12 | Projects menu click-outside | ✅ | 2026-11-15 | [#47](https://github.com/vrund1999-ai/code_blocks/pull/47) |
 | UX-13 | Item-linked settings outside a List | ⬜ | | |
 | UX-14 | Drag to reorder in the layers panel | ⬜ | | |
 
@@ -445,4 +445,4 @@ More unit tests included:
 
 ---
 
-**Totals:** 42 / 82 done · 0 in progress
+**Totals:** 43 / 82 done · 0 in progress
