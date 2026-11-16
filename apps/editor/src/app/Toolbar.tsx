@@ -96,7 +96,7 @@ function ProjectsMenu({ onClose }: { onClose(): void }) {
   const browserOnly = local.filter((p) => !account?.some((a) => a.id === p.id));
 
   return (
-    <div className="menu" onMouseLeave={onClose}>
+    <div className="menu">
       <div className="menu-title">Start something new</div>
       {TEMPLATES.map((t) => (
         <button
