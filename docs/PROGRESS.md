@@ -54,6 +54,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Dates and times | 2026-11-15 | [#49](https://github.com/vrund1999-ai/code_blocks/pull/49) | See below |
 | Date picker | 2026-11-15 | [#50](https://github.com/vrund1999-ai/code_blocks/pull/50) | See below |
 | Grids and galleries | 2026-11-16 | [#51](https://github.com/vrund1999-ai/code_blocks/pull/51) | See below |
+| More events | 2026-11-16 | [#52](https://github.com/vrund1999-ai/code_blocks/pull/52) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -350,6 +351,13 @@ Grids and galleries included:
 - **Tests:** `designer/gridIndex.test.ts`, unit tests in `model/elements.test.ts`, and `e2e/grid.spec.ts`.
 - **Follow-up:** fewer columns on narrow screens such as phones (EL-11).
 
+
+More events included:
+- ***When key pressed*:** any key, or one of Enter, Space, Escape, Backspace, Tab, the arrows, a letter or a digit. It gives the key's name (`a`, `Space`, `ArrowUp`). Letters count with or without Shift; shortcuts (Ctrl, Alt, ⌘) and Shift on its own don't count. Only keys pressed in the running app count, not those typed in the editor's panels, and while typing in a text box, only Enter and Escape. Straight after Run, keys go to the app.
+- ***When list item clicked*:** gives the item and its position. Clicking a button or input in the card runs that element's blocks instead. Items it listens to show as clickable, and can be picked with Enter or Space.
+- ***When mouse over*:** when the mouse moves onto an element, or off it. Inside a List's cards it gives the card's item, like *When button clicked*.
+- **Tests:** `packages/engine/src/events.test.ts`, unit tests in `runtime/controller.test.ts`, and `e2e/more-events.spec.ts`.
+
 ---
 
 ## Roadmap status
@@ -429,7 +437,7 @@ Grids and galleries included:
 | LB-6 | Custom reusable blocks | ⬜ | | |
 | LB-7 | Local variables | ⬜ | | |
 | LB-8 | Repeat while / stop loop | ⬜ | | |
-| LB-9 | More events | ⬜ | | |
+| LB-9 | More events | ✅ | 2026-11-16 | [#52](https://github.com/vrund1999-ai/code_blocks/pull/52) |
 | LB-10 | Typed starting values for lists and records | ⬜ | | |
 
 ### 6. Run mode and debugging
@@ -471,4 +479,4 @@ Grids and galleries included:
 
 ---
 
-**Totals:** 47 / 83 done · 0 in progress
+**Totals:** 48 / 83 done · 0 in progress

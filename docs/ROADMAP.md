@@ -39,7 +39,7 @@ The fifth wave carries on with P2 items for people building apps, starting with 
 1. ✅ **LB-5:** date and time blocks: today, showing, adding, counting between and comparing dates.
 2. ✅ **EL-6:** a date picker, raised to P2 since date blocks can now use what it gives.
 3. ✅ **EL-4:** grid and column layouts.
-4. **LB-9:** more events: a key pressed, a List card clicked, the mouse over an element.
+4. ✅ **LB-9:** more events: a key pressed, a List card clicked, the mouse over an element.
 5. **UX-7:** tidy up the logic graph with one click.
 6. **UX-9:** a guided tutorial for first-time users, once the blocks above have settled.
 
@@ -122,7 +122,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | LB-6 | Custom reusable blocks (functions) | P2 | |
 | LB-7 | Local variables scoped to a single run | P3 | |
 | LB-8 | *Repeat while* loop and *Stop loop* | P3 | |
-| LB-9 | More events: key pressed, list item clicked, hover | P2 | A button inside a List card already reports its item (EL-2); this is for clicking the card itself |
+| LB-9 | More events: key pressed, list item clicked, hover | P2 | Shipped: *When key pressed* (any key, or a common key, letter or digit; it gives the key's name), *When list item clicked* (the item and its position; a button in the card runs its own blocks instead) and *When mouse over* (onto or off an element, with the card's item inside a List). Keys count only in the running app: not shortcuts, and while typing in a text box only Enter and Escape. Phones have no mouse, so *When mouse over* doesn't run there |
 | LB-10 | Typed starting values for list items and record fields (numbers, yes/no) | P3 | The Variables panel stores them as text today; the forgiving conversions hide this in most cases |
 
 ## 6. Run mode and debugging
