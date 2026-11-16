@@ -6,7 +6,7 @@ import { cloneElements, cloneNodes, PASTE_OFFSET, type Clip } from './clipboard'
 import { ELEMENT_DEFS } from './elements';
 import { defaultInitial, makeElement, makeProject, makeScreen, newId, nextElementName, nextName } from './factory';
 import { canPlaceInside, collectIds, findElement, findInProject, findParent } from './tree';
-import type { ColumnType, ElementType, GraphEdge, Project, PropValue, TableColumn, UIElement, Variable } from './types';
+import type { ColumnType, ElementType, GraphEdge, Project, PropValue, TableColumn, Theme, UIElement, Variable } from './types';
 
 export type Tab = 'design' | 'logic' | 'data';
 /** `ids` lists every selected block when there are several; `id` is the main one. */
@@ -34,6 +34,8 @@ interface Actions {
   select(sel: Selection): void;
   setActiveScreen(id: string): void;
   renameProject(name: string): void;
+  /** Changes the app's theme; `undefined` settings go back to the usual look. */
+  setTheme(patch: Partial<Theme> | null): void;
 
   addElement(type: ElementType, parentId: string, index?: number): string;
   moveElement(id: string, parentId: string, index: number): void;
@@ -180,6 +182,14 @@ export const useProjectStore = create<ProjectStore>()(
           if (s.selection?.kind === 'element') s.selection = null;
         }),
       renameProject: (name) => mutate((p) => void (p.name = name), 'project-name'),
+      setTheme: (patch) =>
+        mutate((p) => {
+          // null, or nothing left set, is the usual look: no theme in the file.
+          const next: Theme = patch === null ? {} : { ...p.theme, ...patch };
+          for (const k of Object.keys(next) as (keyof Theme)[]) if (next[k] === undefined || next[k] === '') delete next[k];
+          if (Object.keys(next).length > 0) p.theme = next;
+          else delete p.theme;
+        }, 'theme'),
 
       // ---- UI elements ------------------------------------------------------
       addElement: (type, parentId, index) => {

@@ -11,7 +11,7 @@ import { COLUMN_TYPES, VISITOR_ACCESS, type DataTable } from './tables';
  * The current format. Bump it when the format changes, and add a step to
  * MIGRATIONS that upgrades files from the version before.
  */
-export const PROJECT_VERSION = 2;
+export const PROJECT_VERSION = 3;
 
 export type PropValue =
   // `value` can be left out: JSON drops a value that's undefined.
@@ -45,6 +45,23 @@ export interface Variable {
   initial: unknown;
 }
 
+/**
+ * The app's look, shared by every screen. Anything left out keeps the usual
+ * look. Colours are `#rrggbb`.
+ */
+export interface Theme {
+  /** Buttons, links, sliders and the outline of a field being typed in. */
+  accent?: string;
+  /** Behind every screen. */
+  background?: string;
+  /** Text that has no colour of its own. */
+  text?: string;
+  /** One of the editor's font choices (`sans`, `serif`, ...). */
+  font?: string;
+  /** How rounded buttons, fields, cards and images are. */
+  corners?: 'square' | 'usual' | 'round';
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -54,6 +71,8 @@ export interface Project {
   /** Data tables: their columns. The rows live on the server. */
   tables: DataTable[];
   graph: LogicGraph;
+  /** The app's colours and font; not there for the usual look. */
+  theme?: Theme;
 }
 
 export const ELEMENT_TYPES = [
@@ -89,7 +108,34 @@ type Json = Record<string, unknown>;
 export const MIGRATIONS: Record<number, (p: Json) => Json> = {
   // Version 1 files saved before data tables (BE-3) have no `tables`.
   1: (p) => ({ ...p, tables: p.tables ?? [] }),
+  // Version 2 gave every new Text a dark grey, and every new Box a white
+  // background. From version 3 they're left empty to follow the app's theme
+  // (EL-9), so those colours are taken off again; they look the same.
+  2: (p) => ({ ...p, screens: Array.isArray(p.screens) ? p.screens.map(clearOldDefaultColors) : p.screens }),
 };
+
+/** The colours every new Text and Box was given before themes (EL-9). */
+export const OLD_DEFAULT_COLORS: Record<string, { key: string; value: string }> = {
+  text: { key: 'color', value: '#1f2937' },
+  container: { key: 'background', value: '#ffffff' },
+};
+
+function clearOldDefaultColors(screen: unknown): unknown {
+  if (!isObject(screen) || !isObject(screen.root)) return screen;
+  const clear = (el: unknown): unknown => {
+    if (!isObject(el)) return el;
+    let out = el;
+    const old = OLD_DEFAULT_COLORS[String(el.type)];
+    const props = el.props;
+    const pv = old && isObject(props) ? props[old.key] : undefined;
+    if (old && isObject(props) && isObject(pv) && pv.kind === 'static' && String(pv.value).toLowerCase() === old.value) {
+      const { [old.key]: _old, ...rest } = props;
+      out = { ...out, props: rest };
+    }
+    return Array.isArray(el.children) ? { ...out, children: el.children.map(clear) } : out;
+  };
+  return { ...screen, root: clear(screen.root) };
+}
 
 /**
  * A project that can't be opened. The message says why, as a sentence that
@@ -199,6 +245,15 @@ export const graphSchema = z.pipe(
   }),
 );
 
+const color = z.string().check(z.regex(/^#[0-9a-fA-F]{6}$/, 'Colours are written like #5b5bd6.'));
+export const themeSchema = z.object({
+  accent: z.optional(color),
+  background: z.optional(color),
+  text: z.optional(color),
+  font: z.optional(z.string()),
+  corners: z.optional(z.enum(['square', 'usual', 'round'])),
+});
+
 function allElements(root: UIElement): UIElement[] {
   return [root, ...root.children.flatMap(allElements)];
 }
@@ -212,6 +267,7 @@ export const projectSchema = z
     variables: z.array(variableSchema),
     tables: z.array(tableSchema),
     graph: graphSchema,
+    theme: z.optional(themeSchema),
   })
   .check(
     z.superRefine((p, ctx) => {

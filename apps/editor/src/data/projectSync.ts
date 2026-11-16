@@ -73,8 +73,14 @@ const keepHere = (project: Project) => saveLocal(project, baseVersion(project.id
 /** Marks the open project as changed, before autosave waits a moment to save it. */
 export function markChanged() {
   starter = false;
-  if (useSaveStore.getState().status !== 'conflict') useSaveStore.setState({ status: 'pending', problem: '' });
+  const { status, problem } = useSaveStore.getState();
+  if (status === 'conflict') return;
+  if (status !== 'pending') beforeChange = { status, problem };
+  useSaveStore.setState({ status: 'pending', problem: '' });
 }
+
+/** The save status before the change autosave is waiting on, for when it's undone. */
+let beforeChange: { status: SaveStatus; problem: string } | null = null;
 
 /**
  * Saves the open project where it belongs. `replace` saves it to the account
@@ -82,7 +88,12 @@ export function markChanged() {
  */
 export function saveCurrent({ replace = false } = {}) {
   const project = useProjectStore.getState().project;
-  if (project === lastSaved && !replace) return;
+  if (project === lastSaved && !replace) {
+    // Back to what was saved (a change, then undo): saved as it was before.
+    // A save still being sent sets its own status when it's done.
+    if (useSaveStore.getState().status === 'pending' && beforeChange && beforeChange.status !== 'saving') useSaveStore.setState(beforeChange);
+    return;
+  }
   lastSaved = project;
   starter = false;
   setLastProject(project.id);

@@ -3,6 +3,7 @@ import { toBool, toList, toNumber, toText } from '@code-blocks/engine/convert';
 import { cardValue, type CardItem } from './cards';
 import { dateInputValue, dateLimits, dropdownChoices, fitDate, fitNumber, gridColumns, linkHref, numberLimits } from '../model/elements';
 import { elementStyle, hasFixedWidth } from '../model/style';
+import { themeStyle } from '../model/theme';
 import { useProjectStore } from '../model/projectStore';
 import type { UIElement } from '../model/types';
 import { fireCardClick, fireChange, fireClick, fireHover, fireListDelete, isPublished } from './controller';
@@ -480,8 +481,9 @@ export function AppView({
 }) {
   const screen = useProjectStore((s) => s.project.screens.find((x) => x.id === screenId) ?? s.project.screens[0]);
   const toasts = useRuntimeStore((s) => s.toasts);
+  const theme = useProjectStore((s) => s.project.theme);
   return (
-    <div className={`app-view mode-${mode}`}>
+    <div className={`app-view mode-${mode}`} style={themeStyle(theme)}>
       <ElementView el={screen.root} mode={mode} design={design} isRoot />
       {mode === 'run' && toasts.length > 0 && (
         <div className="toasts">
