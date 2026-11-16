@@ -37,7 +37,7 @@ Smaller P3 fixes, such as ✅ **UX-12** (the Projects menu closing on mouse-leav
 The fifth wave carries on with P2 items for people building apps, starting with what everyday apps need most:
 
 1. ✅ **LB-5:** date and time blocks: today, showing, adding, counting between and comparing dates.
-2. **EL-6:** a date picker, raised to P2 since date blocks can now use what it gives.
+2. ✅ **EL-6:** a date picker, raised to P2 since date blocks can now use what it gives.
 3. **EL-4:** grid and column layouts.
 4. **LB-9:** more events: a key pressed, a List card clicked, the mouse over an element.
 5. **UX-7:** tidy up the logic graph with one click.
@@ -104,7 +104,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | EL-3 | Number input / slider | P2 | Shipped as a *Number Box* and a *Slider*, with smallest and biggest numbers, a step and a starting value (a slider can show its number). Blocks read them as numbers kept within their ends, and a slider's on a step; *Get / Set text box value* and *When value changes* work with both. Like text boxes, they stay out of List cards |
 | EL-4 | Grid / columns layout | P2 | |
 | EL-5 | Link, divider and spacer elements | P2 | Shipped: a *Link* opens a web page, an email (`mailto:`) or a phone number (`tel:`); other kinds of address, such as `javascript:`, are refused. Published apps open it in the same tab or a new one, as set; the editor's preview always uses a new tab. *Set text* changes its text. A *Divider* is a line (upright side by side), and a *Spacer* is empty space, striped while designing |
-| EL-6 | Date picker | P2 | Raised from P3 for the fifth wave: the date blocks (LB-5) read the `2026-11-15` form a date input gives |
+| EL-6 | Date picker | P2 | Raised from P3 for the fifth wave. Shipped: a *Date Picker* element, using the browser's own date input, or date and time with *Pick a time too*. It has a starting date and earliest and latest dates, where “today” means the day the app runs (so past days can't be picked). Blocks read it as the date blocks write dates (`2026-11-15`, or `2026-11-15 14:30`), kept between the earliest and latest; *Set text box value* sets it the same way, and text that isn't a date clears it. *Get text box value* and *When value changes* work with it, and it stays out of List cards like other inputs |
 | EL-7 | Icon element | P3 | |
 | EL-8 | More styling: width/height, margins, corner radius, shadow, fonts | P1 | Shipped: a Style section on every element (width, height, space around, rounded corners, shadow, font); sizes in pixels, empty means automatic; the screen's font applies to the whole screen |
 | EL-9 | App-wide themes (colours, fonts) | P2 | |

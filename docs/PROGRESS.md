@@ -52,6 +52,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | No mouse needed | 2026-11-15 | [#45](https://github.com/vrund1999-ai/code_blocks/pull/45) | See below |
 | More unit tests | 2026-11-15 | [#46](https://github.com/vrund1999-ai/code_blocks/pull/46) | See below |
 | Dates and times | 2026-11-15 | [#49](https://github.com/vrund1999-ai/code_blocks/pull/49) | See below |
+| Date picker | 2026-11-15 | [#50](https://github.com/vrund1999-ai/code_blocks/pull/50) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -334,6 +335,13 @@ Dates and times included:
 - **Tests:** `packages/engine/src/dates.test.ts` (unit tests) and `e2e/dates.spec.ts`.
 - **The fifth wave** is planned in the roadmap: EL-6 (date picker, raised to P2), EL-4, LB-9, UX-7 and UX-9.
 
+Date picker included:
+- **A *Date Picker* element:** the browser's own date input, or date and time with *Pick a time too*.
+- **Settings:** a starting date, and the earliest and latest dates. “today” means the day the app runs, so a booking app can stop people picking past days.
+- **Blocks read it as the date blocks write dates** (`2026-11-15`, or `2026-11-15 14:30`), kept between the earliest and latest. *Set text box value* sets it the same way; text that isn't a date clears it. *Get text box value* and *When value changes* work with it.
+- **Text settings can show a placeholder** in the Settings panel, such as *Nothing picked* and *No limit*.
+- **Tests:** unit tests in `model/elements.test.ts` and `runtime/controller.test.ts`, and `e2e/date-picker.spec.ts`.
+
 ---
 
 ## Roadmap status
@@ -395,7 +403,7 @@ Dates and times included:
 | EL-3 | Number input / slider | ✅ | 2026-11-15 | [#42](https://github.com/vrund1999-ai/code_blocks/pull/42) |
 | EL-4 | Grid / columns layout | ⬜ | | |
 | EL-5 | Link, divider, spacer | ✅ | 2026-11-15 | [#43](https://github.com/vrund1999-ai/code_blocks/pull/43) |
-| EL-6 | Date picker | ⬜ | | |
+| EL-6 | Date picker | ✅ | 2026-11-15 | [#50](https://github.com/vrund1999-ai/code_blocks/pull/50) |
 | EL-7 | Icon | ⬜ | | |
 | EL-8 | More styling options | ✅ | 2026-11-12 | [#14](https://github.com/vrund1999-ai/code_blocks/pull/14) |
 | EL-9 | Themes | ⬜ | | |
@@ -454,4 +462,4 @@ Dates and times included:
 
 ---
 
-**Totals:** 45 / 82 done · 0 in progress
+**Totals:** 46 / 82 done · 0 in progress
