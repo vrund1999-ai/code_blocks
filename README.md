@@ -73,6 +73,7 @@ The Playwright report and coverage are uploaded as artifacts. To also run Firefo
 - **🎨 Design tab:** drag Boxes, Text, Buttons, Text Boxes, Checkboxes, Dropdowns, Number Boxes, Sliders, Date Pickers, Images, Links, Dividers, Spacers and Lists onto a screen. Click any element to change it in the Settings panel. Use 🔗 *link* to tie a setting to a variable, so it updates live. The *Style* section sets an element's size, space around it, rounded corners, shadow and font.
   - The **Layers** panel shows the screen as a tree. Click a row to select an element, even one deep inside boxes, and double-click to rename it. Alt+arrow keys move the selected element.
   - Drop elements inside a **List** to design a card that repeats for every item. Inside a card, 🔗 *link* can show *a field of this card's item*, such as a contact's name.
+  - Set a Box's *Arrange items* to **In a grid** to lay its items out in equal columns, or set a List's *Cards per row* to show its cards side by side, like a gallery.
 - **⚡ Logic tab:** a node graph.
   - **When…** blocks start things, for example *When button clicked*.
   - White arrows decide what happens next: **Do…** blocks, and **Decide & repeat** blocks such as *If*, *Repeat* and *For each*.
