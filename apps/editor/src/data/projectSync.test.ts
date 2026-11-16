@@ -1,15 +1,27 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeProject } from '../model/factory';
-import { listProjects, loadProject } from '../model/persistence';
+import { lastProjectId, listProjects, loadProject, saveProject } from '../model/persistence';
 import { useProjectStore } from '../model/projectStore';
 import { signOut, useAuthStore } from './authStore';
-import { keepThisCopy, markChanged, saveCurrent, useSaveStore } from './projectSync';
+import { useRuntimeStore } from '../runtime/runtimeStore';
+import {
+  keepThisCopy,
+  markChanged,
+  openFromAccount,
+  openInEditor,
+  openNewestCopy,
+  saveBeforeClosing,
+  saveCurrent,
+  useSaveStore,
+} from './projectSync';
 
 const store = new Map<string, string>();
 /** The bodies of the saves sent to the server. */
 let sent: { project: { name: string }; baseVersion: unknown }[] = [];
 /** How the fake server answers the next save. */
-let answer: () => Response | Promise<Response>;
+let answer: (method: string) => Response | Promise<Response>;
+/** The addresses asked for, other than saves. */
+let gets: string[] = [];
 /** What the fake server was sent and answered, in order. */
 let log: string[] = [];
 
@@ -20,6 +32,7 @@ beforeEach(() => {
   store.clear();
   sent = [];
   log = [];
+  gets = [];
   globalThis.localStorage = {
     getItem: (k: string) => store.get(k) ?? null,
     setItem: (k: string, v: string) => void store.set(k, v),
@@ -36,17 +49,21 @@ beforeEach(() => {
     'fetch',
     vi.fn(async (_url: string, init: RequestInit = {}) => {
       if (init.method === 'PUT') sent.push(JSON.parse(String(init.body)));
+      else gets.push(_url);
       if (_url === '/api/auth/signout') {
         log.push('sign out sent');
         return json({ ok: true });
       }
-      return answer();
+      return answer(init.method ?? 'GET');
     }),
   );
   useAuthStore.setState({ status: 'guest', user: null });
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  useSaveStore.setState({ ready: false });
+});
 
 /** Opens a new project in the editor and returns a function that renames it. */
 function openNew(name: string) {
@@ -196,5 +213,149 @@ describe('signing out', () => {
     release();
     await signingOut;
     expect(log).toEqual(['save answered', 'sign out sent']);
+  });
+});
+
+describe('a save that was already made', () => {
+  it('counts as saved when the account already has this copy', async () => {
+    signIn();
+    const p = openNew('Closed tab');
+    saveCurrent();
+    await vi.waitFor(() => expect(status()).toBe('saved'));
+    p.rename('Closed tab, changed');
+    const current = useProjectStore.getState().project;
+    answer = (method) =>
+      method === 'PUT'
+        ? json({ error: { message: 'Changed in another tab.' } }, 409)
+        : json({ project: current, version: 5, updatedAt: 1 });
+    saveCurrent();
+    await vi.waitFor(() => expect(status()).toBe('saved'));
+    expect(loadProject(p.id)).toBeNull();
+
+    answer = () => json({ version: 6, updatedAt: 1 });
+    p.rename('Closed tab, changed again');
+    saveCurrent();
+    await vi.waitFor(() => expect(sent).toHaveLength(3));
+    expect(sent[2].baseVersion).toBe(5);
+  });
+});
+
+describe('opening projects', () => {
+  it('opens a project from the account as saved, without sending it back', () => {
+    signIn();
+    const p = makeProject('From the account');
+    openInEditor(p, { accountVersion: 3 });
+    expect(useProjectStore.getState().project.name).toBe('From the account');
+    expect(status()).toBe('saved');
+    expect(lastProjectId()).toBe(p.id);
+    expect(sent).toEqual([]);
+  });
+
+  it('saves the open project first, then saves the new one where it belongs', async () => {
+    const first = openNew('First');
+    first.rename('First, changed');
+    const second = makeProject('Second');
+    openInEditor(second);
+    expect(loadProject(first.id)?.name).toBe('First, changed');
+    expect(loadProject(second.id)?.name).toBe('Second');
+    expect(status()).toBe('browser');
+
+    signIn();
+    const third = makeProject('Third');
+    openInEditor(third);
+    await vi.waitFor(() => expect(status()).toBe('saved'));
+    expect(sent.at(-1)).toMatchObject({ project: { name: 'Third' }, baseVersion: null });
+  });
+
+  it('opens the copy kept in this browser before asking the account', async () => {
+    signIn();
+    const kept = makeProject('Kept here');
+    saveProject(kept, 2);
+    await openFromAccount(kept.id);
+    expect(useProjectStore.getState().project.name).toBe('Kept here');
+    expect(gets).toEqual([]);
+    // It is sent to the account, based on the version it was kept from.
+    await vi.waitFor(() => expect(sent.at(-1)).toMatchObject({ project: { name: 'Kept here' }, baseVersion: 2 }));
+  });
+
+  it('opens a project from the account at its version', async () => {
+    signIn();
+    const p = makeProject('Only there');
+    answer = () => json({ project: p, version: 8, updatedAt: 1 });
+    await openFromAccount(p.id);
+    expect(gets).toEqual([`/api/projects/${p.id}`]);
+    expect(useProjectStore.getState().project.name).toBe('Only there');
+    expect(status()).toBe('saved');
+
+    answer = () => json({ version: 9, updatedAt: 1 });
+    useProjectStore.getState().renameProject('Only there, changed');
+    saveCurrent();
+    await vi.waitFor(() => expect(sent.at(-1)?.baseVersion).toBe(8));
+  });
+
+  it('can drop the changes here for the account’s newest copy', async () => {
+    signIn();
+    const p = openNew('Two copies');
+    p.rename('Two copies, here');
+    saveProject(useProjectStore.getState().project, 1);
+    const theirs = { ...makeProject('Two copies, there'), id: p.id };
+    answer = () => json({ project: theirs, version: 4, updatedAt: 1 });
+    await openNewestCopy();
+    expect(useProjectStore.getState().project.name).toBe('Two copies, there');
+    expect(status()).toBe('saved');
+    expect(loadProject(p.id)).toBeNull();
+  });
+
+  it('shows why the newest copy couldn’t be opened', async () => {
+    signIn();
+    const p = openNew('Unreachable');
+    answer = () => Promise.reject(new TypeError('Failed to fetch'));
+    await openNewestCopy();
+    expect(useProjectStore.getState().project.id).toBe(p.id);
+    expect(useRuntimeStore.getState().toasts.at(-1)).toMatchObject({ kind: 'error' });
+  });
+});
+
+describe('closing the page', () => {
+  it('keeps unsaved work in this browser', () => {
+    const guest = openNew('Guest');
+    guest.rename('Guest, unsaved');
+    saveBeforeClosing();
+    expect(loadProject(guest.id)?.name).toBe('Guest, unsaved');
+  });
+
+  it('signed in, keeps a change not yet sent, with the version it’s based on', async () => {
+    signIn();
+    const p = openNew('Cloud');
+    saveCurrent();
+    await vi.waitFor(() => expect(status()).toBe('saved'));
+    saveBeforeClosing();
+    // Saved already: nothing to keep.
+    expect(loadProject(p.id)).toBeNull();
+
+    p.rename('Cloud, just typed');
+    saveBeforeClosing();
+    expect(loadProject(p.id)?.name).toBe('Cloud, just typed');
+    expect(listProjects().find((m) => m.id === p.id)?.accountVersion).toBe(1);
+  });
+});
+
+describe('signing in and out', () => {
+  it('signing in saves the open project to the account; signing out saves in this browser again', async () => {
+    useSaveStore.setState({ ready: true });
+    const p = openNew('Before signing in');
+    saveCurrent();
+    expect(status()).toBe('browser');
+
+    signIn();
+    await vi.waitFor(() => expect(status()).toBe('saved'));
+    expect(sent).toMatchObject([{ project: { name: 'Before signing in' }, baseVersion: null }]);
+
+    useAuthStore.setState({ status: 'guest', user: null });
+    expect(status()).toBe('idle');
+    p.rename('After signing out');
+    saveCurrent();
+    expect(status()).toBe('browser');
+    expect(sent).toHaveLength(1);
   });
 });

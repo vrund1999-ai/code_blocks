@@ -50,6 +50,7 @@ This file tracks completion of the items in [ROADMAP.md](ROADMAP.md).
 | Link, divider and spacer | 2026-11-15 | [#43](https://github.com/vrund1999-ai/code_blocks/pull/43) | See below |
 | Where is this used? | 2026-11-15 | [#44](https://github.com/vrund1999-ai/code_blocks/pull/44) | See below |
 | No mouse needed | 2026-11-15 | [#45](https://github.com/vrund1999-ai/code_blocks/pull/45) | See below |
+| More unit tests | 2026-11-15 | [#46](https://github.com/vrund1999-ai/code_blocks/pull/46) | See below |
 
 v1 included:
 - **Design tab:** drag-and-drop UI designer, inspector, and binding element settings to variables.
@@ -316,6 +317,14 @@ No mouse needed included:
 - **Moving elements:** in the Layers panel, Alt+arrow keys move the selected element up or down, into the end of the box above it, or out of its box (`layerMoveTarget` in `model/tree.ts`). They keep out of List cards what can't go in them.
 - **Tests:** 9 new unit tests (`model/wiring.test.ts`, `model/tree.test.ts`, `model/projectStore.test.ts`), and a new end-to-end spec (`e2e/keyboard-blocks.spec.ts`).
 
+More unit tests included:
+- **Coverage:** unit tests cover 63% of lines, up from 56%, with 116 new tests (480 in all).
+- **The runtime controller** (`runtime/controller.test.ts`, 0% → 97%): starting and stopping, events and the values they pass on, reading and setting elements (checkboxes, number boxes, sliders), screens and *Go back*, timers, *Wait* and Stop, wire values, saving on the device, tables (paging, rows that are gone, server errors, published apps) and the server (forms, requests sent from the server). The server calls are mocked.
+- **Saving projects:** in the browser (`model/persistence.test.ts`, 67% → 83%: the list of projects, deleting, and what's kept), and to the account (`data/projectSync.test.ts`, 48% → 79%: opening from the account or a copy kept here, a save that was already made, the newest copy, closing the page, signing in and out).
+- **Value and action blocks** (`packages/engine/src/valueblocks.test.ts`, 100%): *And / Or*, *Not*, *Compare*, *Random number*, *Count items*, *Get item*, *Show / hide*, and a check that every block's sentence works, set up or not.
+- **A floor in CI:** coverage below lines 60%, statements 58%, functions 52% or branches 46% fails the check (`vitest.config.ts`).
+- **Follow-up:** a slow server test that can time out on a busy machine (QE-15).
+
 ---
 
 ## Roadmap status
@@ -426,13 +435,14 @@ No mouse needed included:
 | QE-6 | Large-graph performance | ⬜ | | |
 | QE-7 | Export as standalone app / code | ⬜ | | |
 | QE-8 | Visual regression screenshots | ⬜ | | |
-| QE-9 | Raise unit test coverage | ⬜ | | |
+| QE-9 | Raise unit test coverage | ✅ | 2026-11-15 | [#46](https://github.com/vrund1999-ai/code_blocks/pull/46) |
 | QE-10 | React Flow attribution review | ✅ | 2026-11-13 | [#25](https://github.com/vrund1999-ai/code_blocks/pull/25) |
 | QE-11 | Drag tests in Firefox / WebKit | ⬜ | | |
 | QE-12 | Stray 401 after signing out in an accounts test | ✅ | 2026-11-14 | [#34](https://github.com/vrund1999-ai/code_blocks/pull/34) |
 | QE-13 | Connect and move blocks without a mouse | ✅ | 2026-11-15 | [#45](https://github.com/vrund1999-ai/code_blocks/pull/45) |
 | QE-14 | Accessibility checks for built apps | ⬜ | | |
+| QE-15 | Speed up the server's sign-in limit test | ⬜ | | |
 
 ---
 
-**Totals:** 41 / 81 done · 0 in progress
+**Totals:** 42 / 82 done · 0 in progress

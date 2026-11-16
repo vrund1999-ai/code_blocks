@@ -39,7 +39,7 @@ Use Node 24 (see `.nvmrc`). The repo is an npm workspace: run every command from
 | Command | What it does |
 | --- | --- |
 | `npm test` | Unit tests (Vitest) for the engine, the editor and the server, next to the code (`packages/*/src/**/*.test.ts`, `apps/*/src/**/*.test.ts`) |
-| `npm run test:coverage` | Unit tests with a coverage report in `coverage/` |
+| `npm run test:coverage` | Unit tests with a coverage report in `coverage/`. Fails if coverage drops below the floor in `vitest.config.ts` |
 | `npm run e2e:install` | One-time: download the Chromium build Playwright uses (`e2e:install:all` adds Firefox and WebKit) |
 | `npm run test:e2e` | Browser end-to-end tests (Playwright, Chromium) in `e2e/` |
 | `npm run test:e2e:ui` | The same tests in Playwright's interactive UI mode |

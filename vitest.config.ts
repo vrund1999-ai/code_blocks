@@ -10,6 +10,9 @@ export default defineConfig({
       include: ['packages/*/src/**', 'apps/*/src/**'],
       exclude: ['**/*.test.ts'],
       reporter: ['text-summary', 'html'],
+      // CI fails if coverage drops below these: a few points under where it is
+      // (QE-9), so a change that adds code without tests is noticed.
+      thresholds: { lines: 60, statements: 58, functions: 52, branches: 46 },
     },
   },
 });
