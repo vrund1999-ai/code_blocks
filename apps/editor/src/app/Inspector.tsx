@@ -9,6 +9,7 @@ import type { ElementType, Project, PropValue, UIElement, ValueType } from '../m
 import { ConfigFieldInput, InlineValueInput } from './fields';
 import { TryPanel } from './TryPanel';
 import { UsedBy } from './UsedBy';
+import { ColorField, ThemeSection } from './ThemeSection';
 import { TRYABLE } from '../data/tryApi';
 import { focusBlock } from '../logic/focus';
 import { WiresSection } from '../logic/WiresSection';
@@ -156,9 +157,7 @@ function PropEditor({ el, field }: { el: UIElement; field: PropField }) {
         );
         break;
       case 'color':
-        editor = (
-          <input type="color" className="color-input" aria-label={field.label} value={String(value || '#ffffff')} onChange={(e) => set({ kind: 'static', value: e.target.value })} />
-        );
+        editor = <ColorField field={field} value={String(value ?? '')} onChange={(v) => set({ kind: 'static', value: v })} />;
         break;
       case 'textarea':
         editor = (
@@ -360,13 +359,15 @@ export function Inspector() {
   return (
     <aside className="inspector" aria-label="Properties">
       <h2 className="panel-title">Settings</h2>
-      {body ?? (
-        <div className="hint empty-inspector">
-          {tab === 'design'
-            ? 'Click an element on the screen to change how it looks.'
-            : 'Click a block to see what it does and change its settings.'}
-        </div>
-      )}
+      {body ??
+        (tab === 'design' ? (
+          <>
+            <div className="hint empty-inspector">Click an element on the screen to change how it looks.</div>
+            <ThemeSection />
+          </>
+        ) : (
+          <div className="hint empty-inspector">Click a block to see what it does and change its settings.</div>
+        ))}
     </aside>
   );
 }

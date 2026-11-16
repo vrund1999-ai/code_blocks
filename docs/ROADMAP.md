@@ -45,6 +45,15 @@ The fifth wave carries on with P2 items for people building apps, starting with 
 
 The fifth wave is done.
 
+The sixth wave finishes the P2 items, starting with how apps look and then making the editor quicker to use:
+
+1. ✅ **EL-9:** app-wide themes: colours, font and corners for every screen, with ready-made themes.
+2. **UX-4:** right-click menus in the Design and Logic tabs.
+3. **UX-5:** selecting several elements at once on the design canvas, which works well with the right-click menus.
+4. **UX-6:** comments and group frames in the logic graph, for bigger graphs (alongside Tidy up).
+5. **LB-6:** custom reusable blocks. The biggest item here, and a large change to the engine.
+6. **AI-1:** "Describe your app" builds screens and blocks. It needs a model API, a server route and limits on cost, so it comes last.
+
 ---
 
 ## 1. Backend (phase 2)
@@ -109,9 +118,10 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | EL-6 | Date picker | P2 | Raised from P3 for the fifth wave. Shipped: a *Date Picker* element, using the browser's own date input, or date and time with *Pick a time too*. It has a starting date and earliest and latest dates, where “today” means the day the app runs (so past days can't be picked). Blocks read it as the date blocks write dates (`2026-11-15`, or `2026-11-15 14:30`), kept between the earliest and latest; *Set text box value* sets it the same way, and text that isn't a date clears it. *Get text box value* and *When value changes* work with it, and it stays out of List cards like other inputs |
 | EL-7 | Icon element | P3 | |
 | EL-8 | More styling: width/height, margins, corner radius, shadow, fonts | P1 | Shipped: a Style section on every element (width, height, space around, rounded corners, shadow, font); sizes in pixels, empty means automatic; the screen's font applies to the whole screen |
-| EL-9 | App-wide themes (colours, fonts) | P2 | |
+| EL-9 | App-wide themes (colours, fonts) | P2 | Shipped: a project can have a `theme` (main colour, background, text colour, font, corners), set under *App theme* in Settings while nothing is selected, with six ready-made themes. It reaches the app as `--app-*` CSS variables; buttons pick a readable label colour, and the panel warns when the text is hard to read on the background. New Texts and Boxes have no colour of their own so they follow it; format version 3 takes the old default grey and white off older files |
 | EL-10 | Sizes as a share of the space (%, fill) and blocks that change an element's style while running | P3 | Follow-up to EL-8, which only takes pixel sizes set in the designer |
 | EL-11 | Fewer grid columns on narrow screens | P3 | Follow-up to EL-4: a grid keeps its columns on every screen size, so a 4-column grid is cramped on a phone. Let a grid (and a List's cards per row) drop to fewer columns when the screen is narrow, or set a column count per device |
+| EL-12 | Reuse a theme in other projects | P3 | Follow-up to EL-9: save a theme of your own next to the ready-made ones, so it can be picked in any project |
 
 ## 5. Logic blocks
 | ID | Item | Priority | Notes |
@@ -151,7 +161,7 @@ The engine (`packages/engine`) is free of React, DOM and Node code, and its type
 | QE-1 | Add the browser end-to-end tests (Playwright) to the repo | P1 | `e2e/`, covering every v1 feature |
 | QE-2 | GitHub Actions CI: test, type-check, build | P1 | |
 | QE-3 | Code-split the bundle (it is currently over 500 kB) | P2 | Shipped: the editor and published apps are loaded separately (`main.tsx`), and the Logic tab with React Flow (`LogicWorkspace.tsx`) is loaded on its own, fetched once the editor is open. The project check uses `zod/mini`. A published app now downloads 349 kB (108 kB gzipped) instead of 727 kB (222 kB); the editor 463 kB before the Logic tab. No chunk is over 500 kB |
-| QE-4 | Validate the project file format (e.g. zod) and test migrations | P1 | Shipped: `packages/engine/src/project.ts` holds the format, its version (now 2) with step-by-step upgrades in `MIGRATIONS`, and a zod check with plain messages. The editor checks imported and saved projects; the server checks the graph, variables and tables it runs and deploys. When the format changes, bump `PROJECT_VERSION` and add a step |
+| QE-4 | Validate the project file format (e.g. zod) and test migrations | P1 | Shipped: `packages/engine/src/project.ts` holds the format, its version (now 3) with step-by-step upgrades in `MIGRATIONS`, and a zod check with plain messages. The editor checks imported and saved projects; the server checks the graph, variables and tables it runs and deploys. When the format changes, bump `PROJECT_VERSION` and add a step |
 | QE-5 | Accessibility pass (keyboard, screen readers, contrast) | P2 | Shipped: `e2e/accessibility.spec.ts` runs axe (WCAG 2.1 A and AA, and best practices) on each tab, the inspector for elements and blocks, the menus, a running app, an empty project and a published app, and fails on any finding. Fixed: text and block colours too light to read (the muted grey, *Run*, variable type chips, block headers, palette category titles), fields in the inspector and on blocks without names, layer rows named differently from what they show, buttons on the design canvas holding other controls, unnamed side panels, missing page headings, and icon-only buttons named only by a `title`. The menus close with Escape and put the keyboard back on their button, and anything the keyboard is on gets one clear ring. Not tested with a screen reader by hand |
 | QE-6 | Performance with large graphs and screens | P3 | |
 | QE-7 | Export an app as standalone HTML or generated code | P3 | |

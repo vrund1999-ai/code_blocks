@@ -86,6 +86,21 @@ describe('saving the open project', () => {
     expect(sent).toEqual([]);
   });
 
+  it('shows the project as saved again after a change is undone before autosave', () => {
+    const p = openNew('Guest app');
+    p.rename('Guest app 2');
+    saveCurrent();
+    expect(status()).toBe('browser');
+    // A change, then undo: the project is the one saved last, so there's nothing to send.
+    useProjectStore.getState().setTheme({ accent: '#237032' });
+    markChanged();
+    useProjectStore.getState().undo();
+    markChanged();
+    expect(status()).toBe('pending');
+    saveCurrent();
+    expect(status()).toBe('browser');
+  });
+
   it('saves to the account when signed in, based on the version saved last', async () => {
     signIn();
     const p = openNew('Shop');

@@ -50,6 +50,29 @@ describe('upgrading project files', () => {
     expect(parseProject(unversioned).tables).toEqual([]);
   });
 
+  it('takes the old default colours off version 2 Texts and Boxes, so they follow the theme', () => {
+    const p = project();
+    const text = (color: unknown): UIElement => ({ ...el(`t${String(color)}`, 'text', 'T'), props: { color: { kind: 'static', value: color }, size: { kind: 'static', value: 'large' } } });
+    const box = (background: string, children: UIElement[] = []): UIElement => ({ ...el(`b${background}`, 'container', 'Box', children), props: { background: { kind: 'static', value: background }, gap: { kind: 'static', value: 8 } } });
+    p.screens[0].root = box('#FFFFFF', [box('#1f2937', [text('#1F2937'), text('#ff0000')])]);
+    const up = parseProject({ ...p, version: 2 });
+    expect(up.screens[0].root.props).toEqual({ gap: { kind: 'static', value: 8 } });
+    const inner = up.screens[0].root.children[0];
+    // A Box keeps a colour that was chosen, even the Texts' grey.
+    expect(inner.props.background).toEqual({ kind: 'static', value: '#1f2937' });
+    const [grey, red] = inner.children;
+    expect(grey.props).toEqual({ size: { kind: 'static', value: 'large' } });
+    expect(red.props.color).toEqual({ kind: 'static', value: '#ff0000' });
+  });
+
+  it('keeps a theme, and refuses colours that aren’t #rrggbb', () => {
+    const theme = { accent: '#0b7285', background: '#ffffff', text: '#123a44', font: 'serif', corners: 'round' as const };
+    expect(parseProject({ ...project(), theme }).theme).toEqual(theme);
+    expect(parseProject(project()).theme).toBeUndefined();
+    expect(problem({ ...project(), theme: { accent: 'red' } })).toContain('Colours are written like #5b5bd6.');
+    expect(problem({ ...project(), theme: { corners: 'very' } })).toContain('corners');
+  });
+
   it('refuses files from a newer version, and versions that aren’t whole numbers', () => {
     expect(problem({ ...project(), version: PROJECT_VERSION + 1 })).toBe(
       'It was made with a newer version of Code Blocks. Update Code Blocks to open it.',

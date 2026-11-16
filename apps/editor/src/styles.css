@@ -621,6 +621,65 @@ textarea.field-input {
   margin-top: 4px;
   padding-top: 10px;
 }
+/* The app theme, in Settings while nothing is selected. */
+.theme-section {
+  margin-top: 14px;
+}
+.theme-presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 8px 0 12px;
+}
+.theme-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 4px;
+  font-size: 11px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.theme-preset:hover {
+  border-color: var(--accent);
+}
+.theme-preset.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+  font-weight: 600;
+}
+.theme-swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 28px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+}
+.theme-swatch > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.color-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.color-field .chip {
+  margin: 0;
+}
+.hint.warn {
+  color: #9c4a00;
+  margin-bottom: 10px;
+}
 .style-section h3 {
   margin: 0 0 8px;
   font-size: 11px;
@@ -709,6 +768,10 @@ textarea.field-input {
 }
 
 /* ---------- rendered app elements ---------- */
+/*
+ * The app's theme (EL-9) arrives as --app-* variables on .app-view; see
+ * model/theme.ts. Each falls back to the usual look.
+ */
 .app-view {
   position: relative;
   flex: 1;
@@ -726,7 +789,8 @@ textarea.field-input {
   border-radius: 8px;
 }
 .el-container.bordered {
-  border: 1px solid #e3e5e8;
+  border: 1px solid var(--app-soft-line, #e3e5e8);
+  border-radius: var(--app-card-radius, 8px);
 }
 /* A grid Box: its columns come from the element's settings. Items can shrink to fit a cell. */
 .el-container.cb-grid > * {
@@ -770,32 +834,34 @@ textarea.field-input {
 }
 .el-button {
   border: none;
-  border-radius: 8px;
+  border-radius: var(--app-radius, 8px);
   padding: 10px 16px;
   font-weight: 600;
 }
 .el-button.primary {
-  background: var(--accent);
-  color: #fff;
+  background: var(--app-accent, var(--accent));
+  color: var(--app-on-accent, #fff);
 }
 .el-button.primary:hover {
-  background: #4a4ac4;
+  background: color-mix(in srgb, var(--app-accent, var(--accent)) 86%, #000);
 }
 .el-button.secondary {
-  background: #fff;
-  border: 1.5px solid var(--accent);
-  color: var(--accent);
+  background: var(--app-field, #fff);
+  border: 1.5px solid var(--app-accent, var(--accent));
+  color: var(--app-accent, var(--accent));
 }
 .el-input {
-  border: 1px solid #ced4da;
-  border-radius: 8px;
+  border: 1px solid var(--app-line, #ced4da);
+  border-radius: var(--app-radius, 8px);
+  background: var(--app-field, #fff);
+  color: inherit;
   padding: 10px 12px;
   min-width: 0;
   width: 100%;
 }
 .el-input:focus {
-  outline: 2px solid var(--accent-soft);
-  border-color: var(--accent);
+  outline: 2px solid color-mix(in srgb, var(--app-accent, var(--accent)) 25%, transparent);
+  border-color: var(--app-accent, var(--accent));
 }
 .cb-row > .el-input,
 .cb-row > .el-wrap-input,
@@ -875,7 +941,7 @@ textarea.field-input {
   min-width: 0;
 }
 .el-link {
-  color: var(--accent);
+  color: var(--app-accent, var(--accent));
   text-decoration: underline;
   overflow-wrap: anywhere;
 }
@@ -915,7 +981,7 @@ textarea.field-input {
 .el-slider input[type='range'] {
   flex: 1;
   min-width: 0;
-  accent-color: var(--accent);
+  accent-color: var(--app-accent, var(--accent));
 }
 .el-slider input[type='range']:disabled {
   opacity: 1;
@@ -928,12 +994,12 @@ textarea.field-input {
   font-variant-numeric: tabular-nums;
 }
 .el-dropdown {
-  border: 1px solid #ced4da;
-  border-radius: 8px;
+  border: 1px solid var(--app-line, #ced4da);
+  border-radius: var(--app-radius, 8px);
   padding: 9px 10px;
   min-width: 0;
   width: 100%;
-  background: #fff;
+  background: var(--app-field, #fff);
   font: inherit;
   color: inherit;
 }
@@ -944,17 +1010,20 @@ textarea.field-input {
   pointer-events: none;
 }
 .el-dropdown:focus {
-  outline: 2px solid var(--accent-soft);
-  border-color: var(--accent);
+  outline: 2px solid color-mix(in srgb, var(--app-accent, var(--accent)) 25%, transparent);
+  border-color: var(--app-accent, var(--accent));
 }
 .el-checkbox {
   display: flex;
   gap: 8px;
   align-items: center;
 }
+.el-checkbox input {
+  accent-color: var(--app-accent, var(--accent));
+}
 .el-image {
   max-width: 100%;
-  border-radius: 8px;
+  border-radius: var(--app-radius, 8px);
   display: block;
 }
 .placeholder-box {
@@ -969,8 +1038,8 @@ textarea.field-input {
 .el-list {
   display: flex;
   flex-direction: column;
-  border: 1px solid #e3e5e8;
-  border-radius: 8px;
+  border: 1px solid var(--app-soft-line, #e3e5e8);
+  border-radius: var(--app-card-radius, 8px);
   overflow: hidden;
 }
 .list-row {
@@ -978,7 +1047,7 @@ textarea.field-input {
   justify-content: space-between;
   align-items: center;
   padding: 10px 12px;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid var(--app-soft-line, #f1f3f5);
 }
 .list-row:last-child {
   border-bottom: none;
@@ -988,10 +1057,10 @@ textarea.field-input {
   cursor: pointer;
 }
 .list-row.clickable:hover {
-  background: #f8f9fa;
+  background: var(--app-hover, #f8f9fa);
 }
 .list-row.clickable:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--app-accent, var(--accent));
   outline-offset: -2px;
 }
 /* Cards side by side, like a gallery: each card has its own border. */
@@ -1003,8 +1072,8 @@ textarea.field-input {
 }
 .el-list.grid > .list-row,
 .el-list.grid > .list-row:last-child {
-  border: 1px solid #e3e5e8;
-  border-radius: 8px;
+  border: 1px solid var(--app-soft-line, #e3e5e8);
+  border-radius: var(--app-card-radius, 8px);
   min-width: 0;
 }
 .el-list.grid > .list-hint,
@@ -1014,7 +1083,8 @@ textarea.field-input {
 .list-delete {
   border: none;
   background: transparent;
-  color: #6c757d;
+  color: inherit;
+  opacity: 0.65;
   border-radius: 4px;
   padding: 2px 6px;
 }
@@ -1024,7 +1094,8 @@ textarea.field-input {
 }
 .list-empty {
   padding: 14px;
-  color: var(--muted);
+  color: inherit;
+  opacity: 0.7;
   text-align: center;
   font-size: 13px;
 }
@@ -2165,6 +2236,8 @@ a.icon-btn {
 .published-app {
   width: min(480px, 100%);
   flex: 1;
+  display: flex;
+  flex-direction: column;
   background: #fff;
   box-shadow: 0 0 0 1px var(--border);
 }

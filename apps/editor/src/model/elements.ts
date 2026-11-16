@@ -34,6 +34,11 @@ export interface PropField {
   notOnRoot?: boolean;
   /** Only offered while another setting has this value, such as Columns for a grid. */
   when?: { key: string; value: unknown };
+  /**
+   * A colour that can be left empty: the theme's text colour, or no colour at
+   * all (`none`), with a button to go back to it.
+   */
+  emptyColor?: 'theme-text' | 'none';
 }
 
 export interface ElementDef {
@@ -104,7 +109,8 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
       gap: 8,
       padding: 12,
       align: 'stretch',
-      background: '#ffffff',
+      // No colour: the screen's (the theme's background) shows through.
+      background: '',
       border: true,
       visible: true,
     },
@@ -141,7 +147,7 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
       },
       { key: 'gap', label: 'Space between', type: 'number' },
       { key: 'padding', label: 'Inner padding', type: 'number' },
-      { key: 'background', label: 'Background', type: 'color' },
+      { key: 'background', label: 'Background', type: 'color', emptyColor: 'none' },
       { key: 'border', label: 'Show border', type: 'boolean' },
       visibleField,
     ],
@@ -152,7 +158,8 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
     icon: 'T',
     description: 'Shows a piece of text.',
     canHaveChildren: false,
-    defaults: { text: 'Some text', size: 'medium', bold: false, color: '#1f2937', visible: true },
+    // No colour: the theme's text colour.
+    defaults: { text: 'Some text', size: 'medium', bold: false, color: '', visible: true },
     fields: [
       { key: 'text', label: 'Text', type: 'textarea', bindable: 'text' },
       {
@@ -167,7 +174,7 @@ export const ELEMENT_DEFS: Record<ElementType, ElementDef> = {
         ],
       },
       { key: 'bold', label: 'Bold', type: 'boolean' },
-      { key: 'color', label: 'Color', type: 'color' },
+      { key: 'color', label: 'Color', type: 'color', emptyColor: 'theme-text' },
       visibleField,
     ],
   },
